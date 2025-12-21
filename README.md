@@ -1,33 +1,406 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WheelShift UI - Next.js Starter Kit
 
-## Getting Started
+A comprehensive, production-ready Next.js starter template with all modern tools and best practices pre-configured.
 
-First, run the development server:
+## 🚀 Features
+
+### Core Framework
+
+- **Next.js 16** - React framework with App Router
+- **React 19** - Latest React with concurrent features
+- **TypeScript** - Full type safety
+- **Tailwind CSS 4** - Utility-first CSS framework
+
+### Code Quality
+
+- **ESLint** - Configured with Next.js best practices and Prettier integration
+- **Prettier** - Code formatting with Tailwind CSS class sorting
+- **Husky** - Git hooks for pre-commit checks
+- **lint-staged** - Run linters on staged files only
+
+### UI Components
+
+- **Shadcn UI** - Beautiful, accessible components
+  - Button, Card, Input, Label, Select, Textarea
+  - Badge, Avatar, Dialog, Dropdown Menu
+  - Separator, Tabs, Sonner (toast notifications)
+  - Form components with validation
+- **Typography Component** - Reusable text components with variants
+- **Framer Motion** - Animation library
+- **Lucide React** - Beautiful icon library
+
+### State Management
+
+- **Redux Toolkit** - Predictable state management
+  - Pre-configured store with TypeScript
+  - Example slice with actions and selectors
+  - Custom typed hooks (useAppDispatch, useAppSelector)
+
+### Data Fetching
+
+- **TanStack Query (React Query)** - Powerful data synchronization
+  - Pre-configured QueryClient
+  - React Query DevTools included
+  - Optimized for SSR
+
+### Forms & Validation
+
+- **React Hook Form** - Performant form management
+- **Zod** - TypeScript-first schema validation
+- **@hookform/resolvers** - Bridge between React Hook Form and Zod
+- Example login form with validation
+
+### HTTP Client
+
+- **Axios** - Promise-based HTTP client
+  - Request/Response interceptors
+  - Automatic token handling
+  - Token refresh logic
+  - Error handling
+  - Example API service functions
+
+### Testing
+
+- **Jest** - Testing framework
+- **React Testing Library** - Component testing utilities
+- **@testing-library/jest-dom** - Custom matchers
+- **@testing-library/user-event** - User interaction simulation
+- Example test files included
+
+### Monitoring & Analytics
+
+- **Web Vitals** - Performance monitoring
+  - CLS, FID, FCP, LCP, TTFB, INP tracking
+  - Custom analytics endpoint
+  - Page view tracking
+  - Custom event tracking
+  - Error tracking utilities
+
+## 📦 Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see your app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Development
+npm run dev          # Start development server
 
-## Learn More
+# Build
+npm run build        # Create production build
+npm run start        # Start production server
 
-To learn more about Next.js, take a look at the following resources:
+# Code Quality
+npm run lint         # Run ESLint
+npm run format       # Format code with Prettier
+npm run format:check # Check formatting without writing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Testing
+npm run test         # Run tests
+npm run test:watch   # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
+
+```
+wheelshift-ui/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   │   └── analytics/        # Analytics endpoint
+│   ├── layout.tsx            # Root layout with providers
+│   ├── page.tsx              # Home page
+│   └── globals.css           # Global styles
+├── components/
+│   ├── ui/                   # Shadcn UI components
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── form.tsx
+│   │   ├── typography.tsx
+│   │   └── ...
+│   ├── forms/                # Form components
+│   │   └── login-form.tsx
+│   └── web-vitals-reporter.tsx
+├── lib/
+│   ├── api/                  # API utilities
+│   │   ├── axios.ts          # Axios instance with interceptors
+│   │   └── services.ts       # API service functions
+│   ├── redux/                # Redux setup
+│   │   ├── store.ts          # Redux store
+│   │   ├── provider.tsx      # Redux provider
+│   │   └── features/         # Redux slices
+│   ├── react-query/          # TanStack Query setup
+│   │   └── provider.tsx
+│   ├── validations/          # Zod schemas
+│   │   └── schemas.ts
+│   ├── monitoring/           # Analytics & monitoring
+│   │   ├── web-vitals.ts
+│   │   └── analytics.ts
+│   └── utils.ts              # Utility functions
+├── __tests__/                # Test files
+│   └── components/
+├── public/                   # Static assets
+├── .husky/                   # Git hooks
+├── eslint.config.mjs         # ESLint configuration
+├── .prettierrc               # Prettier configuration
+├── jest.config.ts            # Jest configuration
+├── jest.setup.ts             # Jest setup
+├── next.config.ts            # Next.js configuration
+├── tailwind.config.ts        # Tailwind CSS configuration
+├── tsconfig.json             # TypeScript configuration
+└── package.json              # Dependencies & scripts
+```
+
+## 🎨 Using Components
+
+### Shadcn UI Components
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+export default function Example() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Example</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button>Click me</Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Typography Component
+
+```tsx
+import { Typography } from "@/components/ui/typography";
+
+export default function Example() {
+  return (
+    <>
+      <Typography variant="h1">Heading 1</Typography>
+      <Typography variant="p">Paragraph text</Typography>
+      <Typography variant="muted">Muted text</Typography>
+    </>
+  );
+}
+```
+
+### Forms with Validation
+
+```tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, type LoginFormData } from "@/lib/validations/schemas";
+
+export function MyForm() {
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  function onSubmit(data: LoginFormData) {
+    console.log(data);
+  }
+
+  return <form onSubmit={form.handleSubmit(onSubmit)}>...</form>;
+}
+```
+
+### Redux State Management
+
+```tsx
+"use client";
+
+import { useAppDispatch, useAppSelector } from "@/lib/redux/store";
+import { increment, selectValue } from "@/lib/redux/features/exampleSlice";
+
+export function Counter() {
+  const dispatch = useAppDispatch();
+  const value = useAppSelector(selectValue);
+
+  return (
+    <div>
+      <p>Count: {value}</p>
+      <button onClick={() => dispatch(increment())}>Increment</button>
+    </div>
+  );
+}
+```
+
+### TanStack Query
+
+```tsx
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "@/lib/api/services";
+
+export function UserProfile() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["user", "profile"],
+    queryFn: () => userService.getProfile(),
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return <div>{data?.name}</div>;
+}
+```
+
+### API Calls with Axios
+
+```tsx
+import api from "@/lib/api/axios";
+
+// GET request
+const response = await api.get("/endpoint");
+
+// POST request
+const response = await api.post("/endpoint", { data });
+
+// Using service functions
+import { authService } from "@/lib/api/services";
+const result = await authService.login(email, password);
+```
+
+### Animations with Framer Motion
+
+```tsx
+import { motion } from "framer-motion";
+
+export function AnimatedComponent() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      Content
+    </motion.div>
+  );
+}
+```
+
+### Icons with Lucide React
+
+```tsx
+import { Home, Settings, User } from "lucide-react";
+
+export function IconExample() {
+  return (
+    <div>
+      <Home className="h-6 w-6" />
+      <Settings className="h-6 w-6" />
+      <User className="h-6 w-6" />
+    </div>
+  );
+}
+```
+
+## 🧪 Testing
+
+Write tests using React Testing Library:
+
+```tsx
+import { render, screen } from "@testing-library/react";
+import MyComponent from "./MyComponent";
+
+describe("MyComponent", () => {
+  it("renders correctly", () => {
+    render(<MyComponent />);
+    expect(screen.getByText("Hello")).toBeInTheDocument();
+  });
+});
+```
+
+## 📊 Performance Monitoring
+
+Web Vitals are automatically tracked and sent to the analytics endpoint. You can customize the reporting in:
+
+- `lib/monitoring/web-vitals.ts`
+- `app/api/analytics/route.ts`
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_GA_ID=your-google-analytics-id
+```
+
+### Adding More Shadcn Components
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+## 📝 Pre-commit Hooks
+
+Husky is configured to run:
+
+- ESLint on staged files
+- Prettier formatting on staged files
+
+This ensures code quality before committing.
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+### Other Platforms
+
+Build the app:
+
+```bash
+npm run build
+```
+
+Then deploy the `.next` folder to your preferred hosting platform.
+
+## 📚 Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Shadcn UI](https://ui.shadcn.com/)
+- [TanStack Query](https://tanstack.com/query)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [React Hook Form](https://react-hook-form.com/)
+- [Zod](https://zod.dev/)
+- [Framer Motion](https://www.framer.com/motion/)
+
+## 📄 License
+
+MIT
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+Built with ❤️ using Next.js and modern web technologies.
 
 ## Deploy on Vercel
 
