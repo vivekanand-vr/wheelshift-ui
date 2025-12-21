@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { ReactQueryProvider } from "@/lib/react-query/provider";
+import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { WebVitalsReporter } from "@/components/web-vitals-reporter";
 
@@ -32,11 +33,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProvider>
-          <ReactQueryProvider>
-            <WebVitalsReporter />
-            {children}
-            <Toaster />
-          </ReactQueryProvider>
+          <ThemeProvider>
+            <ReactQueryProvider>
+              <WebVitalsReporter />
+              {children}
+              <Toaster />
+            </ReactQueryProvider>
+          </ThemeProvider>
         </ReduxProvider>
       </body>
     </html>

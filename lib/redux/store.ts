@@ -1,14 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import exampleReducer from "./features/exampleSlice";
-
-// Import your reducers here
-// import exampleReducer from "./features/exampleSlice";
+import authReducer from "./features/auth/authSlice";
+import themeReducer from "./features/theme/themeSlice";
 
 export const store = configureStore({
   reducer: {
     example: exampleReducer,
-    // Add your reducers here
+    auth: authReducer,
+    theme: themeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

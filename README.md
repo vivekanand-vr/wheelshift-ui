@@ -1,53 +1,201 @@
-# WheelShift UI - Next.js Starter Kit
+# WheelShift UI - Enterprise Next.js Application
 
-A comprehensive, production-ready Next.js starter template with all modern tools and best practices pre-configured.
+A **production-ready, feature-complete Next.js application** with authentication, theming, RBAC, and a scalable feature-based architecture.
 
-## 🚀 Features
+## 🎯 What You Get
 
-### Core Framework
+✅ **Complete Authentication System** - Login, protected routes, token management  
+✅ **Beautiful Light/Dark Theme** - With comprehensive color system  
+✅ **Role-Based Access Control** - Admin, Manager, User, Guest roles  
+✅ **Feature-Based Architecture** - Scalable, maintainable structure  
+✅ **Professional UI** - Sidebar, header, 20+ shadcn/ui components  
+✅ **State Management** - Redux + TanStack Query  
+✅ **Example Features** - Dashboard, Tasks, and more  
+✅ **Complete Documentation** - Guides, examples, diagrams
 
-- **Next.js 16** - React framework with App Router
-- **React 19** - Latest React with concurrent features
-- **TypeScript** - Full type safety
-- **Tailwind CSS 4** - Utility-first CSS framework
+## 📚 Documentation
 
-### Code Quality
+**New here? Start with these guides:**
 
-- **ESLint** - Configured with Next.js best practices and Prettier integration
-- **Prettier** - Code formatting with Tailwind CSS class sorting
-- **Husky** - Git hooks for pre-commit checks
-- **lint-staged** - Run linters on staged files only
+1. **[START_HERE.md](./START_HERE.md)** ⭐ - Quick overview and setup
+2. **[INDEX.md](./INDEX.md)** - Documentation navigation hub
+3. **[QUICKSTART.md](./QUICKSTART.md)** - Step-by-step guide with examples
+4. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete architecture guide
+5. **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - What's been built
 
-### UI Components
+**For specific needs:**
 
-- **Shadcn UI** - Beautiful, accessible components
-  - Button, Card, Input, Label, Select, Textarea
-  - Badge, Avatar, Dialog, Dropdown Menu
-  - Separator, Tabs, Sonner (toast notifications)
-  - Form components with validation
-- **Typography Component** - Reusable text components with variants
-- **Framer Motion** - Animation library
-- **Lucide React** - Beautiful icon library
+- **Find files**: [FILE_STRUCTURE.md](./FILE_STRUCTURE.md)
+- **Visual guide**: [ARCHITECTURE_DIAGRAM.md](./ARCHITECTURE_DIAGRAM.md)
+- **Code examples**: [QUICKSTART.md](./QUICKSTART.md)
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Visit http://localhost:3000 and you'll see the login page!
+
+## 🎨 Key Features
+
+### Authentication & Authorization
+
+- Complete login/logout flow
+- JWT token management
+- Protected routes
+- Role-based permissions (RBAC)
+
+### Theme System
+
+- Light/Dark mode toggle
+- Comprehensive color palette
+- LocalStorage persistence
+- System preference detection
+
+### Layout
+
+- Collapsible sidebar with navigation
+- Professional header with search
+- User menu and notifications
+- Fully responsive
+
+### Feature-Based Structure
+
+```
+features/[name]/
+  ├── components/    # UI components
+  ├── hooks/         # Custom hooks
+  ├── api/           # API services
+  ├── types/         # TypeScript types
+  └── index.ts       # Barrel export
+```
 
 ### State Management
 
-- **Redux Toolkit** - Predictable state management
-  - Pre-configured store with TypeScript
-  - Example slice with actions and selectors
-  - Custom typed hooks (useAppDispatch, useAppSelector)
+- **Redux Toolkit** - Auth, theme, global state
+- **TanStack Query** - Server data, caching
+- **Custom hooks** - Easy access throughout app
 
-### Data Fetching
+## 🏗️ Tech Stack
 
-- **TanStack Query (React Query)** - Powerful data synchronization
-  - Pre-configured QueryClient
-  - React Query DevTools included
-  - Optimized for SSR
+## 🏗️ Tech Stack
 
-### Forms & Validation
+### Core
 
-- **React Hook Form** - Performant form management
-- **Zod** - TypeScript-first schema validation
-- **@hookform/resolvers** - Bridge between React Hook Form and Zod
+- **Next.js 16** - App Router
+- **React 19** - Latest React
+- **TypeScript** - Full type safety
+- **Tailwind CSS 4** - Utility-first CSS
+
+### UI & Styling
+
+- **shadcn/ui** - 20+ beautiful components
+- **Radix UI** - Accessible primitives
+- **Lucide React** - Icon library
+- **Framer Motion** - Animations
+
+### State Management
+
+- **Redux Toolkit** - Global state
+- **TanStack Query** - Server state
+- **React Hook Form** - Forms
+- **Zod** - Validation
+
+### Code Quality
+
+- **ESLint** - Linting
+- **Prettier** - Formatting
+- **Husky** - Git hooks
+- **Jest** - Testing
+
+## 📁 Project Structure
+
+```
+wheelshift-ui/
+├── app/
+│   ├── (authenticated)/   # Protected routes
+│   │   ├── dashboard/
+│   │   └── tasks/
+│   ├── login/
+│   └── layout.tsx
+├── features/              # ⭐ Feature modules
+│   ├── auth/
+│   ├── dashboard/
+│   └── tasks/
+├── components/
+│   ├── layout/           # Sidebar, Header
+│   ├── common/           # Reusable components
+│   └── ui/               # shadcn/ui
+└── lib/
+    ├── constants/        # Colors, navigation
+    ├── redux/            # Store, slices
+    └── rbac/             # Permissions
+```
+
+## 🎯 Example Features
+
+### Dashboard (`/dashboard`)
+
+- Stats cards with trends
+- Recent activity feed
+- RBAC examples
+- Responsive grid layout
+
+### Tasks (`/tasks`)
+
+- Task management
+- Filters and search
+- Empty states
+- CRUD operations
+
+### Auth (`/login`)
+
+- Login form with validation
+- Token management
+- Auto-redirect
+- Error handling
+
+## 🔐 RBAC (Role-Based Access Control)
+
+```tsx
+// Protect components
+<Protected allowedRoles={["admin"]}>
+  <AdminContent />
+</Protected>;
+
+// Or use hooks
+const { isAdmin, hasAccess } = useRBAC();
+if (hasAccess(["admin", "manager"])) {
+  // Show feature
+}
+```
+
+## 🎨 Theme System
+
+```tsx
+// Toggle theme
+const { mode, toggleTheme } = useTheme();
+
+// Automatic dark mode support
+<div className="bg-white dark:bg-neutral-900">Content</div>;
+```
+
+## 📖 Learn More
+
+Check out the comprehensive documentation:
+
+- **[START_HERE.md](./START_HERE.md)** - Begin here!
+- **[QUICKSTART.md](./QUICKSTART.md)** - Step-by-step guide
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Deep dive
+- **[INDEX.md](./INDEX.md)** - All documentation
+
+## 🛠️ Development
+
 - Example login form with validation
 
 ### HTTP Client
