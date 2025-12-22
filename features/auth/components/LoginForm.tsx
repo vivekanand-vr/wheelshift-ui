@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
 import { useLogin } from "../hooks";
 import type { LoginFormData } from "../types";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock, Mail } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -44,88 +45,144 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     login(data);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2 text-center">
-        <Typography variant="h1" className="text-3xl font-bold">
-          Welcome back
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="w-full space-y-8"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants} className="space-y-3">
+        <Typography variant="h1" className="text-foreground text-4xl font-bold">
+          Welcome Back
         </Typography>
-        <Typography variant="muted" className="text-sm">
-          Enter your credentials to access your account
+        <Typography variant="muted" className="text-base">
+          Sign in to continue to your account
         </Typography>
-      </div>
+      </motion.div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="name@example.com"
-                    disabled={isPending}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Email Field */}
+          <motion.div variants={itemVariants}>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold">
+                    Email Address
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Mail className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                      <Input
+                        type="email"
+                        placeholder="name@example.com"
+                        disabled={isPending}
+                        className="h-12 border-2 pl-10 text-base transition-colors focus:border-blue-500"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </motion.div>
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="h-auto p-0 text-sm font-normal"
-                    disabled={isPending}
-                  >
-                    Forgot password?
-                  </Button>
-                </div>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    disabled={isPending}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Password Field */}
+          <motion.div variants={itemVariants}>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="mb-2 flex items-center justify-between">
+                    <FormLabel className="text-sm font-semibold">
+                      Password
+                    </FormLabel>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="h-auto p-0 text-sm font-medium text-blue-600 hover:text-blue-700"
+                      disabled={isPending}
+                    >
+                      Forgot password?
+                    </Button>
+                  </div>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        disabled={isPending}
+                        className="h-12 border-2 pl-10 text-base transition-colors focus:border-blue-500"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </motion.div>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign in"
-            )}
-          </Button>
+          {/* Submit Button */}
+          <motion.div variants={itemVariants}>
+            <Button
+              type="submit"
+              className="h-12 w-full bg-blue-600 font-semibold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
+              disabled={isPending}
+            >
+              {isPending ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center"
+                >
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Signing in...
+                </motion.div>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+          </motion.div>
         </form>
       </Form>
 
-      <div className="text-center">
-        <Typography variant="small" className="text-sm">
+      {/* Sign Up Link */}
+      <motion.div variants={itemVariants} className="border-t pt-4 text-center">
+        <Typography variant="small" className="text-muted-foreground text-sm">
           Don&apos;t have an account?{" "}
-          <Button variant="link" className="h-auto p-0 font-semibold">
-            Sign up
+          <Button
+            variant="link"
+            className="h-auto p-0 font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Create Account
           </Button>
         </Typography>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
