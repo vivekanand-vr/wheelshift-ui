@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { REHYDRATE } from "redux-persist";
 import type { AuthState, LoginCredentials, LoginResponse, User } from "./types";
 import type { UserRole } from "@/lib/constants/navigation";
 import { authService } from "./api";
@@ -73,6 +74,18 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // Handle rehydration
+    builder.addCase(REHYDRATE, (state, action: any) => {
+      if (action.payload?.auth) {
+        return {
+          ...state,
+          ...action.payload.auth,
+          isLoading: false,
+          error: null,
+        };
+      }
+    });
+
     // Login
     builder
       .addCase(loginAsync.pending, (state) => {

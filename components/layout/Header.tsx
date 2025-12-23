@@ -16,16 +16,13 @@ import { useAuth } from "@/lib/redux/features/auth/hooks";
 import { useTheme } from "@/lib/redux/features/theme/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
 
 export function Header() {
   const { user, logout } = useAuth();
   const { mode, toggleTheme } = useTheme();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
   };
 
   return (
