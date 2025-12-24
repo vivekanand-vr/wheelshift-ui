@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { REHYDRATE } from "redux-persist";
-import type { AuthState, LoginCredentials, LoginResponse, User } from "./types";
+import { authApi } from "../api";
+import type { AuthState, LoginCredentials, User } from "../types";
 import type { UserRole } from "@/lib/constants/navigation";
-import { authService } from "./api";
 
 const initialState: AuthState = {
   user: null,
@@ -13,7 +13,6 @@ const initialState: AuthState = {
 
 // Map backend roles to frontend roles
 const mapRole = (roles: string[]): UserRole => {
-  // Return the first valid role from the backend
   if (roles.includes("SUPER_ADMIN")) return "SUPER_ADMIN";
   if (roles.includes("ADMIN")) return "ADMIN";
   if (roles.includes("SALES")) return "SALES";
@@ -23,7 +22,7 @@ const mapRole = (roles: string[]): UserRole => {
   return "guest";
 };
 
-const transformUser = (response: LoginResponse): User => ({
+const transformUser = (response: any): User => ({
   ...response,
   role: mapRole(response.roles),
 });
@@ -33,7 +32,7 @@ export const loginAsync = createAsyncThunk(
   "auth/login",
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const response = await authService.login(credentials);
+      const response = await authApi.login(credentials);
       return transformUser(response);
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.detail || "Login failed");
@@ -43,9 +42,8 @@ export const loginAsync = createAsyncThunk(
 
 export const logoutAsync = createAsyncThunk("auth/logout", async () => {
   try {
-    await authService.logout();
+    await authApi.logout();
   } catch (error) {
-    // Ignore logout errors
     console.error("Logout failed:", error);
   }
   return null;
@@ -55,7 +53,7 @@ export const checkAuthAsync = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await authService.getCurrentUser();
+      const response = await authApi.getCurrentUser();
       return transformUser(response);
     } catch (error: any) {
       return rejectWithValue(

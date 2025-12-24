@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "../../store";
+import { useAppDispatch, useAppSelector } from "../redux/store";
 import { setTheme, toggleTheme, initTheme } from "./themeSlice";
 import type { ThemeMode } from "@/lib/constants/colors";
 

@@ -1,4 +1,4 @@
-import { useAuth } from "@/lib/redux/features/auth/hooks";
+import { useAuth } from "@/features/auth";
 import type { UserRole } from "@/lib/constants/navigation";
 import { hasAccess, hasRole, isAdmin, isManagerOrAbove } from "./permissions";
 
@@ -9,22 +9,22 @@ export function useRBAC() {
   const { user } = useAuth();
 
   const checkAccess = (allowedRoles?: UserRole[]): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
     return hasAccess(user.role, allowedRoles);
   };
 
   const checkRole = (roles: UserRole[]): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
     return hasRole(user.role, roles);
   };
 
   const checkIsAdmin = (): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
     return isAdmin(user.role);
   };
 
   const checkIsManagerOrAbove = (): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
     return isManagerOrAbove(user.role);
   };
 

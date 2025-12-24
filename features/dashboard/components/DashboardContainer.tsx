@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboard } from "../hooks";
-import { useAuth } from "@/lib/redux/features/auth/hooks";
+import { useAuth } from "@/features/auth";
 import { AdminDashboard } from "./dashboards/AdminDashboard";
 import { SalesDashboard } from "./dashboards/SalesDashboard";
 import { InspectorDashboard } from "./dashboards/InspectorDashboard";

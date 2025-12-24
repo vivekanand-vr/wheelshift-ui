@@ -122,32 +122,25 @@ wheelshift-ui/
 │   │   ├── 📄 navigation.ts       # Sidebar navigation config
 │   │   └── 📄 index.ts
 │   │
-│   ├── 📂 redux/                   # Redux state management
-│   │   ├── 📂 features/
-│   │   │   ├── 📂 auth/           # ⭐ Auth state
-│   │   │   │   ├── 📄 authSlice.ts
-│   │   │   │   ├── 📄 hooks.ts
-│   │   │   │   ├── 📄 api.ts
-│   │   │   │   ├── 📄 types.ts
-│   │   │   │   └── 📄 index.ts
-│   │   │   ├── 📂 theme/          # ⭐ Theme state
-│   │   │   │   ├── 📄 themeSlice.ts
-│   │   │   │   └── 📄 hooks.ts
-│   │   │   └── 📄 exampleSlice.ts
+│   ├── 📂 redux/                   # Redux configuration only
 │   │   ├── 📄 store.ts            # Redux store
 │   │   └── 📄 provider.tsx        # Redux provider
 │   │
 │   ├── 📂 rbac/                    # ⭐ ROLE-BASED ACCESS CONTROL
 │   │   ├── 📄 permissions.ts      # Permission utilities
 │   │   ├── 📄 Protected.tsx       # <Protected> component
+│   │   ├── 📄 RoleGuard.tsx       # <RoleGuard> component
 │   │   ├── 📄 useRBAC.ts          # RBAC hook
 │   │   └── 📄 index.ts
 │   │
-│   ├── 📂 theme/
-│   │   └── 📄 ThemeProvider.tsx
+│   ├── 📂 theme/                   # ⭐ THEME SYSTEM
+│   │   ├── 📄 ThemeProvider.tsx   # Theme provider
+│   │   ├── 📄 themeSlice.ts       # Redux slice
+│   │   ├── 📄 hooks.ts            # useTheme hook
+│   │   └── 📄 index.ts
 │   │
 │   ├── 📂 api/
-│   │   ├── 📄 axios.ts            # Axios instance with auth
+│   │   ├── 📄 axios.ts            # ⭐ Configured axios instance
 │   │   └── 📄 services.ts
 │   │
 │   ├── 📂 react-query/
@@ -240,8 +233,8 @@ import { Sidebar } from "@/components/layout/Sidebar";
 ### Hook Imports
 
 ```tsx
-import { useAuth } from "@/lib/redux/features/auth/hooks";
-import { useTheme } from "@/lib/redux/features/theme/hooks";
+import { useAuth } from "@/features/auth";
+import { useTheme } from "@/lib/theme";
 import { useRBAC } from "@/lib/rbac";
 ```
 
@@ -288,11 +281,11 @@ Need to find something? Here's where to look:
 | Create a feature | `features/[name]/`                    |
 | Modify sidebar   | `lib/constants/navigation.ts`         |
 | Change colors    | `lib/constants/colors.ts`             |
-| Auth logic       | `lib/redux/features/auth/`            |
+| Auth logic       | `features/auth/`                      |
 | UI components    | `components/ui/`                      |
 | RBAC             | `lib/rbac/`                           |
 | API config       | `lib/api/axios.ts`                    |
-| Theme toggle     | `lib/redux/features/theme/`           |
+| Theme toggle     | `lib/theme/`                          |
 
 ---
 

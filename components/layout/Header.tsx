@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Moon, Sun, Search, LogOut, Settings, User } from "lucide-react";
-import { useAuth } from "@/lib/redux/features/auth/hooks";
-import { useTheme } from "@/lib/redux/features/theme/hooks";
+import { useAuth } from "@/features/auth";
+import { useTheme } from "@/lib/theme";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 

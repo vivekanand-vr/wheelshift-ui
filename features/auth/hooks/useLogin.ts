@@ -1,11 +1,15 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useAuth } from "@/lib/redux/features/auth/hooks";
+import { useAuth } from "./useAuth";
 import type { LoginFormData } from "../types";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+/**
+ * Login hook - handles login form submission
+ * Pattern: Component → useLogin hook → useAuth hook → Redux store → authApi
+ */
 export const useLogin = (onSuccess?: () => void) => {
   const { login } = useAuth();
   const router = useRouter();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/lib/redux/features/auth/hooks";
+import { useAuth } from "@/features/auth";
 import type { UserRole } from "@/lib/constants/navigation";
 import { hasAccess } from "./permissions";
 
@@ -20,7 +20,7 @@ export function Protected({
 }: ProtectedProps) {
   const { user } = useAuth();
 
-  if (!user) {
+  if (!user || !user.role) {
     return <>{fallback}</>;
   }
 

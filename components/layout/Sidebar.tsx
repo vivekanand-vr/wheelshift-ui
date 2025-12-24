@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarItem } from "./SidebarItem";
 import { getNavigationForRole } from "@/lib/constants/navigation";
-import { useAuth } from "@/lib/redux/features/auth/hooks";
+import { useAuth } from "@/features/auth";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { useState } from "react";

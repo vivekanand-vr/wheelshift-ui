@@ -1,14 +1,15 @@
-import { useAppDispatch, useAppSelector } from "../../store";
-import type { RootState } from "../../store";
-import {
-  loginAsync,
-  logoutAsync,
-  checkAuthAsync,
-  clearError,
-} from "./authSlice";
-import type { LoginCredentials } from "./types";
+"use client";
+
+import { useAppDispatch, useAppSelector } from "@/lib/redux/store";
+import type { RootState } from "@/lib/redux/store";
+import { loginAsync, logoutAsync, checkAuthAsync, clearError } from "../store";
+import type { LoginCredentials } from "../types";
 import { useRouter } from "next/navigation";
 
+/**
+ * Main auth hook - provides auth state and actions
+ * This connects to Redux store for state management
+ */
 export const useAuth = () => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state: RootState) => state.auth);
@@ -20,7 +21,6 @@ export const useAuth = () => {
 
   const logout = async () => {
     const result = await dispatch(logoutAsync());
-    // Clear local storage and redirect
     if (typeof window !== "undefined") {
       localStorage.removeItem("persist:root");
     }

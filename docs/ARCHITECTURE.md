@@ -1,493 +1,210 @@
-# WheelShift UI - Complete Frontend Architecture
+# WheelShift UI - Architecture Overview
 
-A production-ready Next.js application with comprehensive authentication, theming, and feature-based architecture.
+A production-ready Next.js application with feature-based architecture, authentication, and role-based access control.
 
 ## 🏗️ Architecture Overview
 
-This application follows a **feature-based architecture** where each feature is self-contained with its own:
+This application follows a **feature-based architecture** where each feature is self-contained with its own components, hooks, API services, and types.
 
-- Components
-- Hooks
-- API services
-- Types
-- Business logic
+### Core Principles
 
-### Directory Structure
+1. **Feature Cohesion** - All related code stays together
+2. **Separation of Concerns** - Clear layer responsibilities
+3. **Data Flow** - UI → Hooks → Queries → API
+4. **Role-Based Access** - Granular permission control
+5. **Type Safety** - Full TypeScript support
+
+## 📁 Directory Structure
 
 ```
 wheelshift-ui/
-├── app/
-│   ├── (authenticated)/         # Protected routes group
-│   │   ├── layout.tsx           # Auth layout with sidebar/header
-│   │   ├── dashboard/
-│   │   │   └── page.tsx         # Single import from feature
-│   │   ├── tasks/
-│   │   │   └── page.tsx
-│   │   └── [other-pages]/
-│   ├── login/
-│   │   └── page.tsx
-│   ├── layout.tsx               # Root layout
-│   └── globals.css
+├── app/                        # Next.js App Router
+│   ├── (authenticated)/        # Protected routes
+│   │   ├── layout.tsx         # Auth layout (Sidebar + Header)
+│   │   └── [pages]/           # Feature pages
+│   ├── login/                 # Public login page
+│   └── layout.tsx             # Root layout
 │
-├── features/                    # Feature-based modules
-│   ├── auth/
-│   │   ├── components/
-│   │   │   ├── LoginForm.tsx
-│   │   │   └── LoginFeature.tsx
-│   │   ├── hooks/
-│   │   │   └── useLogin.ts
-│   │   ├── types/
-│   │   │   └── index.ts
-│   │   └── index.ts             # Feature barrel export
-│   ├── dashboard/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── api/
-│   │   ├── types/
-│   │   └── index.ts
-│   └── tasks/
-│       ├── components/
-│       ├── hooks/
-│       ├── api/
-│       ├── types/
-│       └── index.ts
+├── features/                   # Feature modules
+│   ├── auth/                  # Authentication
+│   ├── dashboard/             # Dashboard
+│   └── [feature-name]/        # Other features
+│       ├── api/               # API calls
+│       ├── components/        # UI components
+│       ├── hooks/             # Custom hooks
+│       ├── queries/           # React Query configs
+│       ├── store/             # Redux slice (optional)
+│       ├── types/             # TypeScript types
+│       └── index.ts           # Exports
 │
-├── components/
-│   ├── layout/                  # Layout components
-│   │   ├── Sidebar.tsx
-│   │   ├── SidebarItem.tsx
-│   │   └── Header.tsx
-│   ├── common/                  # Reusable components
-│   │   ├── Container.tsx
-│   │   ├── PageHeader.tsx
-│   │   ├── Section.tsx
-│   │   └── EmptyState.tsx
-│   └── ui/                      # shadcn/ui components
+├── components/                 # Shared components
+│   ├── layout/                # Layout (Sidebar, Header)
+│   ├── common/                # Reusable components
+│   └── ui/                    # shadcn/ui components
 │
-├── lib/
-│   ├── constants/               # App-wide constants
-│   │   ├── colors.ts            # Theme color system
-│   │   └── navigation.ts        # Sidebar navigation config
-│   ├── redux/
-│   │   ├── features/
-│   │   │   ├── auth/            # Auth state management
-│   │   │   │   ├── authSlice.ts
-│   │   │   │   ├── hooks.ts
-│   │   │   │   ├── api.ts
-│   │   │   │   └── types.ts
-│   │   │   └── theme/           # Theme state management
-│   │   │       ├── themeSlice.ts
-│   │   │       └── hooks.ts
-│   │   ├── store.ts
-│   │   └── provider.tsx
-│   ├── rbac/                    # Role-based access control
-│   │   ├── permissions.ts
-│   │   ├── Protected.tsx
-│   │   └── useRBAC.ts
-│   ├── theme/
-│   │   └── ThemeProvider.tsx
-│   └── utils.ts
+└── lib/                        # Core utilities
+    ├── api/                   # API configuration
+    ├── constants/             # App constants
+    ├── redux/                 # Redux store
+    ├── rbac/                  # Access control
+    └── theme/                 # Theme system
+```
+
+## 🔄 Data Flow
+
+```
+┌─────────────┐
+│  Component  │  Renders UI, handles user interaction
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│    Hook     │  Business logic, state management
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│   Query     │  Data fetching, caching (React Query)
+└──────┬──────┘
+       │
+       ↓
+┌─────────────┐
+│     API     │  HTTP requests (axios)
+└─────────────┘
 ```
 
 ## 🎨 Theme System
 
-### Color Palette
-
-The application uses a comprehensive color system defined in `lib/constants/colors.ts`:
-
-- **Primary**: Blue tones for main actions
-- **Secondary**: Purple tones for secondary elements
-- **Success**: Green tones for positive actions
-- **Warning**: Yellow/Orange tones for warnings
-- **Error**: Red tones for errors
-- **Neutral**: Grayscale for text and backgrounds
-
-### Light/Dark Mode
-
-Theme switching is managed via Redux:
-
-```tsx
-import { useTheme } from "@/lib/redux/features/theme/hooks";
-
-function MyComponent() {
-  const { mode, toggleTheme } = useTheme();
-
-  return <button onClick={toggleTheme}>Toggle Theme</button>;
-}
-```
+- **Light/Dark Mode** - Managed via Redux
+- **Color Palette** - Defined in `lib/constants/colors.ts`
+- **Persistent** - Saved to localStorage
+- **System Detection** - Auto-detects OS preference
 
 ## 🔐 Authentication Flow
 
-### Login
+1. User visits protected route
+2. Redirected to `/login` if not authenticated
+3. Credentials sent to backend
+4. Token stored (cookies via `withCredentials`)
+5. User redirected to dashboard
+6. Subsequent requests include auth cookies
 
-1. User visits `/login`
-2. Submits credentials via `LoginForm`
-3. Redux action dispatches API call
-4. On success, token stored in localStorage
-5. User redirected to `/dashboard`
+### Auth State Management
 
-### Protected Routes
-
-All routes in `app/(authenticated)/*` are protected:
-
-```tsx
-// app/(authenticated)/layout.tsx
-// Automatically checks auth and redirects to login if not authenticated
-```
-
-### Usage in Components
-
-```tsx
-import { useAuth } from "@/lib/redux/features/auth/hooks";
-
-function MyComponent() {
-  const { user, isAuthenticated, logout } = useAuth();
-
-  if (!isAuthenticated) return null;
-
-  return <div>Welcome, {user.name}!</div>;
-}
-```
+- **Redux** - Global auth state (user, isAuthenticated)
+- **Persistence** - State saved to localStorage
+- **Auto-rehydration** - Restores on page reload
 
 ## 🛡️ Role-Based Access Control (RBAC)
 
 ### User Roles
 
-- **admin**: Full access
-- **manager**: Management features
-- **user**: Standard features
-- **guest**: Limited access
+- `SUPER_ADMIN` - Full system control
+- `ADMIN` - Management features
+- `SALES` - Sales operations
+- `INSPECTOR` - Inspections
+- `FINANCE` - Financial reports
+- `STORE_MANAGER` - Storage management
 
-### Protecting Components
+### Protection Levels
 
-```tsx
-import { Protected } from "@/lib/rbac";
-
-function AdminPanel() {
-  return (
-    <Protected allowedRoles={["admin"]}>
-      <div>Admin Only Content</div>
-    </Protected>
-  );
-}
-```
-
-### Using RBAC Hook
+**Component Level:**
 
 ```tsx
-import { useRBAC } from "@/lib/rbac";
-
-function MyComponent() {
-  const { isAdmin, hasAccess } = useRBAC();
-
-  if (hasAccess(["admin", "manager"])) {
-    return <AdvancedFeature />;
-  }
-
-  return <BasicFeature />;
-}
+<RoleGuard allowedRoles={["ADMIN"]}>
+  <AdminPanel />
+</RoleGuard>
 ```
 
-### Navigation with RBAC
+**Route Level:**
+Automatic via `app/(authenticated)/layout.tsx`
 
-Navigation items in `lib/constants/navigation.ts` support role-based filtering:
-
-```tsx
-{
-  title: 'Analytics',
-  href: '/analytics',
-  icon: BarChart3,
-  roles: ['admin', 'manager'], // Only visible to these roles
-}
-```
+**Navigation Level:**
+Items filtered by role in `lib/constants/navigation.ts`
 
 ## 📦 Feature Structure
 
-Each feature follows this pattern:
+See [../features/README.md](../features/README.md) for detailed feature architecture patterns.
 
-```
-features/[feature-name]/
-├── components/
-│   ├── [Feature]Feature.tsx    # Main feature component
-│   └── [Sub]Component.tsx
-├── hooks/
-│   └── index.ts                # Custom hooks
-├── api/
-│   └── index.ts                # API service
-├── types/
-│   └── index.ts                # TypeScript types
-└── index.ts                    # Barrel export
-```
+Each feature follows:
 
-### Creating a New Feature
+- API calls in `api/`
+- Components in `components/`
+- Business logic in `hooks/`
+- React Query configs in `queries/`
+- Redux state in `store/` (if needed)
+- Types in `types/`
 
-1. **Create feature directory:**
+## 🔌 API Configuration
 
-```bash
-mkdir -p features/my-feature/{components,hooks,api,types}
-```
+Centralized axios instance with:
 
-2. **Define types** (`types/index.ts`):
+- **Base URL** - Configured via environment
+- **Credentials** - `withCredentials: true` by default
+- **Interceptors** - Request/response logging and error handling
+- **Auto-retry** - Token refresh on 401
 
-```tsx
-export interface MyData {
-  id: string;
-  name: string;
-}
-```
+Located in `lib/api/axios.ts`
 
-3. **Create API service** (`api/index.ts`):
+## 🎯 Key Technologies
 
-```tsx
-import axios from "@/lib/api/axios";
-import type { MyData } from "../types";
+- **Next.js 14** - App Router, Server Components
+- **React 19** - Latest features
+- **TypeScript** - Full type safety
+- **Redux Toolkit** - State management
+- **React Query** - Server state & caching
+- **shadcn/ui** - Component library
+- **Tailwind CSS** - Styling
+- **Axios** - HTTP client
+- **Zod** - Schema validation
 
-export const myService = {
-  getData: async (): Promise<MyData[]> => {
-    const response = await axios.get("/my-endpoint");
-    return response.data;
-  },
-};
-```
+## 📚 Documentation
 
-4. **Create hooks** (`hooks/index.ts`):
+- [QUICKSTART.md](./QUICKSTART.md) - Quick setup guide
+- [FILE_STRUCTURE.md](./FILE_STRUCTURE.md) - Detailed file structure
+- [../features/README.md](../features/README.md) - Feature architecture patterns
+- [../features/auth/README.md](../features/auth/README.md) - Auth feature deep dive
 
-```tsx
-import { useQuery } from "@tanstack/react-query";
-import { myService } from "../api";
+## 🔧 Development Workflow
 
-export const useMyData = () => {
-  return useQuery({
-    queryKey: ["my-data"],
-    queryFn: myService.getData,
-  });
-};
-```
+1. Create feature folder structure
+2. Define types
+3. Create API functions
+4. Add React Query configs (optional)
+5. Build custom hooks
+6. Create UI components
+7. Add to navigation (if needed)
+8. Create page route
 
-5. **Create feature component** (`components/MyFeature.tsx`):
+## 🚀 Best Practices
 
-```tsx
-"use client";
-
-import { useMyData } from "../hooks";
-import { Container } from "@/components/common/Container";
-
-export function MyFeature() {
-  const { data, isLoading } = useMyData();
-
-  return <Container>{/* Your feature UI */}</Container>;
-}
-```
-
-6. **Export from feature** (`index.ts`):
-
-```tsx
-export * from "./components";
-export * from "./hooks";
-export * from "./types";
-```
-
-7. **Create page** (`app/(authenticated)/my-feature/page.tsx`):
-
-```tsx
-import { MyFeature } from "@/features/my-feature";
-
-export default function MyFeaturePage() {
-  return <MyFeature />;
-}
-```
-
-## 🎯 Common Components
-
-### Container
-
-Provides consistent padding and max-width:
-
-```tsx
-import { Container } from "@/components/common/Container";
-
-<Container size="xl">{/* content */}</Container>;
-```
-
-Sizes: `sm`, `md`, `lg`, `xl`, `full`
-
-### PageHeader
-
-Consistent page headers with actions:
-
-```tsx
-import { PageHeader } from "@/components/common/PageHeader";
-import { Button } from "@/components/ui/button";
-
-<PageHeader
-  title="My Page"
-  description="Page description"
-  actions={<Button>Action</Button>}
-/>;
-```
-
-### EmptyState
-
-Display when no data is available:
-
-```tsx
-import { EmptyState } from "@/components/common/EmptyState";
-import { FileText } from "lucide-react";
-
-<EmptyState
-  icon={<FileText className="h-12 w-12" />}
-  title="No data"
-  description="Get started by creating something"
-  action={<Button>Create</Button>}
-/>;
-```
-
-## 🎨 Using shadcn/ui Components
-
-All shadcn/ui components are in `components/ui/`:
-
-```tsx
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Typography } from "@/components/ui/typography";
-```
-
-## 🔍 Typography
-
-Use the Typography component for consistent text styling:
-
-```tsx
-import { Typography } from '@/components/ui/typography';
-
-<Typography variant="h1">Heading 1</Typography>
-<Typography variant="h2">Heading 2</Typography>
-<Typography variant="p">Paragraph</Typography>
-<Typography variant="muted">Muted text</Typography>
-<Typography variant="small">Small text</Typography>
-```
-
-## 🚀 State Management
-
-### Redux (Global State)
-
-Used for:
-
-- Authentication
-- Theme preferences
-- Global UI state
-
-```tsx
-import { useAppSelector, useAppDispatch } from "@/lib/redux/store";
-```
-
-### React Query (Server State)
-
-Used for:
-
-- API data fetching
-- Caching
-- Background updates
-
-```tsx
-import { useQuery, useMutation } from "@tanstack/react-query";
-```
-
-### Local State
-
-Use React hooks for component-specific state:
-
-```tsx
-const [count, setCount] = useState(0);
-```
+- ✅ Use feature-based organization
+- ✅ Keep components presentational
+- ✅ Use configured axios instance
+- ✅ Leverage RoleGuard for access control
+- ✅ Export through index.ts
+- ✅ Follow Data Flow pattern
+- ✅ Use TypeScript strictly
 
 ## 📱 Responsive Design
 
-All layouts are responsive:
+- Mobile-first approach
+- Collapsible sidebar
+- Responsive navigation
+- Adaptive layouts
+- Touch-friendly UI
 
-- **Mobile**: Single column, collapsible sidebar
-- **Tablet**: 2 columns
-- **Desktop**: Full layout with sidebar
+## 🧪 Testing
 
-Use Tailwind responsive prefixes:
+- Jest - Unit testing
+- React Testing Library - Component testing
+- Test files in `__tests__/`
 
-```tsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-```
+## 🎨 UI Components
 
-## 🧪 Adding New Pages
+- **shadcn/ui** - Base components
+- **Custom Components** - Feature-specific
+- **Common Components** - Shared across features
+- **Layout Components** - Sidebar, Header
 
-1. **Create feature directory** in `features/`
-2. **Build feature components** with hooks and API
-3. **Create page** in `app/(authenticated)/[page-name]/page.tsx`
-4. **Add to navigation** in `lib/constants/navigation.ts`
-
-Example:
-
-```tsx
-// lib/constants/navigation.ts
-{
-  title: 'My Page',
-  href: '/my-page',
-  icon: MyIcon,
-  roles: ['admin', 'manager', 'user'],
-}
-```
-
-## 🎨 Customizing Theme Colors
-
-Edit `lib/constants/colors.ts` to change the color palette:
-
-```tsx
-export const colors = {
-  primary: {
-    500: "#0ea5e9", // Change this
-    // ...
-  },
-};
-```
-
-Then update `app/globals.css` CSS variables accordingly.
-
-## 🔧 Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-```
-
-## 📝 Best Practices
-
-1. **Single Import Pattern**: Pages should only import feature components
-2. **Feature Isolation**: Each feature is self-contained
-3. **Type Safety**: Use TypeScript for all code
-4. **RBAC**: Protect routes and components based on roles
-5. **Consistent Styling**: Use Typography and common components
-6. **Theme Support**: Always consider dark mode
-7. **Responsive**: Test on all screen sizes
-8. **Accessibility**: Use semantic HTML and ARIA labels
-
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS 4
-- **UI Components**: shadcn/ui + Radix UI
-- **State Management**: Redux Toolkit
-- **Server State**: TanStack Query
-- **Forms**: React Hook Form + Zod
-- **Icons**: Lucide React
-- **Animations**: Framer Motion
-
-## 📄 License
-
-MIT
+All styled with Tailwind CSS for consistency.

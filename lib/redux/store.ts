@@ -11,13 +11,11 @@ import {
   REGISTER,
 } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
-import exampleReducer from "./features/exampleSlice";
-import authReducer from "./features/auth/authSlice";
-import themeReducer from "./features/theme/themeSlice";
+import authReducer from "@/features/auth/store/authSlice";
+import themeReducer from "@/lib/theme/themeSlice";
 
 // Combine reducers
 const rootReducer = combineReducers({
-  example: exampleReducer,
   auth: authReducer,
   theme: themeReducer,
 });
