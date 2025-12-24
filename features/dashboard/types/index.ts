@@ -87,7 +87,7 @@ export interface NotificationItem {
   isRead: boolean;
 }
 
-export interface NotificationsWidget {
+export interface NotificationsData {
   unreadCount: number;
   recent: NotificationItem[];
 }
@@ -99,7 +99,7 @@ export interface AdminDashboardResponse {
   recentActivities: ActivityLog[];
   topEmployees: EmployeePerformance[];
   alerts: SystemAlerts;
-  notifications: NotificationsWidget;
+  notifications: NotificationsData;
 }
 
 // Sales Dashboard Types
@@ -152,7 +152,7 @@ export interface SalesDashboardResponse {
   performance: PerformanceMetrics;
   quickActions: QuickActions;
   availableInventory: InventorySummary;
-  notifications: NotificationsWidget;
+  notifications: NotificationsData;
 }
 
 // Inspector Dashboard Types
@@ -204,7 +204,7 @@ export interface InspectorDashboardResponse {
   assignedTasks: AssignedTasks;
   locationSummary: LocationInspectionSummary[];
   recentInspections: RecentInspection[];
-  notifications: NotificationsWidget;
+  notifications: NotificationsData;
 }
 
 // Finance Dashboard Types
@@ -248,7 +248,7 @@ export interface FinanceDashboardResponse {
   profitability: ProfitabilityMetrics;
   aging: AgingAnalysis;
   budgetTracking: BudgetTracking;
-  notifications: NotificationsWidget;
+  notifications: NotificationsData;
 }
 
 // Store Manager Dashboard Types
@@ -295,7 +295,7 @@ export interface StoreManagerDashboardResponse {
   capacityAlerts: CapacityAlerts;
   maintenanceStatus: MaintenanceStatus;
   performance: LocationPerformance;
-  notifications: NotificationsWidget;
+  notifications: NotificationsData;
 }
 
 export type DashboardResponse =

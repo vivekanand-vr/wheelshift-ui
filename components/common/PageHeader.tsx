@@ -17,7 +17,10 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div
-      className={cn("flex items-center justify-between space-y-2", className)}
+      className={cn(
+        "mb-4 flex items-center justify-between space-y-2",
+        className
+      )}
     >
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>

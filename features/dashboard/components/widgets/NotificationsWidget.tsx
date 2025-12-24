@@ -46,7 +46,7 @@ export const NotificationsWidget = ({ data }: NotificationsWidgetProps) => {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="relative overflow-hidden p-6">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bell className="text-primary h-5 w-5" />
@@ -57,34 +57,34 @@ export const NotificationsWidget = ({ data }: NotificationsWidgetProps) => {
         )}
       </div>
 
-      <ScrollArea className="h-96 pr-4">
-        <div className="space-y-3">
+      <ScrollArea className="h-80 pr-4">
+        <div className="space-y-2">
           {data.recent.map((notification) => (
             <div
               key={notification.id}
-              className={`rounded-lg border p-3 transition-colors ${
+              className={`rounded-lg border p-2 transition-colors ${
                 !notification.isRead
                   ? "bg-primary/5 border-primary/20"
                   : "bg-muted/30"
               }`}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2">
                 <div className="mt-0.5">
                   {getSeverityIcon(notification.severity)}
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-sm font-medium">
+                    <h4 className="text-xs font-medium">
                       {notification.subject}
                     </h4>
                     {!notification.isRead && (
-                      <div className="bg-primary h-2 w-2 rounded-full" />
+                      <div className="bg-primary h-2 w-2 shrink-0 rounded-full" />
                     )}
                   </div>
-                  <p className="text-muted-foreground line-clamp-2 text-xs">
+                  <p className="text-muted-foreground line-clamp-2 text-[10px]">
                     {notification.body}
                   </p>
-                  <div className="text-muted-foreground flex items-center gap-2 text-xs">
+                  <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
                     <span>
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         addSuffix: true,
@@ -92,7 +92,7 @@ export const NotificationsWidget = ({ data }: NotificationsWidgetProps) => {
                     </span>
                     <Badge
                       variant={getSeverityColor(notification.severity) as any}
-                      className="text-xs"
+                      className="text-[10px]"
                     >
                       {notification.type}
                     </Badge>

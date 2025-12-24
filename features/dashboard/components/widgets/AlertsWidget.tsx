@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { SystemAlerts } from "../../types";
 import { WidgetEmpty } from "./WidgetEmpty";
@@ -40,7 +41,7 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="relative overflow-hidden p-6">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertTriangle className="text-warning h-5 w-5" />
@@ -51,64 +52,69 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
         )}
       </div>
 
-      <div className="space-y-3">
-        {data.expiringReservations > 0 && (
-          <div className="bg-warning/10 border-warning/20 rounded-lg border p-3">
-            <div className="mb-1 flex items-center gap-2">
-              <AlertTriangle className="text-warning h-4 w-4" />
-              <span className="text-sm font-medium">Expiring Reservations</span>
+      <ScrollArea className="h-80">
+        <div className="space-y-2 pr-4">
+          {data.expiringReservations > 0 && (
+            <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
+              <div className="mb-1 flex items-center gap-2">
+                <AlertTriangle className="text-warning h-4 w-4" />
+                <span className="text-xs font-medium">
+                  Expiring Reservations
+                </span>
+              </div>
+              <p className="text-muted-foreground text-[10px]">
+                {data.expiringReservations} reservation
+                {data.expiringReservations > 1 ? "s" : ""} expiring within 3
+                days
+              </p>
             </div>
-            <p className="text-muted-foreground text-sm">
-              {data.expiringReservations} reservation
-              {data.expiringReservations > 1 ? "s" : ""} expiring within 3 days
-            </p>
-          </div>
-        )}
+          )}
 
-        {data.inspectionsDue > 0 && (
-          <div className="bg-warning/10 border-warning/20 rounded-lg border p-3">
-            <div className="mb-1 flex items-center gap-2">
-              <AlertTriangle className="text-warning h-4 w-4" />
-              <span className="text-sm font-medium">Inspections Due</span>
+          {data.inspectionsDue > 0 && (
+            <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
+              <div className="mb-1 flex items-center gap-2">
+                <AlertTriangle className="text-warning h-4 w-4" />
+                <span className="text-xs font-medium">Inspections Due</span>
+              </div>
+              <p className="text-muted-foreground text-[10px]">
+                {data.inspectionsDue} vehicle
+                {data.inspectionsDue > 1 ? "s need" : " needs"} inspection
+              </p>
             </div>
-            <p className="text-muted-foreground text-sm">
-              {data.inspectionsDue} vehicle
-              {data.inspectionsDue > 1 ? "s need" : " needs"} inspection
-            </p>
-          </div>
-        )}
+          )}
 
-        {data.locationCapacityWarnings > 0 && (
-          <div className="bg-warning/10 border-warning/20 rounded-lg border p-3">
-            <div className="mb-1 flex items-center gap-2">
-              <AlertTriangle className="text-warning h-4 w-4" />
-              <span className="text-sm font-medium">Capacity Warnings</span>
+          {data.locationCapacityWarnings > 0 && (
+            <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
+              <div className="mb-1 flex items-center gap-2">
+                <AlertTriangle className="text-warning h-4 w-4" />
+                <span className="text-xs font-medium">Capacity Warnings</span>
+              </div>
+              <p className="text-muted-foreground text-[10px]">
+                {data.locationCapacityWarnings} location
+                {data.locationCapacityWarnings > 1 ? "s" : ""} near capacity
+              </p>
             </div>
-            <p className="text-muted-foreground text-sm">
-              {data.locationCapacityWarnings} location
-              {data.locationCapacityWarnings > 1 ? "s" : ""} near capacity
-            </p>
-          </div>
-        )}
+          )}
 
-        {data.details.map((alert, index) => (
-          <div
-            key={index}
-            className={`rounded-lg border p-3 ${
-              alert.severity === "ERROR"
-                ? "bg-destructive/10 border-destructive/20"
-                : alert.severity === "WARNING"
-                  ? "bg-warning/10 border-warning/20"
-                  : "bg-info/10 border-info/20"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {getSeverityIcon(alert.severity)}
-              <p className="text-sm">{alert.message}</p>
+          {data.details.map((alert, index) => (
+            <div
+              key={index}
+              className={`rounded-lg border p-2 ${
+                alert.severity === "ERROR"
+                  ? "bg-destructive/10 border-destructive/20"
+                  : alert.severity === "WARNING"
+                    ? "bg-warning/10 border-warning/20"
+                    : "bg-info/10 border-info/20"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {getSeverityIcon(alert.severity)}
+                <p className="text-xs">{alert.message}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
     </Card>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "../hooks";
+import { useAuth } from "@/lib/redux/features/auth/hooks";
 import { AdminDashboard } from "./dashboards/AdminDashboard";
 import { SalesDashboard } from "./dashboards/SalesDashboard";
 import { InspectorDashboard } from "./dashboards/InspectorDashboard";
@@ -15,10 +16,6 @@ import { WidgetError } from "./widgets/WidgetError";
 import { Card } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import type { DashboardRole } from "../types";
-
-interface DashboardContainerProps {
-  userRole?: DashboardRole;
-}
 
 const DashboardSkeleton = () => (
   <div className="space-y-6">
@@ -38,7 +35,9 @@ const DashboardSkeleton = () => (
   </div>
 );
 
-export const DashboardContainer = ({ userRole }: DashboardContainerProps) => {
+export const DashboardContainer = () => {
+  const { user } = useAuth();
+  const userRole = user?.role as DashboardRole;
   const { data, isLoading, error, refetch } = useDashboard(userRole);
 
   if (isLoading) {
@@ -74,10 +73,8 @@ export const DashboardContainer = ({ userRole }: DashboardContainerProps) => {
     );
   }
 
-  // Detect dashboard type from data structure
-  const dashboardType = detectDashboardType(data);
-
-  switch (dashboardType) {
+  // Use the userRole from auth store to determine which dashboard to render
+  switch (userRole) {
     case "ADMIN":
     case "SUPER_ADMIN":
       return <AdminDashboard data={data as any} />;
@@ -105,35 +102,3 @@ export const DashboardContainer = ({ userRole }: DashboardContainerProps) => {
       );
   }
 };
-
-// Helper function to detect dashboard type from response structure
-function detectDashboardType(data: any): DashboardRole | null {
-  if ("overview" in data && "revenue" in data && "inventory" in data) {
-    return "ADMIN";
-  }
-  if ("personalStats" in data && "pipeline" in data && "performance" in data) {
-    return "SALES";
-  }
-  if (
-    "inspectionQueue" in data &&
-    "vehicleStatus" in data &&
-    "assignedTasks" in data
-  ) {
-    return "INSPECTOR";
-  }
-  if (
-    "financialOverview" in data &&
-    "transactions" in data &&
-    "profitability" in data
-  ) {
-    return "FINANCE";
-  }
-  if (
-    "locationOverview" in data &&
-    "vehicleDistribution" in data &&
-    "movements" in data
-  ) {
-    return "STORE_MANAGER";
-  }
-  return null;
-}

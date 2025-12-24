@@ -13,9 +13,13 @@ const initialState: AuthState = {
 
 // Map backend roles to frontend roles
 const mapRole = (roles: string[]): UserRole => {
-  if (roles.includes("SUPER_ADMIN") || roles.includes("ADMIN")) return "admin";
-  if (roles.includes("MANAGER")) return "manager";
-  if (roles.includes("USER")) return "user";
+  // Return the first valid role from the backend
+  if (roles.includes("SUPER_ADMIN")) return "SUPER_ADMIN";
+  if (roles.includes("ADMIN")) return "ADMIN";
+  if (roles.includes("SALES")) return "SALES";
+  if (roles.includes("INSPECTOR")) return "INSPECTOR";
+  if (roles.includes("FINANCE")) return "FINANCE";
+  if (roles.includes("STORE_MANAGER")) return "STORE_MANAGER";
   return "guest";
 };
 

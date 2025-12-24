@@ -7,14 +7,14 @@ import {
   AlertCircle,
   MapPin,
   Wrench,
+  Calendar,
 } from "lucide-react";
 import { InspectorDashboardResponse } from "../../types";
-import { StatCard } from "../widgets/StatCard";
+import { StatsGroupWidget } from "../widgets/StatsGroupWidget";
 import { NotificationsWidget } from "../widgets/NotificationsWidget";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { WidgetEmpty } from "../widgets/WidgetEmpty";
 import { formatDistanceToNow } from "date-fns";
 
 interface InspectorDashboardProps {
@@ -24,146 +24,106 @@ interface InspectorDashboardProps {
 export const InspectorDashboard = ({ data }: InspectorDashboardProps) => {
   return (
     <div className="space-y-6">
-      {/* Inspection Queue Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Pending Inspections"
-          value={data.inspectionQueue.pendingInspections}
-          description="Awaiting inspection"
+      {/* Top Row - Stats Groups */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatsGroupWidget
+          title="Inspection Queue"
           icon={ClipboardCheck}
+          stats={[
+            {
+              label: "Pending Inspections",
+              value: data.inspectionQueue.pendingInspections,
+              icon: ClipboardCheck,
+            },
+            {
+              label: "Scheduled Today",
+              value: data.inspectionQueue.scheduledToday,
+              icon: Clock,
+            },
+            {
+              label: "This Week",
+              value: data.inspectionQueue.scheduledThisWeek,
+              icon: Calendar,
+            },
+            {
+              label: "Overdue",
+              value: data.inspectionQueue.overdue,
+              icon: AlertCircle,
+            },
+          ]}
         />
-        <StatCard
-          title="Scheduled Today"
-          value={data.inspectionQueue.scheduledToday}
-          description="Today's workload"
-          icon={Clock}
-          iconClassName="bg-blue-500/10"
-        />
-        <StatCard
-          title="This Week"
-          value={data.inspectionQueue.scheduledThisWeek}
-          description="Week schedule"
-          icon={CheckCircle}
-          iconClassName="bg-green-500/10"
-        />
-        <StatCard
-          title="Overdue"
-          value={data.inspectionQueue.overdue}
-          description="Needs attention"
-          icon={AlertCircle}
-          iconClassName="bg-destructive/10"
-        />
-      </div>
 
-      {/* Personal Performance */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Completed This Month"
-          value={data.personalStats.completedThisMonth}
-          description="Inspections done"
+        <StatsGroupWidget
+          title="Personal Performance"
           icon={CheckCircle}
+          stats={[
+            {
+              label: "Completed This Month",
+              value: data.personalStats.completedThisMonth,
+              icon: CheckCircle,
+            },
+            {
+              label: "Pass Rate",
+              value: `${data.personalStats.passRate.toFixed(1)}%`,
+              icon: CheckCircle,
+            },
+            {
+              label: "Avg Inspection Time",
+              value: `${data.personalStats.avgInspectionTime.toFixed(0)} min`,
+              icon: Clock,
+            },
+            {
+              label: "Avg Repair Cost",
+              value: `$${data.personalStats.avgRepairCost.toLocaleString()}`,
+              icon: Wrench,
+            },
+          ]}
         />
-        <StatCard
-          title="Pass Rate"
-          value={`${data.personalStats.passRate.toFixed(1)}%`}
-          description="Success rate"
-          icon={CheckCircle}
-          iconClassName="bg-green-500/10"
-        />
-        <StatCard
-          title="Avg Inspection Time"
-          value={`${data.personalStats.avgInspectionTime.toFixed(0)} min`}
-          description="Per inspection"
-          icon={Clock}
-        />
-        <StatCard
-          title="Avg Repair Cost"
-          value={`$${data.personalStats.avgRepairCost.toLocaleString()}`}
-          description="Per failed inspection"
+
+        <StatsGroupWidget
+          title="Vehicle Status"
           icon={Wrench}
+          stats={[
+            {
+              label: "Needing Inspection",
+              value: data.vehicleStatus.needingInspection,
+              icon: AlertCircle,
+            },
+            {
+              label: "Failed Inspections",
+              value: data.vehicleStatus.failedInspections,
+              icon: AlertCircle,
+            },
+            {
+              label: "In Maintenance",
+              value: data.vehicleStatus.inMaintenance,
+              icon: Wrench,
+            },
+            {
+              label: "High Priority Tasks",
+              value: data.assignedTasks.highPriority,
+              icon: AlertCircle,
+            },
+          ]}
         />
       </div>
 
-      {/* Vehicle Status */}
-      <Card className="p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <ClipboardCheck className="text-primary h-5 w-5" />
-          <h3 className="text-lg font-semibold">Vehicle Status</h3>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="bg-warning/10 border-warning/20 rounded-lg border p-4">
-            <p className="text-muted-foreground mb-1 text-sm">
-              Needing Inspection
-            </p>
-            <p className="text-warning text-3xl font-bold">
-              {data.vehicleStatus.needingInspection}
-            </p>
-          </div>
-          <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-4">
-            <p className="text-muted-foreground mb-1 text-sm">
-              Failed Inspections
-            </p>
-            <p className="text-destructive text-3xl font-bold">
-              {data.vehicleStatus.failedInspections}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg p-4">
-            <p className="text-muted-foreground mb-1 text-sm">In Maintenance</p>
-            <p className="text-3xl font-bold">
-              {data.vehicleStatus.inMaintenance}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Assigned Tasks */}
-      <Card className="p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <ClipboardCheck className="text-primary h-5 w-5" />
-          <h3 className="text-lg font-semibold">Assigned Tasks</h3>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="bg-muted rounded-lg p-4">
-            <p className="text-muted-foreground mb-1 text-sm">Total Tasks</p>
-            <p className="text-3xl font-bold">{data.assignedTasks.total}</p>
-          </div>
-          <div className="bg-destructive/10 rounded-lg p-4">
-            <p className="text-muted-foreground mb-1 text-sm">High Priority</p>
-            <p className="text-destructive text-3xl font-bold">
-              {data.assignedTasks.highPriority}
-            </p>
-          </div>
-          <div className="bg-warning/10 rounded-lg p-4">
-            <p className="text-muted-foreground mb-1 text-sm">Due Today</p>
-            <p className="text-warning text-3xl font-bold">
-              {data.assignedTasks.dueToday}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Location Summary and Recent Inspections */}
+      {/* Middle Row - Location Summary and Recent Inspections */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Location Summary */}
-        <Card className="p-6">
+        <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Inspections by Location</h3>
+            <h3 className="text-lg font-semibold">Location Summary</h3>
           </div>
-          {data.locationSummary.length === 0 ? (
-            <WidgetEmpty
-              title="No Location Data"
-              message="Location summary will appear once inspections are scheduled."
-            />
-          ) : (
-            <div className="space-y-3">
+          <ScrollArea className="h-80">
+            <div className="space-y-2 pr-4">
               {data.locationSummary.map((location, index) => (
                 <div key={index} className="bg-muted/50 rounded-lg p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-sm font-medium">
+                    <h4 className="text-sm font-semibold">
                       {location.locationName}
-                    </span>
-                    <Badge variant="secondary">
+                    </h4>
+                    <Badge variant="outline">
                       {location.pendingCount} pending
                     </Badge>
                   </div>
@@ -173,58 +133,49 @@ export const InspectorDashboard = ({ data }: InspectorDashboardProps) => {
                 </div>
               ))}
             </div>
-          )}
+          </ScrollArea>
         </Card>
 
-        {/* Recent Inspections */}
-        <Card className="p-6">
+        <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
-            <CheckCircle className="text-primary h-5 w-5" />
+            <ClipboardCheck className="text-primary h-5 w-5" />
             <h3 className="text-lg font-semibold">Recent Inspections</h3>
           </div>
-          {data.recentInspections.length === 0 ? (
-            <WidgetEmpty
-              title="No Inspections"
-              message="Recent inspections will appear here."
-            />
-          ) : (
-            <ScrollArea className="h-72 pr-4">
-              <div className="space-y-3">
-                {data.recentInspections.map((inspection) => (
-                  <div key={inspection.id} className="rounded-lg border p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {inspection.carDetails}
-                      </span>
-                      <Badge
-                        variant={
-                          inspection.status === "PASSED"
-                            ? "default"
-                            : inspection.status === "FAILED"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                      >
-                        {inspection.status}
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground mb-1 text-xs">
-                      {inspection.findings}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {formatDistanceToNow(new Date(inspection.completedAt), {
-                        addSuffix: true,
-                      })}
-                    </p>
+          <ScrollArea className="h-80">
+            <div className="space-y-2 pr-4">
+              {data.recentInspections.map((inspection) => (
+                <div key={inspection.id} className="bg-muted/50 rounded-lg p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium">
+                      {inspection.carDetails}
+                    </span>
+                    <Badge
+                      variant={
+                        inspection.status === "PASSED"
+                          ? "default"
+                          : "destructive"
+                      }
+                      className="text-[10px]"
+                    >
+                      {inspection.status}
+                    </Badge>
                   </div>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
+                  <p className="text-muted-foreground mb-1 text-[10px]">
+                    {inspection.findings}
+                  </p>
+                  <p className="text-muted-foreground text-[10px]">
+                    {formatDistanceToNow(new Date(inspection.completedAt), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </Card>
       </div>
 
-      {/* Notifications */}
+      {/* Bottom Row - Notifications */}
       <NotificationsWidget data={data.notifications} />
     </div>
   );

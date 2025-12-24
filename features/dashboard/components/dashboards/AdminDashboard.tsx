@@ -11,13 +11,12 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { AdminDashboardResponse } from "../../types";
-import { StatCard } from "../widgets/StatCard";
 import { RevenueChartWidget } from "../widgets/RevenueChartWidget";
 import { NotificationsWidget } from "../widgets/NotificationsWidget";
-import { RecentActivitiesWidget } from "../widgets/RecentActivitiesWidget";
 import { AlertsWidget } from "../widgets/AlertsWidget";
+import { StatsGroupWidget } from "../widgets/StatsGroupWidget";
 import { Card } from "@/components/ui/card";
-import { WidgetEmpty } from "../widgets/WidgetEmpty";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AdminDashboardProps {
@@ -27,170 +26,159 @@ interface AdminDashboardProps {
 export const AdminDashboard = ({ data }: AdminDashboardProps) => {
   return (
     <div className="space-y-6">
-      {/* Overview Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Cars"
-          value={data.overview.totalCars}
-          description={`${data.overview.availableCars} available`}
-          icon={Car}
-        />
-        <StatCard
-          title="Available Cars"
-          value={data.overview.availableCars}
-          description={`${data.overview.reservedCars} reserved`}
-          icon={Package}
-        />
-        <StatCard
-          title="Sales This Month"
-          value={data.overview.soldCarsThisMonth}
-          description="Monthly sales"
-          icon={ShoppingCart}
-        />
-        <StatCard
-          title="Active Employees"
-          value={data.overview.activeEmployees}
-          description={`${data.overview.totalEmployees} total`}
-          icon={Users}
-        />
-      </div>
-
-      {/* Revenue Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Revenue"
-          value={`$${data.revenue.totalRevenue.toLocaleString()}`}
-          description="All time"
-          icon={DollarSign}
-          iconClassName="bg-green-500/10"
-        />
-        <StatCard
-          title="Monthly Revenue"
-          value={`$${data.revenue.monthlyRevenue.toLocaleString()}`}
-          description="This month"
-          icon={TrendingUp}
-          iconClassName="bg-blue-500/10"
-        />
-        <StatCard
-          title="YTD Revenue"
-          value={`$${data.revenue.ytdRevenue.toLocaleString()}`}
-          description="Year to date"
-          icon={DollarSign}
-          iconClassName="bg-purple-500/10"
-        />
-        <StatCard
-          title="Average Sale"
-          value={`$${data.revenue.averageSalePrice.toLocaleString()}`}
-          description="Per vehicle"
-          icon={TrendingUp}
-          iconClassName="bg-orange-500/10"
-        />
-      </div>
-
-      {/* Inquiries and Reservations */}
+      {/* Top Row - Stats Groups */}
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard
-          title="Active Inquiries"
-          value={data.overview.activeInquiries}
-          description="Pending responses"
+        <StatsGroupWidget
+          title="Inventory Overview"
+          icon={Car}
+          stats={[
+            { label: "Total Cars", value: data.overview.totalCars, icon: Car },
+            {
+              label: "Available",
+              value: data.overview.availableCars,
+              icon: Package,
+            },
+            {
+              label: "Reserved",
+              value: data.overview.reservedCars,
+              icon: AlertTriangle,
+            },
+            {
+              label: "Sold This Month",
+              value: data.overview.soldCarsThisMonth,
+              icon: ShoppingCart,
+            },
+          ]}
+        />
+
+        <StatsGroupWidget
+          title="Revenue Metrics"
+          icon={DollarSign}
+          stats={[
+            {
+              label: "Total Revenue",
+              value: `$${data.revenue.totalRevenue.toLocaleString()}`,
+              icon: DollarSign,
+            },
+            {
+              label: "Monthly Revenue",
+              value: `$${data.revenue.monthlyRevenue.toLocaleString()}`,
+              icon: TrendingUp,
+            },
+            {
+              label: "YTD Revenue",
+              value: `$${data.revenue.ytdRevenue.toLocaleString()}`,
+              icon: TrendingUp,
+            },
+            {
+              label: "Avg Sale Price",
+              value: `$${data.revenue.averageSalePrice.toLocaleString()}`,
+              icon: DollarSign,
+            },
+          ]}
+        />
+
+        <StatsGroupWidget
+          title="Activity Overview"
           icon={Clock}
-        />
-        <StatCard
-          title="Active Reservations"
-          value={data.overview.activeReservations}
-          description="Reserved vehicles"
-          icon={AlertTriangle}
-        />
-        <StatCard
-          title="Inventory Value"
-          value={`$${data.inventory.totalValue.toLocaleString()}`}
-          description={`Avg age: ${data.inventory.avgAge.toFixed(0)} days`}
-          icon={Package}
+          stats={[
+            {
+              label: "Active Inquiries",
+              value: data.overview.activeInquiries,
+              icon: Clock,
+            },
+            {
+              label: "Active Reservations",
+              value: data.overview.activeReservations,
+              icon: AlertTriangle,
+            },
+            {
+              label: "Total Employees",
+              value: data.overview.totalEmployees,
+              icon: Users,
+            },
+            {
+              label: "Active Employees",
+              value: data.overview.activeEmployees,
+              icon: Users,
+            },
+          ]}
         />
       </div>
 
-      {/* Charts and Details */}
+      {/* Middle Row - Charts and Lists */}
       <div className="grid gap-4 md:grid-cols-2">
         <RevenueChartWidget data={data.revenue} />
 
-        {/* Inventory Health */}
-        <Card className="p-6">
+        <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <Package className="text-primary h-5 w-5" />
             <h3 className="text-lg font-semibold">Inventory by Status</h3>
           </div>
-          <div className="space-y-3">
-            {Object.entries(data.inventory.byStatus).map(([status, count]) => (
-              <div key={status} className="flex items-center justify-between">
-                <span className="text-sm font-medium capitalize">
-                  {status.toLowerCase()}
-                </span>
-                <span className="text-sm font-semibold">{count}</span>
-              </div>
-            ))}
-          </div>
+          <ScrollArea className="h-80">
+            <div className="space-y-2 pr-4">
+              {Object.entries(data.inventory.byStatus).map(
+                ([status, count]) => (
+                  <div
+                    key={status}
+                    className="bg-muted/50 flex items-center justify-between rounded-lg p-3"
+                  >
+                    <span className="text-sm font-medium capitalize">
+                      {status.toLowerCase().replace(/_/g, " ")}
+                    </span>
+                    <span className="text-base font-bold">{count}</span>
+                  </div>
+                )
+              )}
+            </div>
+          </ScrollArea>
         </Card>
       </div>
 
-      {/* Top Employees */}
-      <Card className="p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <Users className="text-primary h-5 w-5" />
-          <h3 className="text-lg font-semibold">Top Performers</h3>
-        </div>
-        {data.topEmployees.length === 0 ? (
-          <WidgetEmpty
-            title="No Performance Data"
-            message="Employee performance data will appear once sales are recorded."
-          />
-        ) : (
-          <div className="space-y-3">
-            {data.topEmployees.map((employee, index) => (
-              <div
-                key={employee.employeeId}
-                id={`employee-${index}`}
-                className="bg-muted/50 flex items-center justify-between rounded-lg p-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback>
-                      {employee.employeeName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {employee.employeeName}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {employee.position}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">
-                    {employee.salesCount} sales
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    ${employee.totalRevenue.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
+      {/* Bottom Row - Activities and Alerts */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="relative overflow-hidden p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Users className="text-primary h-5 w-5" />
+            <h3 className="text-lg font-semibold">Top Performers</h3>
           </div>
-        )}
-      </Card>
+          <ScrollArea className="h-80">
+            <div className="space-y-2 pr-4">
+              {data.topEmployees.slice(0, 5).map((employee) => (
+                <div
+                  key={employee.employeeId}
+                  className="bg-muted/50 flex items-center justify-between rounded-lg p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="text-xs">
+                        {employee.employeeName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-xs font-medium">
+                        {employee.employeeName}
+                      </p>
+                      <p className="text-muted-foreground text-[10px]">
+                        {employee.salesCount} sales
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold">
+                    ${employee.totalRevenue.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </Card>
 
-      {/* Alerts and Activities */}
-      <div className="grid gap-4 md:grid-cols-2">
         <AlertsWidget data={data.alerts} />
-        <RecentActivitiesWidget activities={data.recentActivities} />
+        <NotificationsWidget data={data.notifications} />
       </div>
-
-      {/* Notifications */}
-      <NotificationsWidget data={data.notifications} />
     </div>
   );
 };

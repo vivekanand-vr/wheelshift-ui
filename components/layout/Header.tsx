@@ -26,7 +26,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-border bg-header-background sticky top-0 z-40 flex h-16 items-center gap-4 border-b px-6 dark:bg-neutral-950">
+    <header className="border-border bg-header-background sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b px-6 dark:bg-neutral-950">
       {/* Search */}
       <div className="max-w-md flex-1">
         <div className="relative">

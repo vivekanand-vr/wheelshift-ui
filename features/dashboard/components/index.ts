@@ -5,7 +5,6 @@ export { InspectorDashboard } from "./dashboards/InspectorDashboard";
 export { FinanceDashboard } from "./dashboards/FinanceDashboard";
 export { StoreManagerDashboard } from "./dashboards/StoreManagerDashboard";
 export { StatCard } from "./widgets/StatCard";
-export { NotificationsWidget } from "./widgets/NotificationsWidget";
 export { RecentActivitiesWidget } from "./widgets/RecentActivitiesWidget";
 export { RevenueChartWidget } from "./widgets/RevenueChartWidget";
 export { AlertsWidget } from "./widgets/AlertsWidget";
