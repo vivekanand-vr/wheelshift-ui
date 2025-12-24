@@ -1,21 +1,62 @@
-import axios from "@/lib/api/axios";
-import type { DashboardStats, RecentActivity, ChartData } from "../types";
+import api from "@/lib/api/axios";
 
-export const dashboardService = {
-  getStats: async (): Promise<DashboardStats> => {
-    const response = await axios.get("/dashboard/stats");
-    return response.data;
+import type {
+  AdminDashboardResponse,
+  SalesDashboardResponse,
+  InspectorDashboardResponse,
+  FinanceDashboardResponse,
+  StoreManagerDashboardResponse,
+  DashboardResponse,
+} from "../types";
+
+interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
+export const dashboardApi = {
+  // Get current user's dashboard (auto-detects role)
+  getCurrentUserDashboard: async (): Promise<DashboardResponse> => {
+    const response =
+      await api.get<ApiResponse<DashboardResponse>>("/dashboard/me");
+    return response.data.data;
   },
 
-  getRecentActivity: async (): Promise<RecentActivity[]> => {
-    const response = await axios.get("/dashboard/activity");
-    return response.data;
+  // Role-specific dashboard endpoints
+  getAdminDashboard: async (): Promise<AdminDashboardResponse> => {
+    const response =
+      await api.get<ApiResponse<AdminDashboardResponse>>("/dashboard/admin");
+    return response.data.data;
   },
 
-  getChartData: async (
-    period: "week" | "month" | "year"
-  ): Promise<ChartData[]> => {
-    const response = await axios.get(`/dashboard/chart?period=${period}`);
-    return response.data;
+  getSalesDashboard: async (): Promise<SalesDashboardResponse> => {
+    const response =
+      await api.get<ApiResponse<SalesDashboardResponse>>("/dashboard/sales");
+    return response.data.data;
   },
+
+  getInspectorDashboard: async (): Promise<InspectorDashboardResponse> => {
+    const response = await api.get<ApiResponse<InspectorDashboardResponse>>(
+      "/dashboard/inspector"
+    );
+    return response.data.data;
+  },
+
+  getFinanceDashboard: async (): Promise<FinanceDashboardResponse> => {
+    const response =
+      await api.get<ApiResponse<FinanceDashboardResponse>>(
+        "/dashboard/finance"
+      );
+    return response.data.data;
+  },
+
+  getStoreManagerDashboard:
+    async (): Promise<StoreManagerDashboardResponse> => {
+      const response = await api.get<
+        ApiResponse<StoreManagerDashboardResponse>
+      >("/dashboard/store-manager");
+      return response.data.data;
+    },
 };

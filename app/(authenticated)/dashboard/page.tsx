@@ -1,5 +1,16 @@
-import { DashboardFeature } from "@/features/dashboard";
+"use client";
+
+import { DashboardContainer } from "@/features/dashboard";
+import { Container, PageHeader } from "@/components/common";
 
 export default function DashboardPage() {
-  return <DashboardFeature />;
+  return (
+    <Container>
+      <PageHeader
+        title="Dashboard"
+        description="Overview of your activities and metrics"
+      />
+      <DashboardContainer />
+    </Container>
+  );
 }

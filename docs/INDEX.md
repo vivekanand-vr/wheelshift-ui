@@ -154,7 +154,7 @@ All documentation includes code examples, but you can also learn from:
 ### Example Features
 
 - `features/auth/` - Authentication flow
-- `features/dashboard/` - Stats, cards, RBAC examples
+- `features/dashboard/` - Role-based dashboards, stats, widgets
 - `features/tasks/` - CRUD operations, empty states
 
 ### Example Components
@@ -162,12 +162,35 @@ All documentation includes code examples, but you can also learn from:
 - `components/layout/Sidebar.tsx` - Complex layout component
 - `components/layout/Header.tsx` - Theme toggle, user menu
 - `components/common/` - Reusable patterns
+- `features/dashboard/components/widgets/` - Widget patterns
 
 ### Example Hooks
 
 - `lib/redux/features/auth/hooks.ts` - Redux hooks
 - `features/dashboard/hooks/` - React Query hooks
 - `lib/rbac/useRBAC.ts` - Custom RBAC hook
+
+---
+
+## 🎯 Feature Documentation
+
+### Dashboard System
+
+**[features/dashboards/](./features/dashboards/INDEX.md)** - Comprehensive dashboard implementation
+
+- **[Quick Start](./features/dashboards/QUICKSTART.md)** - Get started in 5 minutes
+- **[Implementation Guide](./features/dashboards/IMPLEMENTATION.md)** - Technical deep dive
+- **[Feature Overview](./features/dashboards/README.md)** - Complete documentation
+- **[Summary](./features/dashboards/SUMMARY.md)** - Implementation summary
+
+**Features:**
+
+- ✅ 5 role-specific dashboards (Admin, Sales, Inspector, Finance, Store Manager)
+- ✅ 8+ reusable widgets
+- ✅ Loading, error, and empty states
+- ✅ Fully responsive design
+- ✅ Auto-refresh functionality
+- ✅ TypeScript type safety
 
 ---
 
