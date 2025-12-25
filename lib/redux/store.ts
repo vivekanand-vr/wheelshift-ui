@@ -13,11 +13,13 @@ import {
 import storage from "redux-persist/lib/storage"; // defaults to localStorage for web
 import authReducer from "@/features/auth/store/authSlice";
 import themeReducer from "@/lib/theme/themeSlice";
+import tasksReducer from "@/features/tasks/store/tasksSlice";
 
 // Combine reducers
 const rootReducer = combineReducers({
   auth: authReducer,
   theme: themeReducer,
+  tasks: tasksReducer,
 });
 
 // Persist configuration

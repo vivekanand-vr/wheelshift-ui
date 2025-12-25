@@ -24,14 +24,14 @@ export function hasRole(userRole: UserRole, roles: UserRole[]): boolean {
  * Check if a user is an admin
  */
 export function isAdmin(userRole: UserRole): boolean {
-  return userRole === "admin";
+  return userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 }
 
 /**
  * Check if a user is a manager or above
  */
 export function isManagerOrAbove(userRole: UserRole): boolean {
-  return ["admin", "manager"].includes(userRole);
+  return ["ADMIN", "SUPER_ADMIN", "STORE_MANAGER"].includes(userRole);
 }
 
 /**
@@ -39,9 +39,12 @@ export function isManagerOrAbove(userRole: UserRole): boolean {
  */
 export function getRolePriority(role: UserRole): number {
   const priorities: Record<UserRole, number> = {
-    admin: 4,
-    manager: 3,
-    user: 2,
+    SUPER_ADMIN: 6,
+    ADMIN: 5,
+    STORE_MANAGER: 4,
+    SALES: 3,
+    INSPECTOR: 2,
+    FINANCE: 2,
     guest: 1,
   };
   return priorities[role] || 0;

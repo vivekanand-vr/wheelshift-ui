@@ -312,3 +312,12 @@ export type DashboardRole =
   | "INSPECTOR"
   | "FINANCE"
   | "STORE_MANAGER";
+
+// Recent Activity Type
+export interface RecentActivity {
+  id: string;
+  type: "order" | "customer" | "product";
+  title: string;
+  timestamp: string;
+  description?: string;
+}

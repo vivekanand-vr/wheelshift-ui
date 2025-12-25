@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bell, AlertCircle, Info, AlertTriangle } from "lucide-react";
-import { NotificationsWidget as NotificationsData } from "../../types";
+import { NotificationsData } from "../../types";
 import { WidgetEmpty } from "./WidgetEmpty";
 import { formatDistanceToNow } from "date-fns";
 
