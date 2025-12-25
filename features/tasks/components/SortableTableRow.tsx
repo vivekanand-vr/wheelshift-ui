@@ -32,7 +32,7 @@ export function SortableTableRow({ row, onClick }: SortableTableRowProps) {
       style={style}
       {...attributes}
       className={cn(
-        "cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50",
+        "bg-muted/50 cursor-pointer transition-colors hover:bg-neutral-900",
         isDragging && "opacity-50"
       )}
     >

@@ -7,3 +7,4 @@ export * from "./TaskTableView";
 export * from "./SortableTableRow";
 export * from "./TaskDetailModal";
 export * from "./AssignEmployeeModal";
+export * from "./TaskFiltersModal";

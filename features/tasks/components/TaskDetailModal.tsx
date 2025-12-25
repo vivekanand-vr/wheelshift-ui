@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -46,8 +46,6 @@ const taskFormSchema = z.object({
   ]),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
   dueDate: z.string().optional(),
-  startDate: z.string().optional(),
-  estimatedHours: z.number().min(0).optional(),
   tags: z.string().optional(),
 });
 
@@ -72,7 +70,7 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   const [assignedEmployee, setAssignedEmployee] = useState<
     Employee | undefined
-  >(task?.assignedTo);
+  >(undefined);
   const [showAssignModal, setShowAssignModal] = useState(false);
 
   const form = useForm<TaskFormValues>({
@@ -85,13 +83,27 @@ export function TaskDetailModal({
       dueDate: task?.dueDate
         ? format(new Date(task.dueDate), "yyyy-MM-dd")
         : "",
-      startDate: task?.startDate
-        ? format(new Date(task.startDate), "yyyy-MM-dd")
-        : "",
-      estimatedHours: task?.estimatedHours ?? undefined,
       tags: task?.tags?.join(", ") || "",
     },
   });
+
+  // Reset form when task changes or modal opens
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: task?.title || "",
+        description: task?.description || "",
+        status: task?.status || "TODO",
+        priority: task?.priority || "MEDIUM",
+        dueDate: task?.dueDate
+          ? format(new Date(task.dueDate), "yyyy-MM-dd")
+          : "",
+        tags: task?.tags?.join(", ") || "",
+      });
+      setAssignedEmployee(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, task]);
 
   const handleSubmit = (values: TaskFormValues) => {
     const tagsArray = values.tags
@@ -115,11 +127,11 @@ export function TaskDetailModal({
       status: values.status,
       priority: values.priority,
       dueDate: formatDateToISO(values.dueDate),
-      startDate: formatDateToISO(values.startDate),
-      estimatedHours: values.estimatedHours,
-      assignedToId: assignedEmployee?.id
+      assigneeId: assignedEmployee?.id
         ? String(assignedEmployee.id)
-        : undefined,
+        : task?.assigneeId
+          ? String(task.assigneeId)
+          : undefined,
       tags: tagsArray,
     });
   };
@@ -188,7 +200,7 @@ export function TaskDetailModal({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                         </FormControl>
@@ -218,7 +230,7 @@ export function TaskDetailModal({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select priority" />
                           </SelectTrigger>
                         </FormControl>
@@ -235,79 +247,73 @@ export function TaskDetailModal({
                 />
               </div>
 
-              {/* Assigned To */}
-              <div>
-                <FormLabel>Assigned To</FormLabel>
-                <div className="mt-2">
-                  {assignedEmployee ? (
-                    <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9">
-                          {assignedEmployee.avatar ? (
-                            <img
-                              src={assignedEmployee.avatar}
-                              alt={assignedEmployee.name}
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-sm font-medium">
-                              {assignedEmployee.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .toUpperCase()
-                                .slice(0, 2)}
-                            </div>
-                          )}
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-neutral-900 dark:text-neutral-100">
-                            {assignedEmployee.name}
-                          </p>
-                          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {assignedEmployee.email}
-                          </p>
+              {/* Assigned To and Due Date */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Assigned To */}
+                <div>
+                  <FormLabel>Assigned To</FormLabel>
+                  <div className="mt-2">
+                    {assignedEmployee ||
+                    (task?.assigneeId && task?.assigneeName) ? (
+                      <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9">
+                            {assignedEmployee?.avatar ? (
+                              <img
+                                src={assignedEmployee.avatar}
+                                alt={assignedEmployee.name}
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-sm font-medium">
+                                {(
+                                  assignedEmployee?.name ||
+                                  task?.assigneeName ||
+                                  ""
+                                )
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .toUpperCase()
+                                  .slice(0, 2)}
+                              </div>
+                            )}
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                              {assignedEmployee?.name || task?.assigneeName}
+                            </p>
+                            {assignedEmployee?.email && (
+                              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                {assignedEmployee.email}
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setAssignedEmployee(undefined)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
+                    ) : (
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAssignedEmployee(undefined)}
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setShowAssignModal(true)}
                       >
-                        <X className="h-4 w-4" />
+                        <User className="mr-2 h-4 w-4" />
+                        Assign Employee
                       </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => setShowAssignModal(true)}
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      Assign Employee
-                    </Button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Dates and Hours */}
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+                {/* Due Date */}
                 <FormField
                   control={form.control}
                   name="dueDate"
@@ -315,32 +321,10 @@ export function TaskDetailModal({
                     <FormItem>
                       <FormLabel>Due Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="estimatedHours"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Est. Hours</FormLabel>
-                      <FormControl>
                         <Input
-                          type="number"
-                          min="0"
-                          step="0.5"
+                          type="date"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value
-                                ? parseFloat(e.target.value)
-                                : undefined
-                            )
-                          }
+                          className="dark:scheme-dark"
                         />
                       </FormControl>
                       <FormMessage />
@@ -407,7 +391,11 @@ export function TaskDetailModal({
         onClose={() => setShowAssignModal(false)}
         onSelect={handleAssignEmployee}
         currentAssigneeId={
-          assignedEmployee?.id ? String(assignedEmployee.id) : undefined
+          assignedEmployee?.id
+            ? String(assignedEmployee.id)
+            : task?.assigneeId
+              ? String(task.assigneeId)
+              : undefined
         }
       />
     </>

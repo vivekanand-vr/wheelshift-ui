@@ -1,29 +1,28 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/store";
-import { Plus, LayoutGrid, Table2, Filter, Search, X } from "lucide-react";
+import {
+  Plus,
+  LayoutGrid,
+  Table2,
+  Filter,
+  Search,
+  X,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   setViewMode,
-  updateFilters,
   clearFilters,
   openTaskForm,
   closeTaskForm,
   setSelectedTask,
 } from "@/features/tasks/store/tasksSlice";
 import {
-  useTasks,
   useCreateTask,
   useUpdateTask,
   useDeleteTask,
@@ -32,23 +31,66 @@ import {
 import { KanbanBoard } from "./KanbanBoard";
 import { TaskTableView } from "./TaskTableView";
 import { TaskDetailModal } from "./TaskDetailModal";
+import { TaskFiltersModal } from "./TaskFiltersModal";
+import { useQuery } from "@tanstack/react-query";
+import { tasksApi } from "@/features/tasks/api/services";
 import type {
   Task,
   TaskStatus,
-  TaskPriority,
   CreateTaskInput,
+  TaskFilters,
 } from "@/features/tasks/types";
 
 export function TasksContainer() {
   const dispatch = useAppDispatch();
-  const { viewMode, filters, isCreatingTask, isEditingTask, selectedTask } =
+  const { viewMode, isCreatingTask, isEditingTask, selectedTask } =
     useAppSelector((state) => state.tasks);
+  const currentUser = useAppSelector((state) => state.auth.user);
 
-  const [searchTerm, setSearchTerm] = useState(filters.search || "");
-  const [showFilters, setShowFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<TaskFilters>({});
 
-  // Fetch tasks
-  const { data: tasks = [], isLoading } = useTasks(filters);
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Determine which API to call based on filters and toggle
+  const hasAdvancedFilters = Object.keys(advancedFilters).length > 0;
+
+  // Fetch tasks based on mode
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: [
+      "tasks",
+      showMyTasksOnly,
+      debouncedSearchTerm,
+      advancedFilters,
+      currentUser?.employeeId,
+    ],
+    queryFn: async () => {
+      if (hasAdvancedFilters) {
+        // Use advanced search API
+        return tasksApi.searchTasks(advancedFilters, debouncedSearchTerm);
+      } else if (showMyTasksOnly && currentUser?.employeeId) {
+        // Use employee tasks API
+        return tasksApi.getTasksByEmployee(
+          String(currentUser.employeeId),
+          debouncedSearchTerm
+        );
+      } else {
+        // Use regular tasks API
+        return tasksApi.getTasks(debouncedSearchTerm);
+      }
+    },
+    staleTime: 30000, // 30 seconds
+  });
 
   // Mutations
   const createTaskMutation = useCreateTask();
@@ -64,31 +106,28 @@ export function TasksContainer() {
   // Handle search
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    dispatch(updateFilters({ search: value }));
   };
 
-  // Handle filter changes
-  const handleStatusFilter = (status: string) => {
-    if (status === "all") {
-      const { status: _, ...rest } = filters;
-      dispatch(updateFilters(rest));
-    } else {
-      dispatch(updateFilters({ status: status as TaskStatus }));
+  // Handle show my tasks toggle
+  const handleToggleMyTasks = () => {
+    setShowMyTasksOnly(!showMyTasksOnly);
+    if (!showMyTasksOnly) {
+      // When turning on, clear advanced filters
+      setAdvancedFilters({});
     }
   };
 
-  const handlePriorityFilter = (priority: string) => {
-    if (priority === "all") {
-      const { priority: _, ...rest } = filters;
-      dispatch(updateFilters(rest));
-    } else {
-      dispatch(updateFilters({ priority: priority as TaskPriority }));
-    }
+  // Handle advanced filters
+  const handleApplyFilters = (filters: TaskFilters) => {
+    setAdvancedFilters(filters);
+    setShowFiltersModal(false);
   };
 
   // Clear all filters
   const handleClearFilters = () => {
     setSearchTerm("");
+    setAdvancedFilters({});
+    setShowMyTasksOnly(false);
     dispatch(clearFilters());
   };
 
@@ -152,19 +191,17 @@ export function TasksContainer() {
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (filters.status) count++;
-    if (filters.priority) count++;
-    if (filters.search) count++;
-    return count;
-  }, [filters]);
+    return Object.keys(advancedFilters).filter(
+      (key) => advancedFilters[key as keyof TaskFilters] !== undefined
+    ).length;
+  }, [advancedFilters]);
 
-  const hasFilters = activeFiltersCount > 0;
+  const hasFilters = activeFiltersCount > 0 || showMyTasksOnly;
 
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="space-y-4 rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="bg-muted/50 space-y-4 rounded-lg border p-6">
         {/* Top Row: Search and Actions */}
         <div className="flex items-center gap-3">
           {/* Search */}
@@ -185,6 +222,17 @@ export function TasksContainer() {
               </button>
             )}
           </div>
+
+          {/* Show My Tasks Toggle */}
+          <Button
+            variant={showMyTasksOnly ? "default" : "outline"}
+            size="sm"
+            onClick={handleToggleMyTasks}
+            className="gap-2"
+          >
+            <User className="h-4 w-4" />
+            My Tasks
+          </Button>
 
           {/* View Mode Toggle */}
           <div className="flex items-center gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
@@ -208,16 +256,16 @@ export function TasksContainer() {
             </Button>
           </div>
 
-          {/* Filters Toggle */}
+          {/* Advanced Filters Button */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setShowFiltersModal(true)}
             className="gap-2"
           >
             <Filter className="h-4 w-4" />
             Filters
-            {hasFilters && (
+            {activeFiltersCount > 0 && (
               <Badge
                 variant="default"
                 className="ml-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
@@ -227,68 +275,29 @@ export function TasksContainer() {
             )}
           </Button>
 
+          {/* Clear Filters */}
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearFilters}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          )}
+
           {/* Create Task Button */}
           <Button onClick={handleCreateTask} className="gap-2">
             <Plus className="h-4 w-4" />
             New Task
           </Button>
         </div>
-
-        {/* Filters Row */}
-        {showFilters && (
-          <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/50">
-            <div className="flex flex-1 items-center gap-3">
-              <Select
-                value={filters.status?.toString() || "all"}
-                onValueChange={handleStatusFilter}
-              >
-                <SelectTrigger className="w-45">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="TODO">To Do</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filters.priority?.toString() || "all"}
-                onValueChange={handlePriorityFilter}
-              >
-                <SelectTrigger className="w-45">
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="LOW">Low</SelectItem>
-                  <SelectItem value="MEDIUM">Medium</SelectItem>
-                  <SelectItem value="HIGH">High</SelectItem>
-                  <SelectItem value="URGENT">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {hasFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearFilters}
-                className="gap-2"
-              >
-                <X className="h-4 w-4" />
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Content */}
-      <div className="min-h-screen">
+      <div className="">
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -340,6 +349,18 @@ export function TasksContainer() {
           updateTaskMutation.isPending ||
           deleteTaskMutation.isPending
         }
+      />
+
+      {/* Advanced Filters Modal */}
+      <TaskFiltersModal
+        open={showFiltersModal}
+        onClose={() => setShowFiltersModal(false)}
+        onApply={handleApplyFilters}
+        currentFilters={advancedFilters}
+        currentUserId={
+          currentUser?.employeeId ? String(currentUser.employeeId) : undefined
+        }
+        showMyTasksOnly={showMyTasksOnly}
       />
     </div>
   );

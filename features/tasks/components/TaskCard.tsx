@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import type { Task } from "@/features/tasks/types";
-import { Calendar, Clock, Tag, GripVertical } from "lucide-react";
+import { Calendar, Tag, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
         isDragging && "ring-primary-500 shadow-2xl ring-2"
       )}
     >
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-3 px-4 py-2">
         {/* Header with drag handle and priority */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-start gap-2">
@@ -40,19 +40,14 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
             </h4>
           </div>
           <Badge
-            className={cn("shrink-0 text-xs", priorityColors[task.priority])}
+            className={cn(
+              "shrink-0 rounded-sm text-[10px]",
+              priorityColors[task.priority]
+            )}
           >
             {task.priority}
           </Badge>
         </div>
-
-        {/* Description */}
-        {task.description && (
-          <p className="line-clamp-2 text-sm text-neutral-600 dark:text-neutral-400">
-            {task.description}
-          </p>
-        )}
-
         {/* Tags */}
         {task.tags && task.tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
@@ -76,28 +71,20 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
         {/* Footer with assignee and dates */}
         <div className="flex items-center justify-between border-t border-neutral-100 pt-2 dark:border-neutral-800">
           <div className="flex items-center gap-2">
-            {task.assignedTo ? (
+            {task.assigneeName ? (
               <div className="flex items-center gap-1.5">
                 <Avatar className="h-6 w-6">
-                  {task.assignedTo.avatar ? (
-                    <img
-                      src={task.assignedTo.avatar}
-                      alt={task.assignedTo.name}
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-xs font-medium">
-                      {task.assignedTo.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </div>
-                  )}
+                  <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-xs font-medium">
+                    {task.assigneeName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
                 </Avatar>
                 <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                  {task.assignedTo.name.split(" ")[0]}
+                  {task.assigneeName.split(" ")[0]}
                 </span>
               </div>
             ) : (
@@ -106,12 +93,6 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
           </div>
 
           <div className="flex items-center gap-3 text-xs text-neutral-500">
-            {task.estimatedHours && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                <span>{task.estimatedHours}h</span>
-              </div>
-            )}
             {task.dueDate && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />

@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { tasksApi } from "./services";
-import { taskKeys } from "./queries";
 import type { CreateTaskInput, UpdateTaskInput } from "../types";
 
 // Create Task Mutation
@@ -11,7 +10,7 @@ export function useCreateTaskMutation() {
   return useMutation({
     mutationFn: (data: CreateTaskInput) => tasksApi.createTask(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task created successfully");
     },
     onError: (error: any) => {
@@ -27,9 +26,9 @@ export function useUpdateTaskMutation() {
   return useMutation({
     mutationFn: (data: UpdateTaskInput) => tasksApi.updateTask(data),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: taskKeys.detail(data.id) });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task updated successfully");
+      console.log("Updated Task:", data);
     },
     onError: (error: any) => {
       toast.error(error?.message || "Failed to update task");
@@ -44,7 +43,7 @@ export function useDeleteTaskMutation() {
   return useMutation({
     mutationFn: (id: string) => tasksApi.deleteTask(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task deleted successfully");
     },
     onError: (error: any) => {
@@ -61,7 +60,7 @@ export function useUpdateTaskOrdersMutation() {
     mutationFn: (updates: { id: string; order: number; status?: string }[]) =>
       tasksApi.updateTaskOrders(updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (error: any) => {
       toast.error(error?.message || "Failed to update task order");
@@ -81,11 +80,8 @@ export function useAssignTaskMutation() {
       taskId: string;
       employeeId: string;
     }) => tasksApi.assignTask(taskId, employeeId),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: taskKeys.detail(variables.taskId),
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task assigned successfully");
     },
     onError: (error: any) => {
@@ -101,11 +97,8 @@ export function useUpdateTaskStatusMutation() {
   return useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
       tasksApi.updateTaskStatus(taskId, status),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: taskKeys.detail(variables.taskId),
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task status updated successfully");
     },
     onError: (error: any) => {

@@ -23,7 +23,7 @@ export function KanbanColumnComponent({
   });
 
   return (
-    <div className="flex w-[320px] min-w-[320px] flex-col rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="bg-muted/50 flex min-h-120 w-[320px] min-w-[320px] flex-col rounded-lg">
       {/* Column Header */}
       <div className="border-b border-neutral-200 p-4 dark:border-neutral-800">
         <div className="flex items-center justify-between">

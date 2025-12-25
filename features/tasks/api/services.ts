@@ -18,34 +18,75 @@ interface ApiResponse<T> {
 
 // Tasks API Services
 export const tasksApi = {
-  // Get all tasks with filters
-  getTasks: async (filters?: TaskFilters): Promise<Task[]> => {
+  // Get all tasks with pagination and search
+  getTasks: async (
+    search?: string,
+    page: number = 0,
+    size: number = 20
+  ): Promise<Task[]> => {
     const params = new URLSearchParams();
-
-    if (filters?.status) {
-      if (Array.isArray(filters.status)) {
-        filters.status.forEach((s) => params.append("status", s));
-      } else {
-        params.append("status", filters.status);
-      }
-    }
-
-    if (filters?.priority) {
-      if (Array.isArray(filters.priority)) {
-        filters.priority.forEach((p) => params.append("priority", p));
-      } else {
-        params.append("priority", filters.priority);
-      }
-    }
-
-    if (filters?.assignedToId)
-      params.append("assignedToId", filters.assignedToId);
-    if (filters?.search) params.append("search", filters.search);
-    if (filters?.startDate) params.append("startDate", filters.startDate);
-    if (filters?.endDate) params.append("endDate", filters.endDate);
+    if (search) params.append("search", search);
+    params.append("page", page.toString());
+    params.append("size", size.toString());
 
     const response = await api.get<ApiResponse<PaginatedResponse<Task>>>(
       `/tasks?${params.toString()}`
+    );
+
+    // Extract content array from paginated response and add order field if missing
+    const tasks = response.data.data.content || [];
+    return tasks.map((task, index) => ({
+      ...task,
+      order: task.order ?? index,
+    }));
+  },
+
+  // Advanced search tasks with multiple filters
+  searchTasks: async (
+    filters?: TaskFilters,
+    search?: string,
+    page: number = 0,
+    size: number = 20
+  ): Promise<Task[]> => {
+    const params = new URLSearchParams();
+
+    if (search) params.append("search", search);
+    if (filters?.assignedToId)
+      params.append("assignedToId", filters.assignedToId);
+    if (filters?.status) params.append("status", filters.status as string);
+    if (filters?.priority)
+      params.append("priority", filters.priority as string);
+    if (filters?.startDate) params.append("startDate", filters.startDate);
+    if (filters?.endDate) params.append("endDate", filters.endDate);
+    params.append("page", page.toString());
+    params.append("size", size.toString());
+
+    const response = await api.get<ApiResponse<PaginatedResponse<Task>>>(
+      `/tasks/search?${params.toString()}`
+    );
+
+    // Extract content array from paginated response and add order field if missing
+    const tasks = response.data.data.content || [];
+    return tasks.map((task, index) => ({
+      ...task,
+      order: task.order ?? index,
+    }));
+  },
+
+  // Get tasks by employee (logged-in user)
+  getTasksByEmployee: async (
+    employeeId: string,
+    search?: string,
+    page: number = 0,
+    size: number = 20
+  ): Promise<Task[]> => {
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    params.append("page", page.toString());
+    params.append("size", size.toString());
+
+    const response = await api.get<ApiResponse<PaginatedResponse<Task>>>(
+      `/tasks/employee/${employeeId}?${params.toString()}`
     );
 
     // Extract content array from paginated response and add order field if missing

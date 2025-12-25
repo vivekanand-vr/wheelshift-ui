@@ -16,6 +16,7 @@ import { useState } from "react";
 import type { Task, TaskStatus, KanbanColumn } from "@/features/tasks/types";
 import { KanbanColumnComponent } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -125,15 +126,18 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex h-full gap-4 overflow-x-auto pb-4">
-        {columns.map((column) => (
-          <KanbanColumnComponent
-            key={column.id}
-            column={column}
-            onTaskClick={onTaskClick}
-          />
-        ))}
-      </div>
+      <ScrollArea className="h-full w-full">
+        <div className="flex h-full gap-4 pb-4">
+          {columns.map((column) => (
+            <KanbanColumnComponent
+              key={column.id}
+              column={column}
+              onTaskClick={onTaskClick}
+            />
+          ))}
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       <DragOverlay>
         {activeTask ? (

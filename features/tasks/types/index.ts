@@ -26,18 +26,10 @@ export interface Task {
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
-  assignedTo?: Employee;
-  assignedToId?: string;
-  createdBy?: Employee;
-  createdById?: string;
+  assigneeId?: number;
+  assigneeName?: string;
   dueDate?: string;
-  startDate?: string;
-  completedDate?: string;
-  estimatedHours?: number;
-  actualHours?: number;
   tags?: string[];
-  attachments?: string[];
-  comments?: TaskComment[];
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -54,13 +46,11 @@ export interface TaskComment {
 
 export interface CreateTaskInput {
   title: string;
-  description: string;
+  description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
-  assignedToId?: string;
+  assigneeId?: string;
   dueDate?: string;
-  startDate?: string;
-  estimatedHours?: number;
   tags?: string[];
 }
 

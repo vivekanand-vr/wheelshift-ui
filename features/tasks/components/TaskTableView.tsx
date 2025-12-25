@@ -9,31 +9,17 @@ import {
   type SortingState,
   type ColumnDef,
 } from "@tanstack/react-table";
-import {
-  DndContext,
-  DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  closestCenter,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { useState } from "react";
 import { format } from "date-fns";
-import { GripVertical, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import type { Task } from "@/features/tasks/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SortableTableRow } from "./SortableTableRow";
 import { cn } from "@/lib/utils";
 
 interface TaskTableViewProps {
   tasks: Task[];
-  onTaskReorder: (taskId: string, newOrder: number) => void;
   onTaskClick: (task: Task) => void;
 }
 
@@ -54,36 +40,14 @@ const statusColors = {
   CANCELLED: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
 };
 
-export function TaskTableView({
-  tasks,
-  onTaskReorder,
-  onTaskClick,
-}: TaskTableViewProps) {
+export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
 
   // Ensure tasks is always an array
   const taskArray = Array.isArray(tasks) ? tasks : [];
 
   const columns = useMemo<ColumnDef<Task>[]>(
     () => [
-      {
-        id: "drag",
-        header: "",
-        cell: () => (
-          <div className="cursor-grab active:cursor-grabbing">
-            <GripVertical className="h-4 w-4 text-neutral-400" />
-          </div>
-        ),
-        size: 40,
-      },
       {
         accessorKey: "title",
         header: ({ column }) => (
@@ -139,31 +103,23 @@ export function TaskTableView({
         ),
       },
       {
-        accessorKey: "assignedTo",
+        accessorKey: "assigneeName",
         header: "Assigned To",
         cell: ({ row }) =>
-          row.original.assignedTo ? (
+          row.original.assigneeName ? (
             <div className="flex items-center gap-2">
               <Avatar className="h-7 w-7">
-                {row.original.assignedTo.avatar ? (
-                  <img
-                    src={row.original.assignedTo.avatar}
-                    alt={row.original.assignedTo.name}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-xs font-medium">
-                    {row.original.assignedTo.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </div>
-                )}
+                <div className="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 flex h-full w-full items-center justify-center text-xs font-medium">
+                  {row.original.assigneeName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </div>
               </Avatar>
               <span className="text-sm text-neutral-700 dark:text-neutral-300">
-                {row.original.assignedTo.name}
+                {row.original.assigneeName}
               </span>
             </div>
           ) : (
@@ -191,18 +147,6 @@ export function TaskTableView({
             <span className="text-sm text-neutral-400">No due date</span>
           ),
       },
-      {
-        accessorKey: "estimatedHours",
-        header: "Est. Hours",
-        cell: ({ row }) =>
-          row.original.estimatedHours ? (
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              {row.original.estimatedHours}h
-            </span>
-          ) : (
-            <span className="text-sm text-neutral-400">-</span>
-          ),
-      },
     ],
     []
   );
@@ -218,67 +162,50 @@ export function TaskTableView({
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    const oldIndex = taskArray.findIndex((task) => task.id === active.id);
-    const newIndex = taskArray.findIndex((task) => task.id === over.id);
-
-    if (oldIndex !== -1 && newIndex !== -1) {
-      onTaskReorder(active.id as string, newIndex);
-    }
-  };
-
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-4 py-3 text-left text-xs font-medium tracking-wider text-neutral-700 uppercase dark:text-neutral-300"
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-              <SortableContext
-                items={taskArray.map((t) => t.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {table.getRowModel().rows.map((row) => (
-                  <SortableTableRow
-                    key={row.id}
-                    row={row}
-                    onClick={() => onTaskClick(row.original)}
-                  />
+    <div className="bg-muted/50 rounded-lg">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="border-b border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800/50">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="px-4 py-3 text-left text-xs font-medium tracking-wider text-neutral-700 uppercase dark:text-neutral-300"
+                    style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
                 ))}
-              </SortableContext>
-            </tbody>
-          </table>
-        </div>
-      </DndContext>
+              </tr>
+            ))}
+          </thead>
+          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                onClick={() => onTaskClick(row.original)}
+                className="cursor-pointer transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td
+                    key={cell.id}
+                    className="px-4 py-3 text-sm text-neutral-900 dark:text-neutral-100"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {taskArray.length === 0 && (
         <div className="py-12 text-center text-neutral-500 dark:text-neutral-400">
