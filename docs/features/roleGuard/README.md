@@ -119,7 +119,7 @@ Based on your backend schema:
 - `INSPECTOR` - Create and update inspections
 - `FINANCE` - View/record transactions, financial reports
 - `STORE_MANAGER` - Manage storage locations and movements
-- `guest` - Unauthenticated users
+- `USER` - Regular Users
 
 ## Common Use Cases
 

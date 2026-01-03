@@ -2,7 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { loginSchema, type LoginFormData } from "@/lib/validations/schemas";
+import {
+  loginSchema,
+  type LoginFormData,
+} from "@/features/auth/validations/authSchemas";
 import { Button } from "@/components/ui/button";
 import {
   Form,

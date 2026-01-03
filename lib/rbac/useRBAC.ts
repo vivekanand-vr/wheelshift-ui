@@ -1,5 +1,5 @@
 import { useAuth } from "@/features/auth";
-import type { UserRole } from "@/lib/constants/navigation";
+import type { UserRole } from "@/types";
 import { hasAccess, hasRole, isAdmin, isManagerOrAbove } from "./permissions";
 
 /**

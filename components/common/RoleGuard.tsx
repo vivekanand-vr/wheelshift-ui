@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
-import type { UserRole } from "@/lib/constants/navigation";
+import type { UserRole } from "@/types";
 
 interface RoleGuardProps {
   /**

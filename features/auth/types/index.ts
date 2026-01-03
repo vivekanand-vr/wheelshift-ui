@@ -1,4 +1,4 @@
-import { UserRole } from "@/lib/constants/navigation";
+import { UserRole } from "@/types";
 
 // API Types
 export interface User {

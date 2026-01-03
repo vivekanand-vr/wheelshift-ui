@@ -12,15 +12,7 @@ import {
   Bell,
   Shield,
 } from "lucide-react";
-
-export type UserRole =
-  | "SUPER_ADMIN"
-  | "ADMIN"
-  | "SALES"
-  | "INSPECTOR"
-  | "FINANCE"
-  | "STORE_MANAGER"
-  | "guest";
+import type { UserRole } from "../../types";
 
 export interface NavigationItem {
   title: string;
@@ -121,7 +113,7 @@ export const navigationItems: NavigationItem[] = [
       "INSPECTOR",
       "FINANCE",
       "STORE_MANAGER",
-      "guest",
+      "USER",
     ],
   },
   {

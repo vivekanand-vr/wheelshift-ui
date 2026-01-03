@@ -1,4 +1,4 @@
-import type { UserRole } from "@/lib/constants/navigation";
+import type { UserRole } from "@/types";
 
 /**
  * Check if a user has permission to access a route based on their role
@@ -45,7 +45,7 @@ export function getRolePriority(role: UserRole): number {
     SALES: 3,
     INSPECTOR: 2,
     FINANCE: 2,
-    guest: 1,
+    USER: 1,
   };
   return priorities[role] || 0;
 }

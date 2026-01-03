@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Typography } from "@/components/ui/typography";
-import { useLogin } from "../hooks";
+import { useAuth } from "../hooks";
 import type { LoginFormData } from "../types";
 import { Loader2, Lock, Mail } from "lucide-react";
 
@@ -39,12 +39,29 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     },
   });
 
-  const { mutate: login, isPending } = useLogin(onSuccess, form.setError);
+  const { login, isLoading } = useAuth();
 
-  const onSubmit = (data: LoginFormData) => {
+  const onSubmit = async (data: LoginFormData) => {
     // Clear any previous errors
     form.clearErrors("root");
-    login(data);
+
+    // Attempt login
+    const result = await login(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      onSuccess
+    );
+
+    // Handle error by setting form error
+    if (!result.success) {
+      form.setError("root", {
+        type: "manual",
+        message:
+          (result.error as Error)?.message || "Login failed. Please try again.",
+      });
+    }
   };
 
   const containerVariants = {
@@ -99,7 +116,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                       <Input
                         type="email"
                         placeholder="name@example.com"
-                        disabled={isPending}
+                        disabled={isLoading}
                         className="h-12 border-2 pl-10 text-base transition-colors focus:border-blue-500"
                         {...field}
                       />
@@ -126,7 +143,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                       type="button"
                       variant="link"
                       className="h-auto p-0 text-sm font-medium text-blue-600 hover:text-blue-700"
-                      disabled={isPending}
+                      disabled={isLoading}
                     >
                       Forgot password?
                     </Button>
@@ -137,7 +154,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                       <Input
                         type="password"
                         placeholder="Enter your password"
-                        disabled={isPending}
+                        disabled={isLoading}
                         className="h-12 border-2 pl-10 text-base transition-colors focus:border-blue-500"
                         {...field}
                       />
@@ -171,9 +188,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             <Button
               type="submit"
               className="h-12 w-full bg-blue-600 font-semibold text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
-              disabled={isPending}
+              disabled={isLoading}
             >
-              {isPending ? (
+              {isLoading ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}

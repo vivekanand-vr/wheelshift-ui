@@ -1,315 +1,307 @@
-# Auth Feature Structure
+# Authentication Feature
 
-## 📁 Current Structure
+## 📋 Overview
+
+The authentication feature handles user login, logout, and session management. It follows the standard feature architecture pattern with clear separation of concerns.
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      LOGIN PAGE (app/login/page.tsx)            │
+│  Renders the LoginFeature component                             │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  LOGINFEATURE COMPONENT                                         │
+│  Main container, includes LoginForm                             │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  LOGINFORM COMPONENT                                            │
+│  • Renders email/password form                                  │
+│  • Validates input with Zod schema                              │
+│  • Calls useAuth hook for login                                 │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  USEAUTH HOOK                                                   │
+│  • Contains ALL authentication logic                            │
+│  • Calls login/logout mutations                                 │
+│  • Updates Redux store                                          │
+│  • Handles navigation                                           │
+│  • Shows toast notifications                                    │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  MUTATIONS (useLoginMutation, useLogoutMutation)                │
+│  • React Query mutation configurations                          │
+│  • Calls authApi services                                       │
+│  • Returns data or errors                                       │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  SERVICES (authApi)                                             │
+│  • authApi.login() - POST /auth/login                           │
+│  • authApi.logout() - POST /auth/logout                         │
+│  • authApi.getCurrentUser() - GET /auth/me                      │
+│  • Pure HTTP calls using Axios                                  │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         BACKEND API                              │
+└─────────────────────────────────────────────────────────────────┘
+
+                 ┌────────────────────────┐
+                 │    REDUX STORE         │
+                 │  (Global Auth State)   │
+                 │                        │
+                 │  • user                │
+                 │  • isAuthenticated     │
+                 │  • isLoading           │
+                 │  • error               │
+                 │                        │
+                 │  Persisted to          │
+                 │  localStorage          │
+                 └────────────────────────┘
+```
+
+## 📁 Folder Structure
 
 ```
 features/auth/
 ├── api/
-│   └── index.ts                 # authApi.login(), logout(), getCurrentUser()
+│   ├── services.ts          # Pure API calls (login, logout, getCurrentUser)
+│   ├── mutations.ts         # React Query mutations (useLoginMutation, useLogoutMutation)
+│   ├── queries.ts           # React Query queries (checkAuth)
+│   └── index.ts             # Exports all API-related items
 │
 ├── components/
-│   ├── LoginFeature.tsx         # Main login feature component
-│   ├── LoginForm.tsx            # Login form UI
-│   └── index.ts                 # Component exports
+│   ├── LoginFeature.tsx     # Main feature container
+│   ├── LoginForm.tsx        # Login form UI
+│   └── index.ts             # Component exports
 │
 ├── hooks/
-│   ├── useAuth.ts              # Main auth hook (Redux integration)
-│   ├── useLogin.ts             # Login form hook (React Query)
-│   └── index.ts                # Hook exports
-│
-├── queries/
-│   └── index.ts                # authQueries (React Query configs)
+│   ├── useAuth.ts           # Main auth hook (all logic)
+│   └── index.ts             # Hook exports
 │
 ├── store/
-│   ├── authSlice.ts            # Redux slice for auth state
-│   └── index.ts                # Store exports
+│   ├── authSlice.ts         # Redux slice (user state, async thunks)
+│   └── index.ts             # Store exports
 │
 ├── types/
-│   └── index.ts                # All TypeScript types
+│   └── index.ts             # Auth-specific types (User, LoginCredentials, etc.)
 │
-└── index.ts                    # Main feature exports
+└── index.ts                 # Main feature exports
 ```
 
-## 🔄 Data Flow
+## 🔄 How It Works
 
 ### Login Flow
 
+1. **User enters credentials** in LoginForm component
+2. **Form validation** occurs using Zod schema
+3. **LoginForm calls** `useAuth().login()`
+4. **useAuth hook:**
+   - Calls `loginMutation.mutateAsync()`
+   - On success: Updates Redux store with user data
+   - Shows success toast
+   - Navigates to dashboard
+   - On error: Shows error toast and updates error state
+5. **loginMutation:**
+   - Calls `authApi.login()` service
+   - Returns user data or throws error
+6. **authApi.login():**
+   - Makes POST request to `/auth/login`
+   - Returns user data from backend
+7. **Redux store updated:**
+   - User data stored
+   - `isAuthenticated` set to true
+   - State persisted to localStorage
+
+### Logout Flow
+
+1. **User clicks logout** (from header/menu)
+2. **Component calls** `useAuth().logout()`
+3. **useAuth hook:**
+   - Calls `logoutMutation.mutateAsync()`
+   - Clears Redux store
+   - Removes localStorage data
+   - Shows success toast
+   - Navigates to login page
+4. **logoutMutation:**
+   - Calls `authApi.logout()` service
+5. **authApi.logout():**
+   - Makes POST request to `/auth/logout`
+   - Clears server-side session
+
+### Session Check Flow
+
+1. **App loads** or page refreshes
+2. **Auth guard** calls `useAuth().checkAuth()`
+3. **useAuth hook:**
+   - Dispatches `checkAuthAsync` thunk
+4. **checkAuthAsync thunk:**
+   - Calls `authApi.getCurrentUser()`
+   - Returns user data if authenticated
+   - Throws error if not authenticated
+5. **Redux store updated:**
+   - If valid: User data loaded, `isAuthenticated` = true
+   - If invalid: Store cleared, redirect to login
+
+## 🎯 Key Components
+
+### LoginForm
+
+- Renders email and password inputs
+- Validates form with Zod schema
+- Displays loading state during login
+- Shows error messages from form or API
+- Simple UI component with no business logic
+
+### useAuth Hook
+
+- **Single source of truth** for all auth logic
+- Provides: `login()`, `logout()`, `checkAuth()`, `clearError()`
+- Provides state: `user`, `isAuthenticated`, `isLoading`, `error`
+- Handles all side effects (navigation, toasts, state updates)
+- Used by any component that needs auth functionality
+
+### Redux Store (authSlice)
+
+- Stores global auth state
+- Persisted to localStorage for session continuity
+- Updated by useAuth hook
+- Read by components and guards
+- Contains async thunks for login/logout/checkAuth
+
+## 🔐 Role-Based Access
+
+After login, user roles are mapped from backend:
+
 ```
-1. LoginForm (Component)
-   ↓ user submits form
-
-2. useLogin (Hook)
-   ↓ calls login function
-
-3. useAuth (Hook)
-   ↓ dispatches Redux action
-
-4. authSlice.loginAsync (Redux Thunk)
-   ↓ calls API
-
-5. authApi.login (API Layer)
-   ↓ makes HTTP request
-
-6. Backend API
+Backend Roles       →    Frontend Role
+──────────────────      ─────────────────
+["SUPER_ADMIN"]     →    SUPER_ADMIN
+["ADMIN"]           →    ADMIN
+["SALES"]           →    SALES
+["INSPECTOR"]       →    INSPECTOR
+["FINANCE"]         →    FINANCE
+["STORE_MANAGER"]   →    STORE_MANAGER
+Other               →    USER
 ```
 
-### Component Usage Example
+Protected pages wrap features in RoleGuard:
 
-```typescript
-// ✓ Simple import from feature root
-import { useAuth, useLogin } from "@/features/auth";
+```
+app/admin/page.tsx
+    │
+    └─→ RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}
+            │
+            └─→ AdminDashboard (only shown to allowed roles)
+```
 
-function MyComponent() {
-  const { user, isAuthenticated } = useAuth();
-  const { mutate: login } = useLogin();
+## 📊 State Management
 
-  // Use in component
+### Redux Store State
+
+```
+{
+  user: {
+    employeeId: number
+    email: string
+    name: string
+    roles: string[]
+    permissions: string[]
+    role: UserRole  // Mapped frontend role
+  } | null,
+  isAuthenticated: boolean,
+  isLoading: boolean,
+  error: string | null
 }
 ```
 
-## 📦 What Each Layer Does
+### Why Redux?
 
-### API Layer (`api/index.ts`)
+- **Global access:** Auth state needed everywhere
+- **Persistence:** State survives page refreshes
+- **Consistency:** Single source of truth
+- **Guards:** RoleGuard reads from Redux store
+- **Navigation:** Protected routes check auth state
 
-- Pure HTTP requests
-- No state management
-- No data transformation (basic only)
-- Returns raw API responses
+## 🛡️ Security Features
 
-```typescript
-export const authApi = {
-  login: async (credentials) => {
-    const response = await axios.post("/auth/login", credentials);
-    return response.data;
-  },
-};
-```
+1. **Credentials included:** Axios configured with `withCredentials: true`
+2. **Token handling:** Backend manages JWT/session tokens
+3. **Session persistence:** Redux state saved to localStorage
+4. **Session validation:** `checkAuth()` verifies on app load
+5. **Role-based access:** RoleGuard protects routes
+6. **Error handling:** Failed auth clears state and redirects
 
-### Queries Layer (`queries/index.ts`)
+## 🔌 Integration Points
 
-- React Query configurations
-- Data transformations
-- Caching strategies
-- Error handling patterns
-
-```typescript
-export const authQueries = {
-  login: {
-    mutationFn: async (credentials) => {
-      const response = await authApi.login(credentials);
-      return transformUser(response); // Transform here
-    },
-  },
-};
-```
-
-### Hooks Layer (`hooks/`)
-
-- Business logic
-- State management integration
-- User interaction handlers
-- Side effects (toasts, navigation)
-
-```typescript
-// useAuth.ts - Redux integration
-export const useAuth = () => {
-  const dispatch = useAppDispatch();
-  const auth = useAppSelector((state) => state.auth);
-
-  const login = (credentials) => dispatch(loginAsync(credentials));
-
-  return { ...auth, login };
-};
-
-// useLogin.ts - Form-specific logic
-export const useLogin = (onSuccess) => {
-  const { login } = useAuth();
-  const router = useRouter();
-
-  return useMutation({
-    mutationFn: login,
-    onSuccess: () => {
-      toast.success("Logged in!");
-      router.push("/dashboard");
-    },
-  });
-};
-```
-
-### Store Layer (`store/`)
-
-- Redux slice (if needed)
-- Global state management
-- Persistence configuration
-- Async thunks
-
-```typescript
-export const authSlice = createSlice({
-  name: "auth",
-  initialState: { user: null, isAuthenticated: false },
-  reducers: {
-    /* ... */
-  },
-  extraReducers: {
-    /* loginAsync, etc. */
-  },
-});
-```
-
-### Components Layer (`components/`)
-
-- UI rendering
-- User interactions
-- Uses hooks (no direct API calls)
-- Presentational logic only
-
-```typescript
-export const LoginForm = () => {
-  const { mutate: login, isPending } = useLogin();
-
-  return (
-    <form onSubmit={(data) => login(data)}>
-      {/* UI only */}
-    </form>
-  );
-};
-```
-
-## 🎯 Key Benefits
-
-### 1. **Feature Cohesion**
-
-All auth-related code is in one place:
-
-- ✅ Easy to find
-- ✅ Easy to test
-- ✅ Easy to refactor
-
-### 2. **Clear Separation**
-
-Each layer has one job:
-
-- API = HTTP requests
-- Queries = Data handling
-- Hooks = Business logic
-- Store = Global state
-- Components = UI
-
-### 3. **Testability**
-
-Each layer can be tested independently:
-
-```typescript
-// Test API
-expect(authApi.login(credentials)).resolves.toBe(mockResponse);
-
-// Test Hook
-const { result } = renderHook(() => useLogin());
-act(() => result.current.mutate(data));
-
-// Test Component
-render(<LoginForm />);
-fireEvent.submit(form);
-```
-
-### 4. **Reusability**
-
-Hooks and APIs can be reused:
-
-```typescript
-// Different components, same hooks
-function LoginPage() {
-  const { mutate: login } = useLogin(() => router.push("/dashboard"));
-}
-
-function QuickLogin() {
-  const { mutate: login } = useLogin(() => closeModal());
-}
-```
-
-## 🔧 How Redux Fits In
-
-Redux is used ONLY for:
-
-- ✅ Global state (user, isAuthenticated)
-- ✅ Persistence (localStorage)
-- ✅ Cross-feature state sharing
-
-Redux is NOT used for:
-
-- ❌ API calls (use API layer)
-- ❌ Form state (use React Hook Form)
-- ❌ Server state (use React Query)
-
-## 📚 Import Patterns
-
-### ✓ Correct Imports
+### Using in Components
 
 ```typescript
 // Import from feature root
-import { useAuth, authApi, User } from "@/features/auth";
+import { useAuth } from "@/features/auth";
 
-// Import Redux slice in store configuration
-import authReducer from "@/features/auth/store/authSlice";
+function MyComponent() {
+  const { user, isAuthenticated, login, logout, isLoading } = useAuth();
+
+  // Use auth state and actions
+}
 ```
 
-### ✗ Incorrect Imports
+### Using in Pages
 
 ```typescript
-// Don't import from internal folders
-import { useAuth } from "@/features/auth/hooks/useAuth";
-import { authApi } from "@/features/auth/api/index";
+import { LoginFeature } from "@/features/auth";
 
-// Don't keep feature slices in lib/redux
-import authReducer from "@/lib/redux/features/auth/authSlice";
+export default function LoginPage() {
+  return <LoginFeature />;
+}
 ```
 
-## 🚀 Adding New Auth Features
-
-To add a new auth-related feature:
-
-1. **Add API function** in `api/index.ts`
+### Protecting Routes
 
 ```typescript
-export const authApi = {
-  // ... existing
-  resetPassword: async (email: string) => {
-    return await axios.post("/auth/reset-password", { email });
-  },
-};
+import { RoleGuard } from "@/components/common";
+import { AdminDashboard } from "@/features/admin";
+
+export default function AdminPage() {
+  return (
+    <RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+      <AdminDashboard />
+    </RoleGuard>
+  );
+}
 ```
 
-2. **Add query config** in `queries/index.ts`
+## ✅ Best Practices
 
-```typescript
-export const authQueries = {
-  // ... existing
-  resetPassword: {
-    mutationFn: (email: string) => authApi.resetPassword(email),
-  },
-};
-```
+- **Single hook:** All auth logic in `useAuth`, no multiple auth hooks
+- **No direct API calls:** Components always use hooks
+- **Centralized logic:** Business logic stays in hooks, not components
+- **Error handling:** All errors caught and displayed as toasts
+- **Loading states:** UI disabled during async operations
+- **Type safety:** TypeScript types for all auth data
+- **Clean components:** Components only handle UI rendering
 
-3. **Create hook** in `hooks/useResetPassword.ts`
+## 🚀 Extending Auth
 
-```typescript
-export const useResetPassword = () => {
-  return useMutation({
-    ...authQueries.resetPassword,
-    onSuccess: () => toast.success("Check your email!"),
-  });
-};
-```
+To add new auth functionality (e.g., password reset):
 
-4. **Create component** in `components/ResetPasswordForm.tsx`
+1. **Add service** in `api/services.ts`
+2. **Add mutation** in `api/mutations.ts`
+3. **Extend useAuth** hook with new function
+4. **Create component** if needed
+5. **Export** from feature index.ts
 
-```typescript
-export const ResetPasswordForm = () => {
-  const { mutate, isPending } = useResetPassword();
-  // ... UI
-};
-```
-
-5. **Export** in respective `index.ts` files
-
-Done! ✅
+The pattern remains the same: Component → Hook → Mutation → Service → API
