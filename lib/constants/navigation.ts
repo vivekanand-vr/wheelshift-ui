@@ -49,7 +49,14 @@ export const navigationItems: NavigationItem[] = [
     title: "Tasks",
     href: "/tasks",
     icon: FileText,
-    roles: ["SUPER_ADMIN", "ADMIN", "SALES", "INSPECTOR", "STORE_MANAGER"],
+    roles: [
+      "SUPER_ADMIN",
+      "ADMIN",
+      "SALES",
+      "INSPECTOR",
+      "STORE_MANAGER",
+      "FINANCE",
+    ],
   },
   {
     title: "Team",

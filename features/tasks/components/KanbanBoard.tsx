@@ -22,6 +22,7 @@ interface KanbanBoardProps {
   tasks: Task[];
   onTaskMove: (taskId: string, newStatus: TaskStatus, newOrder: number) => void;
   onTaskClick: (task: Task) => void;
+  onCreateTask?: () => void;
 }
 
 const COLUMNS: KanbanColumn[] = [
@@ -36,6 +37,7 @@ export function KanbanBoard({
   tasks,
   onTaskMove,
   onTaskClick,
+  onCreateTask,
 }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
@@ -133,6 +135,7 @@ export function KanbanBoard({
               key={column.id}
               column={column}
               onTaskClick={onTaskClick}
+              onCreateTask={onCreateTask}
             />
           ))}
         </div>

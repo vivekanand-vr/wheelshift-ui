@@ -289,11 +289,6 @@ export function TaskDetailModal({
                             <p className="font-medium text-neutral-900 dark:text-neutral-100">
                               {assignedEmployee?.name || task?.assigneeName}
                             </p>
-                            {assignedEmployee?.email && (
-                              <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                                {assignedEmployee.email}
-                              </p>
-                            )}
                           </div>
                         </div>
                         <Button

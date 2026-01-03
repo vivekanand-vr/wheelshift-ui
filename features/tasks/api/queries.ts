@@ -24,7 +24,7 @@ export const employeeKeys = {
 export function useTasksQuery(filters?: TaskFilters) {
   return useQuery({
     queryKey: taskKeys.list(filters),
-    queryFn: () => tasksApi.getTasks(filters),
+    queryFn: () => tasksApi.getTasks(filters?.search),
     staleTime: 30000, // 30 seconds
   });
 }

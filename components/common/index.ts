@@ -3,3 +3,4 @@ export * from "./PageHeader";
 export * from "./Section";
 export * from "./EmptyState";
 export * from "./RoleGuard";
+export * from "./ConfirmationDialog";

@@ -77,7 +77,12 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
-          <Badge className={cn("text-xs", statusColors[row.original.status])}>
+          <Badge
+            className={cn(
+              "shrink-0 rounded-sm text-[10px]",
+              statusColors[row.original.status]
+            )}
+          >
             {row.original.status.replace("_", " ")}
           </Badge>
         ),
@@ -96,7 +101,10 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         ),
         cell: ({ row }) => (
           <Badge
-            className={cn("text-xs", priorityColors[row.original.priority])}
+            className={cn(
+              "shrink-0 rounded-sm text-[10px]",
+              priorityColors[row.original.priority]
+            )}
           >
             {row.original.priority}
           </Badge>

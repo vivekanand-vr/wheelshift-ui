@@ -65,7 +65,7 @@ export function SidebarItem({ item, collapsed }: SidebarItemProps) {
             "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
             "hover:bg-sidebar-hover dark:hover:bg-neutral-800",
             isActive && "bg-sidebar-active dark:bg-neutral-800",
-            collapsed && "justify-center px-2"
+            collapsed && "justify-center"
           )}
         >
           {ItemContent}
@@ -94,7 +94,7 @@ export function SidebarItem({ item, collapsed }: SidebarItemProps) {
         isActive
           ? "bg-sidebar-active text-sidebar-textActive dark:text-primary-400 dark:bg-neutral-800"
           : "text-sidebar-text dark:text-neutral-300",
-        collapsed && "justify-center px-2"
+        collapsed && "justify-center"
       )}
       title={collapsed ? item.title : undefined}
     >

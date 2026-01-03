@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, User, Filter } from "lucide-react";
 import type {
   TaskFilters,
@@ -55,6 +55,28 @@ export function TaskFiltersModal({
   );
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
 
+  // Sync local state with external currentFilters when modal opens
+  useEffect(() => {
+    if (open) {
+      const newFilters =
+        currentFilters ||
+        (showMyTasksOnly && currentUserId
+          ? { assignedToId: currentUserId }
+          : {});
+
+      // Only update if filters actually changed
+      if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
+        setFilters(newFilters);
+      }
+
+      // Reset selected employee when filters are cleared
+      if (!currentFilters?.assignedToId && selectedEmployee) {
+        setSelectedEmployee(null);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, currentFilters, showMyTasksOnly, currentUserId]);
+
   const handleApply = () => {
     onApply(filters);
     onClose();
@@ -99,11 +121,11 @@ export function TaskFiltersModal({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Assigned To */}
-            <div>
-              <Label>Assigned To</Label>
-              <div className="mt-1.5">
+            <div className="flex items-center gap-4">
+              <Label className="min-w-25">Assigned To</Label>
+              <div className="flex-1">
                 {selectedEmployee || (showMyTasksOnly && currentUserId) ? (
                   <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800">
                     <div className="flex items-center gap-3">
@@ -257,7 +279,7 @@ export function TaskFiltersModal({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700">
+          <div className="flex items-center justify-between border-t border-neutral-200 pt-6 dark:border-neutral-700">
             <Button type="button" variant="outline" onClick={handleClear}>
               Clear All
             </Button>

@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/store";
 import {
   Plus,
   LayoutGrid,
@@ -15,276 +13,160 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  setViewMode,
-  clearFilters,
-  openTaskForm,
-  closeTaskForm,
-  setSelectedTask,
-} from "@/features/tasks/store/tasksSlice";
-import {
-  useCreateTask,
-  useUpdateTask,
-  useDeleteTask,
-  useUpdateTaskStatus,
-} from "@/features/tasks/hooks";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ConfirmationDialog } from "@/components/common";
+import { useTasksContainer } from "@/features/tasks/hooks";
 import { KanbanBoard } from "./KanbanBoard";
 import { TaskTableView } from "./TaskTableView";
 import { TaskDetailModal } from "./TaskDetailModal";
 import { TaskFiltersModal } from "./TaskFiltersModal";
-import { useQuery } from "@tanstack/react-query";
-import { tasksApi } from "@/features/tasks/api/services";
-import type {
-  Task,
-  TaskStatus,
-  CreateTaskInput,
-  TaskFilters,
-} from "@/features/tasks/types";
 
 export function TasksContainer() {
-  const dispatch = useAppDispatch();
-  const { viewMode, isCreatingTask, isEditingTask, selectedTask } =
-    useAppSelector((state) => state.tasks);
-  const currentUser = useAppSelector((state) => state.auth.user);
+  const {
+    // State
+    viewMode,
+    isCreatingTask,
+    isEditingTask,
+    selectedTask,
+    currentUser,
+    searchTerm,
+    showFiltersModal,
+    showMyTasksOnly,
+    advancedFilters,
+    activeFiltersCount,
+    hasFilters,
+    tasks,
+    isLoading,
+    isSaving,
+    showDeleteConfirm,
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [showFiltersModal, setShowFiltersModal] = useState(false);
-  const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
-  const [advancedFilters, setAdvancedFilters] = useState<TaskFilters>({});
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Determine which API to call based on filters and toggle
-  const hasAdvancedFilters = Object.keys(advancedFilters).length > 0;
-
-  // Fetch tasks based on mode
-  const { data: tasks = [], isLoading } = useQuery({
-    queryKey: [
-      "tasks",
-      showMyTasksOnly,
-      debouncedSearchTerm,
-      advancedFilters,
-      currentUser?.employeeId,
-    ],
-    queryFn: async () => {
-      if (hasAdvancedFilters) {
-        // Use advanced search API
-        return tasksApi.searchTasks(advancedFilters, debouncedSearchTerm);
-      } else if (showMyTasksOnly && currentUser?.employeeId) {
-        // Use employee tasks API
-        return tasksApi.getTasksByEmployee(
-          String(currentUser.employeeId),
-          debouncedSearchTerm
-        );
-      } else {
-        // Use regular tasks API
-        return tasksApi.getTasks(debouncedSearchTerm);
-      }
-    },
-    staleTime: 30000, // 30 seconds
-  });
-
-  // Mutations
-  const createTaskMutation = useCreateTask();
-  const updateTaskMutation = useUpdateTask();
-  const deleteTaskMutation = useDeleteTask();
-  const updateTaskStatusMutation = useUpdateTaskStatus();
-
-  // Handle view mode toggle
-  const handleViewModeChange = (mode: "kanban" | "table") => {
-    dispatch(setViewMode(mode));
-  };
-
-  // Handle search
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-  };
-
-  // Handle show my tasks toggle
-  const handleToggleMyTasks = () => {
-    setShowMyTasksOnly(!showMyTasksOnly);
-    if (!showMyTasksOnly) {
-      // When turning on, clear advanced filters
-      setAdvancedFilters({});
-    }
-  };
-
-  // Handle advanced filters
-  const handleApplyFilters = (filters: TaskFilters) => {
-    setAdvancedFilters(filters);
-    setShowFiltersModal(false);
-  };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setSearchTerm("");
-    setAdvancedFilters({});
-    setShowMyTasksOnly(false);
-    dispatch(clearFilters());
-  };
-
-  // Handle task click
-  const handleTaskClick = (task: Task) => {
-    dispatch(setSelectedTask(task));
-    dispatch(openTaskForm(task));
-  };
-
-  // Handle create new task
-  const handleCreateTask = () => {
-    dispatch(openTaskForm(null));
-  };
-
-  // Handle save task
-  const handleSaveTask = async (data: CreateTaskInput & { id?: string }) => {
-    if (data.id) {
-      // Update existing task
-      await updateTaskMutation.mutateAsync({ id: data.id, ...data });
-    } else {
-      // Create new task
-      await createTaskMutation.mutateAsync(data);
-    }
-    dispatch(closeTaskForm());
-  };
-
-  // Handle delete task
-  const handleDeleteTask = async (id: string) => {
-    if (confirm("Are you sure you want to delete this task?")) {
-      await deleteTaskMutation.mutateAsync(id);
-      dispatch(closeTaskForm());
-    }
-  };
-
-  // Handle task move in Kanban
-  const handleTaskMove = async (
-    taskId: string,
-    newStatus: TaskStatus,
-    newOrder: number
-  ) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (!task) return;
-    console.log("Moving task", taskId, "to", newStatus, "at order", newOrder);
-
-    // Only update status if it changed (for Kanban drag and drop)
-    if (task.status !== newStatus) {
-      await updateTaskStatusMutation.mutateAsync({
-        taskId,
-        status: newStatus,
-      });
-    }
-  };
-
-  // Count active filters
-  const activeFiltersCount = useMemo(() => {
-    return Object.keys(advancedFilters).filter(
-      (key) => advancedFilters[key as keyof TaskFilters] !== undefined
-    ).length;
-  }, [advancedFilters]);
-
-  const hasFilters = activeFiltersCount > 0 || showMyTasksOnly;
+    // Handlers
+    handleViewModeChange,
+    handleSearch,
+    handleToggleMyTasks,
+    handleApplyFilters,
+    handleClearFilters,
+    handleTaskClick,
+    handleCreateTask,
+    handleSaveTask,
+    handleDeleteTask,
+    handleConfirmDelete,
+    handleCancelDelete,
+    handleTaskMove,
+    handleOpenFiltersModal,
+    handleCloseFiltersModal,
+    handleCloseTaskForm,
+  } = useTasksContainer();
 
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="bg-muted/50 space-y-4 rounded-lg border p-6">
+      <div className="bg-muted/50 space-y-4 rounded-md border p-4">
         {/* Top Row: Search and Actions */}
-        <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative max-w-md flex-1">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-500" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => handleSearch("")}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+        <div className="flex items-center justify-between gap-4">
+          {/* Left Side: Search and My Tasks Toggle */}
+          <div className="flex items-center gap-3">
+            {/* Search */}
+            <div className="relative w-[320px]">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-500" />
+              <Input
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => handleSearch("")}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Show My Tasks Toggle */}
+            <div className="flex items-center gap-2">
+              <Switch
+                id="my-tasks"
+                checked={showMyTasksOnly}
+                onCheckedChange={handleToggleMyTasks}
+              />
+              <Label
+                htmlFor="my-tasks"
+                className="cursor-pointer text-sm font-medium"
               >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+                <div className="flex items-center gap-1.5">
+                  <User className="h-4 w-4" />
+                  My Tasks
+                </div>
+              </Label>
+            </div>
           </div>
 
-          {/* Show My Tasks Toggle */}
-          <Button
-            variant={showMyTasksOnly ? "default" : "outline"}
-            size="sm"
-            onClick={handleToggleMyTasks}
-            className="gap-2"
-          >
-            <User className="h-4 w-4" />
-            My Tasks
-          </Button>
+          {/* Right Side: View Mode, Filters and New Task */}
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-0.5 rounded-lg border border-neutral-200 bg-neutral-50 p-0.5 dark:border-neutral-700 dark:bg-neutral-900">
+              <Button
+                variant={viewMode === "kanban" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => handleViewModeChange("kanban")}
+                className="h-8 w-8 p-0"
+                title="Kanban view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "table" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => handleViewModeChange("table")}
+                className="h-8 w-8 p-0"
+                title="Table view"
+              >
+                <Table2 className="h-4 w-4" />
+              </Button>
+            </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800">
-            <Button
-              variant={viewMode === "kanban" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => handleViewModeChange("kanban")}
-              className="gap-2"
-            >
-              <LayoutGrid className="h-4 w-4" />
-              Kanban
-            </Button>
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => handleViewModeChange("table")}
-              className="gap-2"
-            >
-              <Table2 className="h-4 w-4" />
-              Table
+            {/* Advanced Filters Button */}
+            <div className="flex items-center gap-1">
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenFiltersModal}
+                  className="h-9 w-9 p-0"
+                  title="Filters"
+                >
+                  <Filter className="h-4 w-4" />
+                  {activeFiltersCount > 0 && (
+                    <Badge
+                      variant="default"
+                      className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
+                    >
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
+              {activeFiltersCount > 0 && (
+                <button
+                  onClick={handleClearFilters}
+                  className="bg-destructive/10 text-destructive hover:bg-destructive hover:text-secondary dark:bg-destructive/20 dark:hover:bg-destructive dark:hover:text-primary flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition-colors"
+                  title="Clear filters"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Create Task Button */}
+            <Button onClick={handleCreateTask} size="sm" className="h-9 gap-2">
+              <Plus className="h-4 w-4" />
+              New Task
             </Button>
           </div>
-
-          {/* Advanced Filters Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFiltersModal(true)}
-            className="gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-            {activeFiltersCount > 0 && (
-              <Badge
-                variant="default"
-                className="ml-1 flex h-5 w-5 items-center justify-center p-0 text-xs"
-              >
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </Button>
-
-          {/* Clear Filters */}
-          {hasFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearFilters}
-              className="gap-2"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </Button>
-          )}
-
-          {/* Create Task Button */}
-          <Button onClick={handleCreateTask} className="gap-2">
-            <Plus className="h-4 w-4" />
-            New Task
-          </Button>
         </div>
       </div>
 
@@ -319,6 +201,7 @@ export function TasksContainer() {
             tasks={tasks}
             onTaskMove={handleTaskMove}
             onTaskClick={handleTaskClick}
+            onCreateTask={handleCreateTask}
           />
         ) : (
           <TaskTableView tasks={tasks} onTaskClick={handleTaskClick} />
@@ -328,27 +211,36 @@ export function TasksContainer() {
       {/* Task Detail Modal */}
       <TaskDetailModal
         open={isCreatingTask || isEditingTask}
-        onClose={() => dispatch(closeTaskForm())}
+        onClose={handleCloseTaskForm}
         task={selectedTask}
         onSave={handleSaveTask}
         onDelete={handleDeleteTask}
-        isLoading={
-          createTaskMutation.isPending ||
-          updateTaskMutation.isPending ||
-          deleteTaskMutation.isPending
-        }
+        isLoading={isSaving}
       />
 
       {/* Advanced Filters Modal */}
       <TaskFiltersModal
         open={showFiltersModal}
-        onClose={() => setShowFiltersModal(false)}
+        onClose={handleCloseFiltersModal}
         onApply={handleApplyFilters}
         currentFilters={advancedFilters}
         currentUserId={
           currentUser?.employeeId ? String(currentUser.employeeId) : undefined
         }
         showMyTasksOnly={showMyTasksOnly}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showDeleteConfirm}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+        isLoading={isSaving}
       />
     </div>
   );
