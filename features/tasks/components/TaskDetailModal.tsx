@@ -71,6 +71,7 @@ export function TaskDetailModal({
   const [assignedEmployee, setAssignedEmployee] = useState<
     Employee | undefined
   >(undefined);
+  const [explicitlyUnassigned, setExplicitlyUnassigned] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
 
   const form = useForm<TaskFormValues>({
@@ -101,6 +102,7 @@ export function TaskDetailModal({
         tags: task?.tags?.join(", ") || "",
       });
       setAssignedEmployee(undefined);
+      setExplicitlyUnassigned(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, task]);
@@ -127,17 +129,20 @@ export function TaskDetailModal({
       status: values.status,
       priority: values.priority,
       dueDate: formatDateToISO(values.dueDate),
-      assigneeId: assignedEmployee?.id
-        ? String(assignedEmployee.id)
-        : task?.assigneeId
-          ? String(task.assigneeId)
-          : undefined,
+      assigneeId: explicitlyUnassigned
+        ? undefined
+        : assignedEmployee?.id
+          ? String(assignedEmployee.id)
+          : task?.assigneeId
+            ? String(task.assigneeId)
+            : undefined,
       tags: tagsArray,
     });
   };
 
   const handleAssignEmployee = (employee: Employee) => {
     setAssignedEmployee(employee);
+    setExplicitlyUnassigned(false);
   };
 
   return (
@@ -253,8 +258,9 @@ export function TaskDetailModal({
                 <div>
                   <FormLabel>Assigned To</FormLabel>
                   <div className="mt-2">
-                    {assignedEmployee ||
-                    (task?.assigneeId && task?.assigneeName) ? (
+                    {(assignedEmployee ||
+                      (task?.assigneeId && task?.assigneeName)) &&
+                    !explicitlyUnassigned ? (
                       <div className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 p-3 dark:border-neutral-700 dark:bg-neutral-800">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
@@ -294,7 +300,10 @@ export function TaskDetailModal({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          onClick={() => setAssignedEmployee(undefined)}
+                          onClick={() => {
+                            setAssignedEmployee(undefined);
+                            setExplicitlyUnassigned(true);
+                          }}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -324,7 +333,7 @@ export function TaskDetailModal({
                         <Input
                           type="date"
                           {...field}
-                          className="dark:scheme-dark"
+                          className="scheme-dark dark:scheme-dark"
                         />
                       </FormControl>
                       <FormMessage />

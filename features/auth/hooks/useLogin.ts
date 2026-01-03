@@ -10,7 +10,13 @@ import { toast } from "sonner";
  * Login hook - handles login form submission
  * Pattern: Component → useLogin hook → useAuth hook → Redux store → authApi
  */
-export const useLogin = (onSuccess?: () => void) => {
+export const useLogin = (
+  onSuccess?: () => void,
+  setError?: (
+    field: "email" | "password" | "root",
+    error: { type: string; message: string }
+  ) => void
+) => {
   const { login } = useAuth();
   const router = useRouter();
 
@@ -36,7 +42,18 @@ export const useLogin = (onSuccess?: () => void) => {
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Login failed. Please try again.");
+      const errorMessage = error.message || "Login failed. Please try again.";
+
+      // Show error in toast
+      toast.error(errorMessage);
+
+      // Show error in form if setError is provided
+      if (setError) {
+        setError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
+      }
     },
   });
 };

@@ -1,12 +1,8 @@
 import { Metric } from "web-vitals";
+import { logWebVitalsToFile } from "./logger";
 
 // Function to send metrics to analytics
 function sendToAnalytics(metric: Metric) {
-  // Log to console in development
-  if (process.env.NODE_ENV === "development") {
-    console.log(metric);
-  }
-
   // Send to analytics endpoint
   const body = JSON.stringify(metric);
   const url = "/api/analytics";
@@ -27,26 +23,8 @@ function sendToAnalytics(metric: Metric) {
 }
 
 export function reportWebVitals(metric: Metric) {
-  // Core Web Vitals
-  switch (metric.name) {
-    case "CLS": // Cumulative Layout Shift
-      console.log("CLS:", metric.value);
-      break;
-    case "FCP": // First Contentful Paint
-      console.log("FCP:", metric.value);
-      break;
-    case "LCP": // Largest Contentful Paint
-      console.log("LCP:", metric.value);
-      break;
-    case "TTFB": // Time to First Byte
-      console.log("TTFB:", metric.value);
-      break;
-    case "INP": // Interaction to Next Paint
-      console.log("INP:", metric.value);
-      break;
-    default:
-      break;
-  }
+  // Log to file with daily rotation
+  logWebVitalsToFile(metric);
 
   sendToAnalytics(metric);
 }

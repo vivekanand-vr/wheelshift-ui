@@ -30,8 +30,6 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const { mutate: login, isPending } = useLogin(onSuccess);
-
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -41,7 +39,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     },
   });
 
+  const { mutate: login, isPending } = useLogin(onSuccess, form.setError);
+
   const onSubmit = (data: LoginFormData) => {
+    // Clear any previous errors
+    form.clearErrors("root");
     login(data);
   };
 
@@ -146,6 +148,23 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
               )}
             />
           </motion.div>
+
+          {/* Error Message */}
+          {form.formState.errors.root && (
+            <motion.div
+              variants={itemVariants}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30"
+            >
+              <Typography
+                variant="small"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {form.formState.errors.root.message}
+              </Typography>
+            </motion.div>
+          )}
 
           {/* Submit Button */}
           <motion.div variants={itemVariants}>

@@ -35,7 +35,7 @@ export const loginAsync = createAsyncThunk(
       const response = await authApi.login(credentials);
       return transformUser(response);
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || "Login failed");
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
@@ -57,7 +57,7 @@ export const checkAuthAsync = createAsyncThunk(
       return transformUser(response);
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.detail || "Authentication failed"
+        error.response?.data?.message || "Authentication failed"
       );
     }
   }

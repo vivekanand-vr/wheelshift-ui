@@ -3,10 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const metric = await request.json();
-
-    // Log the metric
-    console.log("Web Vital Metric:", metric);
-
+    console.log("Received web vital metric:", metric);
     // Here you can send metrics to your analytics service
     // Examples: Google Analytics, Vercel Analytics, DataDog, etc.
     // await sendToAnalyticsService(metric);

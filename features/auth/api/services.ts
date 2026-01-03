@@ -29,11 +29,9 @@ const transformUser = (response: LoginResponse): User => ({
 // Auth API Services
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<User> => {
-    const response = await api.post<ApiResponse<LoginResponse>>(
-      "/auth/login",
-      credentials
-    );
-    return transformUser(response.data.data);
+    // Login endpoint returns user object directly (not wrapped in ApiResponse)
+    const response = await api.post<LoginResponse>("/auth/login", credentials);
+    return transformUser(response.data);
   },
 
   logout: async (): Promise<void> => {

@@ -235,7 +235,7 @@ export function TaskFiltersModal({
                       startDate: e.target.value || undefined,
                     })
                   }
-                  className="mt-1.5 dark:scheme-dark"
+                  className="mt-1.5 scheme-dark dark:scheme-dark"
                 />
               </div>
               <div>
@@ -250,7 +250,7 @@ export function TaskFiltersModal({
                       endDate: e.target.value || undefined,
                     })
                   }
-                  className="mt-1.5 dark:scheme-dark"
+                  className="mt-1.5 scheme-dark dark:scheme-dark"
                 />
               </div>
             </div>

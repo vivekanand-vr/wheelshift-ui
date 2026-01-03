@@ -181,14 +181,6 @@ export function TasksContainer() {
     }
   };
 
-  // Handle task reorder in table
-  const handleTaskReorder = async (taskId: string, newOrder: number) => {
-    await updateTaskMutation.mutateAsync({
-      id: taskId,
-      order: newOrder,
-    });
-  };
-
   // Count active filters
   const activeFiltersCount = useMemo(() => {
     return Object.keys(advancedFilters).filter(
@@ -329,11 +321,7 @@ export function TasksContainer() {
             onTaskClick={handleTaskClick}
           />
         ) : (
-          <TaskTableView
-            tasks={tasks}
-            onTaskReorder={handleTaskReorder}
-            onTaskClick={handleTaskClick}
-          />
+          <TaskTableView tasks={tasks} onTaskClick={handleTaskClick} />
         )}
       </div>
 
