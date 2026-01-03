@@ -1,14 +1,7 @@
-// Dashboard feature exports
-
+/**
+ * Dashboard Feature Export
+ *
+ * Import the main dashboard component in your pages:
+ * import { DashboardContainer } from "@/features/dashboard";
+ */
 export { DashboardContainer } from "./components/DashboardContainer";
-
-export type {
-  DashboardResponse,
-  DashboardRole,
-  NotificationsData,
-  AdminDashboardResponse,
-  SalesDashboardResponse,
-  InspectorDashboardResponse,
-  FinanceDashboardResponse,
-  StoreManagerDashboardResponse,
-} from "./types";

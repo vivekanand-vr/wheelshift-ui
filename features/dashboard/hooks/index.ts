@@ -1,59 +1,68 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { dashboardQueries } from "../queries";
+import { dashboardQueries } from "../api/queries";
 import type { DashboardRole } from "../types";
 
 /**
- * Hook to fetch dashboard data based on user role
- * @param role - Optional role to fetch specific dashboard, if not provided uses current user's role
- * @returns React Query result with dashboard data
+ * Main Dashboard Hook - Comprehensive dashboard data management
+ * Pattern: Component → useDashboard hook → Queries → Services (API)
+ *
+ * This hook handles:
+ * - Dashboard data fetching (auto-detects role from Redux)
+ * - Role-specific dashboard queries
+ * - Auto-refresh and caching via React Query
+ *
+ * Usage in components:
+ * const { data, isLoading, error, refetch } = useDashboard();
  */
 export const useDashboard = (role?: DashboardRole) => {
   return useQuery(dashboardQueries.byRole(role));
 };
 
 /**
- * Hook to fetch current user's dashboard (auto-detects role)
- * @returns React Query result with dashboard data
+ * Get current user's dashboard (auto-detects role)
+ * Most common use case - fetches dashboard based on logged-in user's role
  */
 export const useCurrentDashboard = () => {
   return useQuery(dashboardQueries.current());
 };
 
 /**
- * Hook to fetch admin dashboard
- * @returns React Query result with admin dashboard data
+ * Get admin dashboard
+ * Used for: Admin/Super Admin specific dashboard views
  */
 export const useAdminDashboard = () => {
   return useQuery(dashboardQueries.admin());
 };
 
 /**
- * Hook to fetch sales dashboard
- * @returns React Query result with sales dashboard data
+ * Get sales dashboard
+ * Used for: Sales team dashboard
  */
 export const useSalesDashboard = () => {
   return useQuery(dashboardQueries.sales());
 };
 
 /**
- * Hook to fetch inspector dashboard
- * @returns React Query result with inspector dashboard data
+ * Get inspector dashboard
+ * Used for: Inspector team dashboard
  */
 export const useInspectorDashboard = () => {
   return useQuery(dashboardQueries.inspector());
 };
 
 /**
- * Hook to fetch finance dashboard
- * @returns React Query result with finance dashboard data
+ * Get finance dashboard
+ * Used for: Finance team dashboard
  */
 export const useFinanceDashboard = () => {
   return useQuery(dashboardQueries.finance());
 };
 
 /**
- * Hook to fetch store manager dashboard
- * @returns React Query result with store manager dashboard data
+ * Get store manager dashboard
+ * Used for: Store management dashboard
  */
 export const useStoreManagerDashboard = () => {
   return useQuery(dashboardQueries.storeManager());

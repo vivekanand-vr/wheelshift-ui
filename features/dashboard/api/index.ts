@@ -1,2 +1,2 @@
-export { dashboardApi, dashboardQueries } from "./services";
-export * from "./mockData";
+export { dashboardApi } from "./services";
+export { dashboardQueries } from "./queries";

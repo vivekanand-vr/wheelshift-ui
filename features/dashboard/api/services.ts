@@ -1,5 +1,4 @@
 import { store } from "@/lib/redux/store";
-
 import type {
   AdminDashboardResponse,
   SalesDashboardResponse,
@@ -7,17 +6,24 @@ import type {
   FinanceDashboardResponse,
   StoreManagerDashboardResponse,
   DashboardResponse,
-  DashboardRole,
 } from "../types";
-
-// Import mock data
 import {
   mockAdminDashboard,
   mockSalesDashboard,
   mockInspectorDashboard,
   mockFinanceDashboard,
   mockStoreManagerDashboard,
-} from "./mockData";
+} from "../constants";
+
+/**
+ * Dashboard Services - Pure API call functions
+ * Pattern: Hooks → Queries → Services (API)
+ *
+ * These functions should only handle HTTP requests and responses.
+ * No business logic, state management, or side effects should be here.
+ *
+ * TODO: Uncomment API calls when backend is ready
+ */
 
 // TODO: Uncomment when backend is ready
 // import { api } from "@/lib/api/axios";
@@ -28,14 +34,23 @@ import {
 //   timestamp: string;
 // }
 
-// Helper to simulate API delay
+/**
+ * Helper to simulate API delay during development
+ * Remove this when backend is ready
+ */
 const delay = (ms: number = 800) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Dashboard API Services
+ */
 export const dashboardApi = {
-  // Get current user's dashboard (auto-detects role)
+  /**
+   * Get current user's dashboard (auto-detects role from Redux)
+   * @returns Dashboard data based on user's role
+   */
   getCurrentUserDashboard: async (): Promise<DashboardResponse> => {
-    // TODO: Uncomment when backend is ready - GET /dashboard/me
+    // TODO: Uncomment when backend is ready
     // const response = await api.get<ApiResponse<DashboardResponse>>("/dashboard/me");
     // return response.data.data;
 
@@ -61,134 +76,69 @@ export const dashboardApi = {
     }
   },
 
-  // Role-specific dashboard endpoints
+  /**
+   * Get admin dashboard
+   * @returns Admin dashboard data
+   */
   getAdminDashboard: async (): Promise<AdminDashboardResponse> => {
-    // TODO: Uncomment when backend is ready - GET /dashboard/admin
+    // TODO: Uncomment when backend is ready
     // const response = await api.get<ApiResponse<AdminDashboardResponse>>("/dashboard/admin");
     // return response.data.data;
 
-    // TEMPORARY: Return mock data
     await delay();
     return mockAdminDashboard;
   },
 
+  /**
+   * Get sales dashboard
+   * @returns Sales dashboard data
+   */
   getSalesDashboard: async (): Promise<SalesDashboardResponse> => {
-    // TODO: Uncomment when backend is ready - GET /dashboard/sales
+    // TODO: Uncomment when backend is ready
     // const response = await api.get<ApiResponse<SalesDashboardResponse>>("/dashboard/sales");
     // return response.data.data;
 
-    // TEMPORARY: Return mock data
     await delay();
     return mockSalesDashboard;
   },
 
+  /**
+   * Get inspector dashboard
+   * @returns Inspector dashboard data
+   */
   getInspectorDashboard: async (): Promise<InspectorDashboardResponse> => {
-    // TODO: Uncomment when backend is ready - GET /dashboard/inspector
+    // TODO: Uncomment when backend is ready
     // const response = await api.get<ApiResponse<InspectorDashboardResponse>>("/dashboard/inspector");
     // return response.data.data;
 
-    // TEMPORARY: Return mock data
     await delay();
     return mockInspectorDashboard;
   },
 
+  /**
+   * Get finance dashboard
+   * @returns Finance dashboard data
+   */
   getFinanceDashboard: async (): Promise<FinanceDashboardResponse> => {
-    // TODO: Uncomment when backend is ready - GET /dashboard/finance
+    // TODO: Uncomment when backend is ready
     // const response = await api.get<ApiResponse<FinanceDashboardResponse>>("/dashboard/finance");
     // return response.data.data;
 
-    // TEMPORARY: Return mock data
     await delay();
     return mockFinanceDashboard;
   },
 
+  /**
+   * Get store manager dashboard
+   * @returns Store manager dashboard data
+   */
   getStoreManagerDashboard:
     async (): Promise<StoreManagerDashboardResponse> => {
-      // TODO: Uncomment when backend is ready - GET /dashboard/store-manager
+      // TODO: Uncomment when backend is ready
       // const response = await api.get<ApiResponse<StoreManagerDashboardResponse>>("/dashboard/store-manager");
       // return response.data.data;
 
-      // TEMPORARY: Return mock data
       await delay();
       return mockStoreManagerDashboard;
     },
-};
-
-// Dashboard React Query configurations
-export const dashboardQueries = {
-  // Current user's dashboard (auto-detects role)
-  current: () => ({
-    queryKey: ["dashboard", "current"],
-    queryFn: () => dashboardApi.getCurrentUserDashboard(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
-  }),
-
-  // Admin dashboard
-  admin: () => ({
-    queryKey: ["dashboard", "admin"],
-    queryFn: () => dashboardApi.getAdminDashboard(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
-
-  // Sales dashboard
-  sales: () => ({
-    queryKey: ["dashboard", "sales"],
-    queryFn: () => dashboardApi.getSalesDashboard(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
-
-  // Inspector dashboard
-  inspector: () => ({
-    queryKey: ["dashboard", "inspector"],
-    queryFn: () => dashboardApi.getInspectorDashboard(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
-
-  // Finance dashboard
-  finance: () => ({
-    queryKey: ["dashboard", "finance"],
-    queryFn: () => dashboardApi.getFinanceDashboard(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
-
-  // Store Manager dashboard
-  storeManager: () => ({
-    queryKey: ["dashboard", "store-manager"],
-    queryFn: () => dashboardApi.getStoreManagerDashboard(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
-
-  // Dynamic role-based dashboard
-  byRole: (role?: DashboardRole) => ({
-    queryKey: ["dashboard", role || "current"],
-    queryFn: () => {
-      if (!role) {
-        return dashboardApi.getCurrentUserDashboard();
-      }
-
-      switch (role) {
-        case "ADMIN":
-        case "SUPER_ADMIN":
-          return dashboardApi.getAdminDashboard();
-        case "SALES":
-          return dashboardApi.getSalesDashboard();
-        case "INSPECTOR":
-          return dashboardApi.getInspectorDashboard();
-        case "FINANCE":
-          return dashboardApi.getFinanceDashboard();
-        case "STORE_MANAGER":
-          return dashboardApi.getStoreManagerDashboard();
-        default:
-          return dashboardApi.getCurrentUserDashboard();
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-  }),
 };
