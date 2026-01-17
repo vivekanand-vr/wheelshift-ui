@@ -30,6 +30,15 @@ export interface LoginResponse {
   permissions: string[];
 }
 
+export interface SessionValidationResponse {
+  valid: boolean;
+  expired: boolean;
+  message: string;
+  employeeId?: number;
+  email?: string;
+  errorCode?: string;
+}
+
 // Component Types
 export interface LoginFormData {
   email: string;

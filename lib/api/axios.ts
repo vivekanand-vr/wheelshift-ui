@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -38,44 +39,74 @@ api.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const errorCode = error.response?.data?.code;
+    const errorMessage =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.message;
 
-    // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Handle 401 Unauthorized (Session Expired)
+    if (error.response?.status === 401) {
+      // Check if it's a session expired error
+      if (
+        errorCode === "SESSION_EXPIRED" &&
+        !originalRequest._isSessionExpiredHandled
+      ) {
+        originalRequest._isSessionExpiredHandled = true;
 
-      try {
-        // Attempt to refresh token
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-            { refreshToken }
-          );
-
-          const { token } = response.data;
-          localStorage.setItem("token", token);
-
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Redirect to login if refresh fails
+        // Show toast notification
         if (typeof window !== "undefined") {
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          window.location.href = "/login";
+          toast.error("Your session has expired. Please login again.", {
+            duration: 4000,
+          });
+
+          // Clear persisted state
+          localStorage.removeItem("persist:root");
+
+          // Dispatch logout action if we have access to store
+          // We'll handle this in a centralized way
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 500);
         }
-        return Promise.reject(refreshError);
+
+        return Promise.reject(error);
       }
+
+      // For other 401 errors (authentication failed)
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.includes("/login")
+      ) {
+        toast.error(
+          errorMessage || "Authentication failed. Please login again."
+        );
+
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 500);
+      }
+
+      return Promise.reject(error);
+    }
+
+    // Handle 403 Forbidden (Insufficient Permissions or Access Denied)
+    if (error.response?.status === 403) {
+      if (errorCode === "INSUFFICIENT_PERMISSIONS") {
+        toast.error("You do not have permission to perform this action.");
+      } else if (errorCode === "ACCESS_DENIED") {
+        toast.error("Access denied. Please check your permissions.");
+      } else {
+        toast.error(errorMessage || "Access denied.");
+      }
+
+      return Promise.reject(error);
     }
 
     // Handle other errors
-    const errorMessage =
-      error.response?.data?.message || error.message || "An error occurred";
-
     console.error("API Error:", {
       status: error.response?.status,
+      code: errorCode,
       message: errorMessage,
       url: error.config?.url,
     });

@@ -1,6 +1,10 @@
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { authApi } from "./services";
-import type { LoginCredentials, User } from "../types";
+import type {
+  LoginCredentials,
+  User,
+  SessionValidationResponse,
+} from "../types";
 
 /**
  * Auth Mutations - React Query mutation configurations
@@ -29,6 +33,19 @@ export const useLogoutMutation = (
 ) => {
   return useMutation({
     mutationFn: () => authApi.logout(),
+    ...options,
+  });
+};
+
+/**
+ * Validate session mutation configuration
+ * Used for: Checking if current session is valid
+ */
+export const useValidateSessionMutation = (
+  options?: UseMutationOptions<SessionValidationResponse, Error, void>
+) => {
+  return useMutation({
+    mutationFn: () => authApi.validateSession(),
     ...options,
   });
 };

@@ -58,4 +58,18 @@ export const authApi = {
     const response = await api.get<ApiResponse<LoginResponse>>("/auth/me");
     return transformUser(response.data.data);
   },
+
+  /**
+   * Validate current session
+   * Checks if the session is still valid and not expired
+   * @returns Session validation response
+   */
+  validateSession: async (): Promise<
+    import("../types").SessionValidationResponse
+  > => {
+    const response = await api.get<
+      import("../types").SessionValidationResponse
+    >("/auth/validate-session");
+    return response.data;
+  },
 };
