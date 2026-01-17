@@ -6,8 +6,8 @@ import type {
   TaskFilters,
   TaskStatus,
   TaskPriority,
-  Employee,
 } from "@/features/tasks/types";
+import type { Employee } from "@/types";
 import {
   Dialog,
   DialogContent,

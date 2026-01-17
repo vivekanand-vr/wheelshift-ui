@@ -5,8 +5,8 @@ import type {
   UpdateTaskInput,
   TaskFilters,
   PaginatedResponse,
-  Employee,
 } from "../types";
+import type { Employee } from "@/types";
 
 // Backend response wrapper type
 interface ApiResponse<T> {

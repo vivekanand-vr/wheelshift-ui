@@ -89,6 +89,12 @@ export const navigationItems: NavigationItem[] = [
     roles: ["SUPER_ADMIN", "ADMIN", "STORE_MANAGER"],
   },
   {
+    title: "Access Control",
+    href: "/access-control",
+    icon: Shield,
+    roles: ["SUPER_ADMIN", "ADMIN"],
+  },
+  {
     title: "Notifications",
     href: "/notifications",
     icon: Bell,
@@ -121,20 +127,6 @@ export const navigationItems: NavigationItem[] = [
     href: "/settings",
     icon: Settings,
     roles: ["SUPER_ADMIN", "ADMIN"],
-    children: [
-      {
-        title: "General",
-        href: "/settings/general",
-        icon: Settings,
-        roles: ["SUPER_ADMIN", "ADMIN"],
-      },
-      {
-        title: "Security",
-        href: "/settings/security",
-        icon: Shield,
-        roles: ["SUPER_ADMIN", "ADMIN"],
-      },
-    ],
   },
 ];
 

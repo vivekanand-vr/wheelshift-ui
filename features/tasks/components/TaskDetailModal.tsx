@@ -6,7 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { X, User, Save, Trash2 } from "lucide-react";
-import type { Task, CreateTaskInput, Employee } from "@/features/tasks/types";
+import type { Task, CreateTaskInput } from "@/features/tasks/types";
+import type { Employee } from "@/types";
+
 import {
   Dialog,
   DialogContent,

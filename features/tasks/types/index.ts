@@ -6,20 +6,6 @@ export type TaskStatus =
   | "CANCELLED";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
-export interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  department: string;
-  joinDate: string;
-  status: string;
-  avatar?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Task {
   id: string;
   title: string;

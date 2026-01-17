@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Search, User, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEmployees } from "@/features/tasks/hooks";
-import type { Employee } from "@/features/tasks/types";
+import type { Employee } from "@/types";
 import {
   Dialog,
   DialogContent,
