@@ -3,15 +3,23 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
+import type { Employee } from "@/types";
 import { Container } from "@/components/common/Container";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ConfirmationDialog } from "@/components/common/ConfirmationDialog";
-import { Plus, Search, Shield, Key, Users, Grid3x3, List } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Shield,
+  Users,
+  Grid3x3,
+  List,
+  KeyRound,
+} from "lucide-react";
 import { RolesGridView } from "./RolesGridView";
 import { RolesListView } from "./RolesListView";
 import { RoleDialog } from "./RoleDialog";
@@ -19,7 +27,13 @@ import { PermissionManager } from "./PermissionManager";
 import { PermissionDialog } from "./PermissionDialog";
 import { EmployeeRoleDialog } from "./EmployeeRoleDialog";
 import { PermissionsTab } from "./PermissionsTab";
-import { useRoleManagement, usePermissionManagement } from "../hooks";
+import { EmployeesTab } from "./EmployeesTab";
+import { RolesGridViewSkeleton, RolesListViewSkeleton } from "./shimmer";
+import {
+  useRoleManagement,
+  usePermissionManagement,
+  useEmployeeManagement,
+} from "../hooks";
 
 type ViewMode = "grid" | "list";
 
@@ -38,7 +52,7 @@ export function TabsHeader() {
           value="permissions"
           className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
         >
-          <Key className="h-4 w-4" />
+          <KeyRound className="h-4 w-4" />
           <span className="hidden sm:inline">Permissions</span>
         </TabsTrigger>
         <TabsTrigger
@@ -69,6 +83,7 @@ export function AccessControlFeature() {
   // Hooks with all business logic
   const roleManagement = useRoleManagement();
   const permissionManagement = usePermissionManagement();
+  const employeeManagement = useEmployeeManagement();
 
   // Sync search state with current tab
   const search =
@@ -76,14 +91,24 @@ export function AccessControlFeature() {
       ? roleManagement.search
       : activeTab === "permissions"
         ? permissionManagement.search
-        : "";
+        : activeTab === "employees"
+          ? employeeManagement.search
+          : "";
 
   const setSearch = (value: string) => {
     if (activeTab === "roles") {
       roleManagement.setSearch(value);
     } else if (activeTab === "permissions") {
       permissionManagement.setSearch(value);
+    } else if (activeTab === "employees") {
+      employeeManagement.setSearch(value);
     }
+  };
+
+  // Handle employee click
+  const handleEmployeeClick = (employee: Employee) => {
+    employeeManagement.setSelectedEmployee(employee);
+    setEmployeeRoleDialogOpen(true);
   };
 
   return (
@@ -148,32 +173,17 @@ export function AccessControlFeature() {
                   <span className="hidden sm:inline">New Permission</span>
                 </Button>
               )}
-              {activeTab === "employees" && (
-                <Button onClick={() => setEmployeeRoleDialogOpen(true)}>
-                  <Users className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Assign Roles</span>
-                </Button>
-              )}
             </div>
           </div>
 
           {/* Roles Tab */}
           <TabsContent value="roles" className="mt-0 space-y-6">
             {roleManagement.rolesLoading ? (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                    : "space-y-3"
-                }
-              >
-                {[...Array(6)].map((_, i) => (
-                  <Card
-                    key={i}
-                    className={`bg-accent animate-pulse ${viewMode === "grid" ? "h-45 p-5" : "h-20 p-4"}`}
-                  />
-                ))}
-              </div>
+              viewMode === "grid" ? (
+                <RolesGridViewSkeleton count={6} />
+              ) : (
+                <RolesListViewSkeleton count={6} />
+              )
             ) : roleManagement.filteredRoles.length === 0 ? (
               <EmptyState
                 icon={<Shield className="h-6 w-6" />}
@@ -229,13 +239,17 @@ export function AccessControlFeature() {
           />
 
           {/* Employees Tab */}
-          <TabsContent value="employees" className="mt-0 space-y-6">
-            <EmptyState
-              icon={<Users className="h-6 w-6" />}
-              title="Employee Management"
-              description="Click 'Assign Roles' to manage employee role assignments"
-            />
-          </TabsContent>
+          <EmployeesTab
+            employees={employeeManagement.employees}
+            employeesLoading={employeeManagement.employeesLoading}
+            totalPages={employeeManagement.totalPages}
+            totalElements={employeeManagement.totalElements}
+            currentPage={employeeManagement.currentPage}
+            pageSize={employeeManagement.pageSize}
+            search={search}
+            onEmployeeClick={handleEmployeeClick}
+            onPageChange={employeeManagement.setCurrentPage}
+          />
         </Tabs>
       </div>
 
@@ -290,8 +304,18 @@ export function AccessControlFeature() {
 
       <EmployeeRoleDialog
         open={employeeRoleDialogOpen}
-        onClose={() => setEmployeeRoleDialogOpen(false)}
+        onClose={() => {
+          setEmployeeRoleDialogOpen(false);
+          employeeManagement.setSelectedEmployee(null);
+        }}
+        employee={employeeManagement.selectedEmployee}
         roles={roleManagement.roles}
+        employeeRoles={employeeManagement.employeeRoles}
+        employeeRolesLoading={employeeManagement.employeeRolesLoading}
+        onAssignRole={employeeManagement.handleAssignRole}
+        onRemoveRole={employeeManagement.handleRemoveRole}
+        isAssigning={employeeManagement.isAssigningRole}
+        isRemoving={employeeManagement.isRemovingRole}
       />
 
       <ConfirmationDialog

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,51 +8,94 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Typography } from "@/components/ui/typography";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, User } from "lucide-react";
-import { useEmployeeRoles } from "../hooks";
+import { Avatar } from "@/components/ui/avatar";
+import type { Employee } from "@/types";
+import { getRoleDisplay } from "../utils";
 import type { Role } from "../types";
 
 interface EmployeeRoleDialogProps {
   open: boolean;
   onClose: () => void;
+  employee: Employee | null;
   roles: Role[];
+  employeeRoles: Role[];
+  employeeRolesLoading: boolean;
+  onAssignRole: (employeeId: number, roleId: number) => Promise<void>;
+  onRemoveRole: (employeeId: number, roleId: number) => Promise<void>;
+  isAssigning: boolean;
+  isRemoving: boolean;
 }
 
 export function EmployeeRoleDialog({
   open,
   onClose,
+  employee,
   roles,
+  employeeRoles,
+  employeeRolesLoading,
+  onAssignRole,
+  onRemoveRole,
+  isAssigning,
+  isRemoving,
 }: EmployeeRoleDialogProps) {
-  const {
-    search,
-    selectedEmployee,
-    selectedRoleIds,
-    filteredEmployees,
-    isLoading,
-    isAssigning,
-    setSearch,
-    handleSelectEmployee,
-    handleToggleRole,
-    handleAssignRoles,
-    reset,
-  } = useEmployeeRoles();
+  const [localRoleIds, setLocalRoleIds] = useState<Set<number>>(new Set());
 
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
+  // Sync local state with employee roles while avoiding unnecessary state updates
+  useEffect(() => {
+    if (!open || !employeeRoles) return;
 
-  const handleSubmit = () => {
-    handleAssignRoles(() => {
-      handleClose();
+    const nextRoleIds = new Set(employeeRoles.map((r) => r.id));
+
+    setLocalRoleIds((prev) => {
+      const hasDifference =
+        prev.size !== nextRoleIds.size ||
+        [...nextRoleIds].some((id) => !prev.has(id));
+
+      return hasDifference ? nextRoleIds : prev;
     });
+  }, [open, employeeRoles]);
+
+  const handleToggleRole = async (roleId: number) => {
+    if (!employee) return;
+
+    const isCurrentlyAssigned = localRoleIds.has(roleId);
+
+    if (isCurrentlyAssigned) {
+      // Optimistic update
+      setLocalRoleIds((prev) => {
+        const next = new Set(prev);
+        next.delete(roleId);
+        return next;
+      });
+      try {
+        await onRemoveRole(employee.id, roleId);
+      } catch (error) {
+        // Revert on error
+        console.error("Failed to remove role:", error);
+        setLocalRoleIds((prev) => new Set(prev).add(roleId));
+      }
+    } else {
+      // Optimistic update
+      setLocalRoleIds((prev) => new Set(prev).add(roleId));
+      try {
+        await onAssignRole(employee.id, roleId);
+      } catch (error) {
+        // Revert on error
+        console.error("Failed to assign role:", error);
+        setLocalRoleIds((prev) => {
+          const next = new Set(prev);
+          next.delete(roleId);
+          return next;
+        });
+      }
+    }
   };
+
+  if (!employee) return null;
 
   const getInitials = (name: string) => {
     const parts = name.split(" ");
@@ -62,187 +106,139 @@ export function EmployeeRoleDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[80vh] sm:max-w-225">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Assign Roles to Employees</DialogTitle>
+          <DialogTitle>Manage Employee Roles</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-4">
-          {/* Employee List */}
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                placeholder="Search employees..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+        <div className="space-y-4">
+          {/* Employee Info */}
+          <div className="bg-accent/50 flex items-center gap-3 rounded-lg border p-4">
+            <Avatar className="h-12 w-12">
+              {employee.avatar ? (
+                <img
+                  src={employee.avatar}
+                  alt={employee.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="bg-primary/10 text-primary flex h-full w-full items-center justify-center text-sm font-semibold">
+                  {getInitials(employee.name)}
+                </div>
+              )}
+            </Avatar>
+            <div className="flex-1">
+              <Typography variant="small" className="mb-1 font-semibold">
+                {employee.name}
+              </Typography>
+              <Typography
+                variant="small"
+                className="text-muted-foreground text-xs"
+              >
+                {employee.email}
+              </Typography>
+              {employee.position && (
+                <Badge variant="outline" className="mt-1 text-xs">
+                  {employee.position}
+                </Badge>
+              )}
             </div>
+            <Badge variant="secondary">
+              {localRoleIds.size} {localRoleIds.size === 1 ? "Role" : "Roles"}
+            </Badge>
+          </div>
 
-            <ScrollArea className="h-100 rounded-lg border">
-              <div className="space-y-1 p-2">
-                {isLoading ? (
-                  <div className="text-muted-foreground p-4 text-center">
-                    Loading employees...
-                  </div>
-                ) : filteredEmployees.length === 0 ? (
-                  <div className="text-muted-foreground p-4 text-center">
-                    No employees found
+          {/* Roles List */}
+          <div>
+            <Typography variant="small" className="mb-3 text-sm font-semibold">
+              Available Roles ({roles.length})
+            </Typography>
+            <ScrollArea className="h-96">
+              <div className="space-y-2 pr-4">
+                {employeeRolesLoading ? (
+                  <div className="text-muted-foreground py-12 text-center">
+                    Loading employee roles...
                   </div>
                 ) : (
-                  filteredEmployees.map((employee) => (
-                    <button
-                      key={employee.id}
-                      onClick={() => handleSelectEmployee(employee)}
-                      className={`hover:bg-accent flex w-full items-center gap-3 rounded-lg p-3 transition-colors ${
-                        selectedEmployee?.id === employee.id ? "bg-accent" : ""
-                      }`}
-                    >
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {getInitials(employee.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 text-left">
-                        <Typography variant="small" className="font-medium">
-                          {employee.name}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          className="text-muted-foreground text-xs"
+                  roles.map((role) => {
+                    const roleDisplay = getRoleDisplay(role.name);
+                    const RoleIcon = roleDisplay.icon;
+                    const isAssigned = localRoleIds.has(role.id);
+
+                    return (
+                      <div
+                        key={role.id}
+                        className={`hover:bg-accent flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all ${
+                          isAssigned ? "bg-primary/5 border-primary/20" : ""
+                        }`}
+                        onClick={() => handleToggleRole(role.id)}
+                      >
+                        <Checkbox
+                          checked={isAssigned}
+                          onCheckedChange={() => handleToggleRole(role.id)}
+                          disabled={isAssigning || isRemoving}
+                          className="mt-0.5"
+                        />
+                        <div
+                          className={`rounded-lg p-2 ${
+                            roleDisplay.color.includes("purple")
+                              ? "bg-purple-500/10 ring-1 ring-purple-500/20"
+                              : roleDisplay.color.includes("blue")
+                                ? "bg-blue-500/10 ring-1 ring-blue-500/20"
+                                : roleDisplay.color.includes("green")
+                                  ? "bg-green-500/10 ring-1 ring-green-500/20"
+                                  : roleDisplay.color.includes("orange")
+                                    ? "bg-orange-500/10 ring-1 ring-orange-500/20"
+                                    : "bg-gray-500/10 ring-1 ring-gray-500/20"
+                          }`}
                         >
-                          {employee.email}
-                        </Typography>
-                        {employee.roles && employee.roles.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {employee.roles.map((role) => (
-                              <Badge
-                                key={role.id}
-                                variant="secondary"
-                                className="text-xs"
-                              >
-                                {role.name}
+                          <RoleIcon
+                            className={`h-4 w-4 ${roleDisplay.color}`}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <Typography
+                              variant="small"
+                              className="font-semibold"
+                            >
+                              {roleDisplay.label}
+                            </Typography>
+                            {role.isSystem && (
+                              <Badge variant="outline" className="text-xs">
+                                System
                               </Badge>
-                            ))}
+                            )}
                           </div>
-                        )}
+                          {role.description && (
+                            <Typography
+                              variant="small"
+                              className="text-muted-foreground line-clamp-2 text-xs leading-relaxed"
+                            >
+                              {role.description}
+                            </Typography>
+                          )}
+                          <Badge
+                            variant="secondary"
+                            className="mt-2 font-mono text-xs"
+                          >
+                            {role.permissions?.length || 0} permissions
+                          </Badge>
+                        </div>
                       </div>
-                    </button>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </ScrollArea>
           </div>
+        </div>
 
-          {/* Role Assignment */}
-          <div className="space-y-4">
-            {selectedEmployee ? (
-              <>
-                <div className="bg-accent/50 rounded-lg border p-4">
-                  <Typography variant="small" className="mb-1 font-semibold">
-                    Selected Employee
-                  </Typography>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {getInitials(selectedEmployee.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <Typography variant="small" className="font-medium">
-                        {selectedEmployee.name}
-                      </Typography>
-                      <Typography
-                        variant="small"
-                        className="text-muted-foreground text-xs"
-                      >
-                        {selectedEmployee.email}
-                      </Typography>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Typography variant="small" className="mb-3 font-semibold">
-                    Assign Roles
-                  </Typography>
-                  <ScrollArea className="h-75 rounded-lg border p-4">
-                    <div className="space-y-3">
-                      {roles.map((role) => (
-                        <div
-                          key={role.id}
-                          className="hover:bg-accent flex cursor-pointer items-start gap-3 rounded-lg p-2"
-                          onClick={() => handleToggleRole(role.id)}
-                        >
-                          <Checkbox
-                            checked={selectedRoleIds.includes(role.id)}
-                            onCheckedChange={() => handleToggleRole(role.id)}
-                            disabled={isAssigning}
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Typography
-                                variant="small"
-                                className="font-medium"
-                              >
-                                {role.name}
-                              </Typography>
-                              {role.isSystem && (
-                                <Badge variant="secondary" className="text-xs">
-                                  System
-                                </Badge>
-                              )}
-                            </div>
-                            {role.description && (
-                              <Typography
-                                variant="small"
-                                className="text-muted-foreground mt-1 text-xs"
-                              >
-                                {role.description}
-                              </Typography>
-                            )}
-                            <Typography
-                              variant="small"
-                              className="text-muted-foreground mt-1 text-xs"
-                            >
-                              {role.permissions?.length || 0} permissions
-                            </Typography>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-
-                <div className="flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleClose}
-                    disabled={isAssigning}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSubmit} disabled={isAssigning}>
-                    {isAssigning ? "Assigning..." : "Assign Roles"}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-                <div className="bg-accent mb-4 rounded-full p-4">
-                  <User className="text-muted-foreground h-8 w-8" />
-                </div>
-                <Typography variant="small" className="mb-2 font-medium">
-                  No Employee Selected
-                </Typography>
-                <Typography variant="small" className="text-muted-foreground">
-                  Select an employee from the list to assign roles
-                </Typography>
-              </div>
-            )}
-          </div>
+        <div className="bg-muted/50 flex justify-end gap-3 border-t pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

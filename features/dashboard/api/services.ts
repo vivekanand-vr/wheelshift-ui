@@ -27,12 +27,7 @@ import {
 
 // TODO: Uncomment when backend is ready
 // import { api } from "@/lib/api/axios";
-// interface ApiResponse<T> {
-//   success: boolean;
-//   message: string;
-//   data: T;
-//   timestamp: string;
-// }
+// import type { ApiResponse } from "@/types";
 
 /**
  * Helper to simulate API delay during development

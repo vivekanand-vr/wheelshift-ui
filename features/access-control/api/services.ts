@@ -4,6 +4,7 @@
  */
 
 import axios from "@/lib/api/axios";
+import type { ApiResponse, Employee } from "@/types";
 import type {
   Role,
   Permission,
@@ -17,12 +18,6 @@ import type {
 } from "../types";
 
 // Backend response wrapper type
-interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  timestamp: string;
-}
 
 // Paginated response type
 interface PaginatedResponse<T> {
@@ -33,21 +28,6 @@ interface PaginatedResponse<T> {
   totalPages: number;
   last: boolean;
   first: boolean;
-}
-
-// Employee type for role assignment
-interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  department: string;
-  joinDate: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-  roles?: Role[];
 }
 
 // ============================================================================
@@ -177,7 +157,35 @@ export const employeeRoleService = {
   },
 
   /**
-   * Assign roles to employee
+   * Get employee's roles
+   */
+  getEmployeeRoles: async (employeeId: number): Promise<Role[]> => {
+    const response = await axios.get(`/rbac/employees/${employeeId}/roles`);
+    return response.data;
+  },
+
+  /**
+   * Assign role to employee
+   */
+  assignRoleToEmployee: async (
+    employeeId: number,
+    roleId: number
+  ): Promise<void> => {
+    await axios.post(`/rbac/employees/${employeeId}/roles/${roleId}`);
+  },
+
+  /**
+   * Remove role from employee
+   */
+  removeRoleFromEmployee: async (
+    employeeId: number,
+    roleId: number
+  ): Promise<void> => {
+    await axios.delete(`/rbac/employees/${employeeId}/roles/${roleId}`);
+  },
+
+  /**
+   * Assign roles to employee (bulk)
    */
   assignRolesToEmployee: async (
     employeeId: number,
@@ -193,7 +201,7 @@ export const employeeRoleService = {
     page?: number;
     pageSize?: number;
     search?: string;
-  }): Promise<Employee[]> => {
+  }): Promise<PaginatedResponse<Employee>> => {
     const queryParams = new URLSearchParams();
     // API uses 0-indexed pages, so subtract 1 from the UI page number
     if (params?.page) queryParams.append("page", (params.page - 1).toString());
@@ -206,8 +214,8 @@ export const employeeRoleService = {
       `/employees?${queryParams.toString()}`
     );
 
-    // Extract content array from paginated response
-    return response.data.data.content || [];
+    // Return full paginated response
+    return response.data.data;
   },
 };
 

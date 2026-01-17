@@ -6,15 +6,7 @@ import type {
   TaskFilters,
   PaginatedResponse,
 } from "../types";
-import type { Employee } from "@/types";
-
-// Backend response wrapper type
-interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  timestamp: string;
-}
+import type { ApiResponse, Employee } from "@/types";
 
 // Tasks API Services
 export const tasksApi = {

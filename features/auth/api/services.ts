@@ -1,6 +1,7 @@
 import { api } from "@/lib/api/axios";
 import type { LoginCredentials, LoginResponse, User } from "../types";
 import type { UserRole } from "@/types";
+import type { ApiResponse } from "@/types";
 
 /**
  * Auth Services - Pure API call functions using Axios
@@ -9,14 +10,6 @@ import type { UserRole } from "@/types";
  * These functions should only handle HTTP requests and responses.
  * No business logic, state management, or side effects should be here.
  */
-
-// Backend response wrapper type
-interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  timestamp: string;
-}
 
 // Map backend roles to frontend roles
 const mapRole = (roles: string[]): UserRole => {

@@ -17,7 +17,8 @@ export function useEmployeeRoles() {
   const [selectedRoleIds, setSelectedRoleIds] = useState<number[]>([]);
 
   // Queries
-  const { data: employees = [], isLoading } = useEmployees();
+  const { data: paginatedData, isLoading } = useEmployees();
+  const employees = paginatedData?.content || [];
 
   // Mutations
   const assignRolesMutation = useAssignRolesToEmployee();
