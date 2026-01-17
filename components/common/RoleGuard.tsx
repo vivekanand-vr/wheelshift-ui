@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
 import type { UserRole } from "@/types";
+import { Error403 } from "@/components/error";
 
 interface RoleGuardProps {
   /**
@@ -30,7 +31,7 @@ interface RoleGuardProps {
 
   /**
    * Content to render when not authorized (optional)
-   * If not provided, nothing will be rendered
+   * If not provided, default 403 error page will be rendered
    */
   fallback?: ReactNode;
 
@@ -83,7 +84,7 @@ export const RoleGuard = ({
   requiredPermissions,
   requirementType = "any",
   children,
-  fallback = null,
+  fallback,
   showLoadingState = false,
   loadingComponent = <div>Loading...</div>,
 }: RoleGuardProps) => {
@@ -96,9 +97,9 @@ export const RoleGuard = ({
     return <>{loadingComponent}</>;
   }
 
-  // If not authenticated, show fallback
+  // If not authenticated, show fallback or default 403 page
   if (!isAuthenticated || !user) {
-    return <>{fallback}</>;
+    return <>{fallback ?? <Error403 />}</>;
   }
 
   // If no restrictions specified, allow access
@@ -160,6 +161,6 @@ export const RoleGuard = ({
     isAuthorized = hasRequiredPermissions;
   }
 
-  // Render children if authorized, otherwise render fallback
-  return <>{isAuthorized ? children : fallback}</>;
+  // Render children if authorized, otherwise render fallback or default 403 page
+  return <>{isAuthorized ? children : (fallback ?? <Error403 />)}</>;
 };
