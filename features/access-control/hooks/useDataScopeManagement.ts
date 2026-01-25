@@ -2,20 +2,30 @@
 
 /**
  * Data Scope Management Hook
- * Handles data scope operations with React Query
+ * Handles data scope operations with React Query and error handling
  */
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { dataScopeService } from "../api/services";
-import type { EmployeeDataScope, DataScopeRequest, ScopeType } from "../types";
+import type {
+  EmployeeDataScope,
+  DataScopeRequest,
+  ScopeType,
+  ApiErrorResponse,
+} from "../types";
 
 export function useDataScopeManagement() {
   const queryClient = useQueryClient();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(
     null
   );
+  const [selectedScope, setSelectedScope] = useState<EmployeeDataScope | null>(
+    null
+  );
+  const [apiError, setApiError] = useState<ApiErrorResponse | null>(null);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
   // Fetch all data scopes
   const {
@@ -38,6 +48,23 @@ export function useDataScopeManagement() {
       enabled: !!selectedEmployeeId,
     });
 
+  // Error handler
+  const handleApiError = (error: any) => {
+    if (error?.response?.data) {
+      const errorData = error.response.data;
+      setApiError({
+        type: errorData.type || "about:blank",
+        title: errorData.title || "An Error Occurred",
+        status: errorData.status || 500,
+        detail: errorData.detail || "An unexpected error occurred",
+        instance: errorData.instance || "",
+        code: errorData.code || "UNKNOWN_ERROR",
+        timestamp: errorData.timestamp || new Date().toISOString(),
+      });
+      setErrorDialogOpen(true);
+    }
+  };
+
   // Create data scope mutation
   const createMutation = useMutation({
     mutationFn: (data: DataScopeRequest) =>
@@ -46,11 +73,7 @@ export function useDataScopeManagement() {
       queryClient.invalidateQueries({ queryKey: ["data-scopes"] });
       toast.success("Data scope created successfully");
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to create data scope"
-      );
-    },
+    onError: handleApiError,
   });
 
   // Update data scope mutation
@@ -66,11 +89,7 @@ export function useDataScopeManagement() {
       queryClient.invalidateQueries({ queryKey: ["data-scopes"] });
       toast.success("Data scope updated successfully");
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to update data scope"
-      );
-    },
+    onError: handleApiError,
   });
 
   // Delete data scope mutation
@@ -80,24 +99,45 @@ export function useDataScopeManagement() {
       queryClient.invalidateQueries({ queryKey: ["data-scopes"] });
       toast.success("Data scope deleted successfully");
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to delete data scope"
-      );
-    },
+    onError: handleApiError,
   });
 
   // Handler functions
-  const handleCreateScope = async (data: DataScopeRequest) => {
-    await createMutation.mutateAsync(data);
+  const handleCreateScope = (
+    data: DataScopeRequest,
+    onSuccess?: () => void
+  ) => {
+    createMutation.mutate(data, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedScope(null);
+      },
+    });
   };
 
-  const handleUpdateScope = async (scopeId: number, data: DataScopeRequest) => {
-    await updateMutation.mutateAsync({ scopeId, data });
+  const handleUpdateScope = (
+    scopeId: number,
+    data: DataScopeRequest,
+    onSuccess?: () => void
+  ) => {
+    updateMutation.mutate(
+      { scopeId, data },
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          setSelectedScope(null);
+        },
+      }
+    );
   };
 
-  const handleDeleteScope = async (scopeId: number) => {
-    await deleteMutation.mutateAsync(scopeId);
+  const handleDeleteScope = (scopeId: number, onSuccess?: () => void) => {
+    deleteMutation.mutate(scopeId, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedScope(null);
+      },
+    });
   };
 
   const handleSelectEmployee = (employeeId: number | null) => {
@@ -117,6 +157,9 @@ export function useDataScopeManagement() {
     employeeScopes,
     scopesByType,
     selectedEmployeeId,
+    selectedScope,
+    apiError,
+    errorDialogOpen,
 
     // Loading states
     scopesLoading,
@@ -128,7 +171,9 @@ export function useDataScopeManagement() {
     // Errors
     scopesError,
 
-    // Handlers
+    // Actions
+    setSelectedScope,
+    setErrorDialogOpen,
     handleCreateScope,
     handleUpdateScope,
     handleDeleteScope,

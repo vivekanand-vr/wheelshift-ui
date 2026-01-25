@@ -14,6 +14,7 @@ import type {
   ResourceACLRequest,
   ResourceType,
   SubjectType,
+  ApiErrorResponse,
 } from "../types";
 
 interface ResourceIdentifier {
@@ -25,22 +26,19 @@ export function useACLManagement() {
   const queryClient = useQueryClient();
   const [selectedResource, setSelectedResource] =
     useState<ResourceIdentifier | null>(null);
+  const [selectedACL, setSelectedACL] = useState<ResourceACL | null>(null);
   const [filterSubjectType, setFilterSubjectType] = useState<
     SubjectType | "all"
   >("all");
+  const [apiError, setApiError] = useState<ApiErrorResponse | null>(null);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
-  // Fetch all ACLs
+  // Fetch ACLs for selected resource only (no "all ACLs" query)
   const {
-    data: allACLs = [],
+    data: resourceACLs = [],
     isLoading: aclsLoading,
     error: aclsError,
   } = useQuery({
-    queryKey: ["acls"],
-    queryFn: resourceACLService.getAllACLs,
-  });
-
-  // Fetch ACLs for selected resource
-  const { data: resourceACLs = [], isLoading: resourceACLsLoading } = useQuery({
     queryKey: [
       "acls",
       "resource",
@@ -51,139 +49,113 @@ export function useACLManagement() {
       selectedResource
         ? resourceACLService.getResourceACLs(
             selectedResource.resourceType,
-            selectedResource.resourceId
+            String(selectedResource.resourceId)
           )
         : Promise.resolve([]),
     enabled: !!selectedResource,
   });
 
+  // Error handler
+  const handleApiError = (error: any) => {
+    if (error?.response?.data) {
+      const errorData = error.response.data;
+      setApiError({
+        type: errorData.type || "about:blank",
+        title: errorData.title || "An Error Occurred",
+        status: errorData.status || 500,
+        detail: errorData.detail || "An unexpected error occurred",
+        instance: errorData.instance || "",
+        code: errorData.code || "UNKNOWN_ERROR",
+        timestamp: errorData.timestamp || new Date().toISOString(),
+      });
+      setErrorDialogOpen(true);
+    }
+  };
+
   // Create ACL mutation
   const createMutation = useMutation({
-    mutationFn: ({
-      resourceType,
-      resourceId,
-      data,
-    }: {
-      resourceType: ResourceType;
-      resourceId: number;
-      data: Omit<ResourceACLRequest, "resourceType" | "resourceId">;
-    }) => resourceACLService.createResourceACL(resourceType, resourceId, data),
+    mutationFn: (data: ResourceACLRequest) =>
+      resourceACLService.grantResourceAccess(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["acls"] });
       toast.success("ACL entry created successfully");
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to create ACL entry"
-      );
-    },
+    onError: handleApiError,
   });
 
   // Delete ACL mutation
   const deleteMutation = useMutation({
-    mutationFn: (aclId: number) => resourceACLService.deleteResourceACL(aclId),
+    mutationFn: (aclId: number) =>
+      resourceACLService.revokeResourceAccess(aclId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["acls"] });
       toast.success("ACL entry deleted successfully");
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to delete ACL entry"
-      );
-    },
-  });
-
-  // Delete all ACLs for a resource
-  const deleteAllMutation = useMutation({
-    mutationFn: ({
-      resourceType,
-      resourceId,
-    }: {
-      resourceType: ResourceType;
-      resourceId: number;
-    }) => resourceACLService.removeAllACLsForResource(resourceType, resourceId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["acls"] });
-      toast.success("All ACL entries removed for resource");
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to remove ACL entries"
-      );
-    },
+    onError: handleApiError,
   });
 
   // Handler functions
-  const handleCreateACL = async (
+  const handleCreateACL = (
     resourceType: ResourceType,
-    resourceId: number,
-    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">
+    resourceId: string,
+    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">,
+    onSuccess?: () => void
   ) => {
-    await createMutation.mutateAsync({ resourceType, resourceId, data });
+    const fullData: ResourceACLRequest = {
+      resourceType,
+      resourceId,
+      ...data,
+    };
+    createMutation.mutate(fullData, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedACL(null);
+      },
+    });
   };
 
-  const handleDeleteACL = async (aclId: number) => {
-    await deleteMutation.mutateAsync(aclId);
-  };
-
-  const handleDeleteAllACLs = async (
-    resourceType: ResourceType,
-    resourceId: number
-  ) => {
-    await deleteAllMutation.mutateAsync({ resourceType, resourceId });
+  const handleDeleteACL = (aclId: number, onSuccess?: () => void) => {
+    deleteMutation.mutate(aclId, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedACL(null);
+      },
+    });
   };
 
   const handleSelectResource = (resource: ResourceIdentifier | null) => {
     setSelectedResource(resource);
   };
 
-  // Filter ACLs by subject type
+  // Filter resource ACLs by subject type (only works when a resource is selected)
   const filteredACLs =
     filterSubjectType === "all"
-      ? allACLs
-      : allACLs.filter((acl) => acl.subjectType === filterSubjectType);
-
-  // Group ACLs by resource type for better organization
-  const aclsByResourceType: Record<string, ResourceACL[]> = {};
-  allACLs.forEach((acl) => {
-    const type = acl.resourceType;
-    if (!aclsByResourceType[type]) {
-      aclsByResourceType[type] = [];
-    }
-    aclsByResourceType[type].push(acl);
-  });
-
-  // Group ACLs by subject type
-  const aclsBySubjectType: Record<SubjectType, ResourceACL[]> = {
-    EMPLOYEE: allACLs.filter((acl) => acl.subjectType === "EMPLOYEE"),
-    ROLE: allACLs.filter((acl) => acl.subjectType === "ROLE"),
-    DEPARTMENT: allACLs.filter((acl) => acl.subjectType === "DEPARTMENT"),
-  };
+      ? resourceACLs
+      : resourceACLs.filter((acl) => acl.subjectType === filterSubjectType);
 
   return {
     // Data
-    allACLs,
-    filteredACLs,
     resourceACLs,
-    aclsByResourceType,
-    aclsBySubjectType,
+    filteredACLs,
     selectedResource,
+    selectedACL,
     filterSubjectType,
+    apiError,
+    errorDialogOpen,
 
     // Loading states
     aclsLoading,
-    resourceACLsLoading,
     isCreating: createMutation.isPending,
     isDeleting: deleteMutation.isPending,
-    isDeletingAll: deleteAllMutation.isPending,
 
     // Errors
     aclsError,
 
-    // Handlers
+    // Actions
+    setSelectedACL,
+    setErrorDialogOpen,
     handleCreateACL,
     handleDeleteACL,
-    handleDeleteAllACLs,
     handleSelectResource,
     setFilterSubjectType,
   };

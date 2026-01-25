@@ -59,7 +59,6 @@ export function CreateRoleDialog({
   });
 
   const [formData, setFormData] = useState<RoleRequest>(buildDefaultForm);
-  const [showAllRolesWarning, setShowAllRolesWarning] = useState(false);
 
   // Calculate available roles (not yet created)
   const existingRoleNames = existingRoles.map((role) => role.name);
@@ -71,13 +70,11 @@ export function CreateRoleDialog({
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setFormData(buildDefaultForm());
-      setShowAllRolesWarning(false);
       onClose();
       return;
     }
 
     setFormData(buildDefaultForm());
-    setShowAllRolesWarning(allRolesCreated);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -87,111 +84,108 @@ export function CreateRoleDialog({
 
   return (
     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-      {/* Warning dialog if all roles are created */}
-      <ErrorDialog
-        open={showAllRolesWarning}
-        onClose={() => {
-          setShowAllRolesWarning(false);
-          onClose();
-        }}
-        type="warning"
-        title="All Roles Already Created"
-        detail="All available role types have already been created. You cannot create any more roles at this time."
-      />
+      {open && allRolesCreated ? (
+        <ErrorDialog
+          open={open}
+          onClose={onClose}
+          type="info"
+          title="All Roles Already Created"
+          detail="All available role types have already been created. You cannot create any more roles at this time."
+        />
+      ) : (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+          <DialogContent className="sm:max-w-125">
+            <DialogHeader className="pb-4">
+              <DialogTitle className="text-xl">Create New Role</DialogTitle>
+            </DialogHeader>
 
-      {/* Create role dialog */}
-      <Dialog open={open && !allRolesCreated} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-125">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-xl">Create New Role</DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-medium">
-                Role Type *
-              </Label>
-              <Select
-                value={formData.name}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, name: value })
-                }
-                required
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Select a role type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRoles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role.split("_").join(" ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                Select from available predefined role types
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the role's responsibilities..."
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-
-            <div className="bg-muted/50 flex items-center justify-between rounded-xl border p-4">
-              <div className="space-y-1">
-                <Label
-                  htmlFor="isSystem"
-                  className="cursor-pointer text-sm font-medium"
-                >
-                  System Role
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium">
+                  Role Type *
                 </Label>
+                <Select
+                  value={formData.name}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, name: value })
+                  }
+                  required
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select a role type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role.split("_").join(" ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  System roles cannot be deleted
+                  Select from available predefined role types
                 </p>
               </div>
-              <Switch
-                id="isSystem"
-                checked={formData.isSystem}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isSystem: checked })
-                }
-              />
-            </div>
 
-            <div className="flex justify-end gap-3 border-t pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isLoading}
-                className="min-w-25"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading || !formData.name}
-                className="min-w-25"
-              >
-                {isLoading ? "Creating..." : "Create Role"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the role's responsibilities..."
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  rows={4}
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="bg-muted/50 flex items-center justify-between rounded-xl border p-4">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="isSystem"
+                    className="cursor-pointer text-sm font-medium"
+                  >
+                    System Role
+                  </Label>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    System roles cannot be deleted
+                  </p>
+                </div>
+                <Switch
+                  id="isSystem"
+                  checked={formData.isSystem}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, isSystem: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 border-t pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isLoading}
+                  className="min-w-25"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !formData.name}
+                  className="min-w-25"
+                >
+                  {isLoading ? "Creating..." : "Create Role"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </RoleGuard>
   );
 }

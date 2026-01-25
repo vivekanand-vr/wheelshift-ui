@@ -12,9 +12,9 @@ import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { Key, MoreVertical, Edit, Trash2 } from "lucide-react";
-import { getResourceDisplay, getActionDisplay } from "../../utils";
-import { PermissionsTabSkeleton } from "../shimmer";
-import type { Permission } from "../../types";
+import { getResourceDisplay, getActionDisplay } from "../utils";
+import { PermissionsTabSkeleton } from "./shimmer";
+import type { Permission } from "../types";
 
 interface PermissionsTabProps {
   permissionsLoading: boolean;

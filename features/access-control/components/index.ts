@@ -8,19 +8,17 @@ export * from "./roles";
 // Permissions
 export * from "./permissions";
 export * from "./permissions/PermissionManager";
-export * from "./permissions/PermissionsTab";
+export * from "./PermissionsTab";
 
 // Employees
 export * from "./EmployeesTab";
-export * from "./EmployeeRoleDialog";
 
 // Data Scopes
-export * from "./DataScopesTab";
-export * from "./DataScopeDialog";
+export * from "./data-scopes";
 
 // ACLs
+export * from "./acls";
 export * from "./ACLsTab";
-export * from "./ResourceACLDialog";
 
 // Main Feature
 export * from "./AccessControlFeature";

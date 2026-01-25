@@ -36,11 +36,52 @@ export function PermissionManager({
   onRemovePermission,
   isLoading,
 }: PermissionManagerProps) {
-  const [search, setSearch] = useState("");
-
   if (!role) return null;
 
-  const rolePermissionIds = new Set(role.permissions?.map((p) => p.id) || []);
+  return (
+    <PermissionManagerContent
+      key={role.id}
+      open={open}
+      onClose={onClose}
+      role={role}
+      availablePermissions={availablePermissions}
+      onAddPermission={onAddPermission}
+      onRemovePermission={onRemovePermission}
+      isLoading={isLoading}
+    />
+  );
+}
+
+type PermissionManagerContentProps = Omit<PermissionManagerProps, "role"> & {
+  role: Role;
+};
+
+function PermissionManagerContent({
+  open,
+  onClose,
+  role,
+  availablePermissions,
+  onAddPermission,
+  onRemovePermission,
+  isLoading,
+}: PermissionManagerContentProps) {
+  const buildPermissionSet = () =>
+    new Set(role.permissions?.map((p) => p.id) || []);
+
+  const [search, setSearch] = useState("");
+  const [localPermissionIds, setLocalPermissionIds] =
+    useState<Set<number>>(buildPermissionSet);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setSearch("");
+      setLocalPermissionIds(buildPermissionSet());
+      onClose();
+      return;
+    }
+
+    setLocalPermissionIds(buildPermissionSet());
+  };
 
   const filteredPermissions = availablePermissions.filter(
     (permission) =>
@@ -62,7 +103,19 @@ export function PermissionManager({
   );
 
   const handleTogglePermission = (permission: Permission) => {
-    if (rolePermissionIds.has(permission.id)) {
+    const isAssigned = localPermissionIds.has(permission.id);
+
+    setLocalPermissionIds((prev) => {
+      const next = new Set(prev);
+      if (isAssigned) {
+        next.delete(permission.id);
+      } else {
+        next.add(permission.id);
+      }
+      return next;
+    });
+
+    if (isAssigned) {
       onRemovePermission(role.id, permission.id);
     } else {
       onAddPermission(role.id, permission.id);
@@ -70,7 +123,7 @@ export function PermissionManager({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex h-[90vh] max-w-4xl flex-col p-0">
         <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
           <DialogTitle className="text-xl">
@@ -98,7 +151,7 @@ export function PermissionManager({
             >
               All Permissions ({filteredPermissions.length})
               <Badge variant="secondary" className="ml-2">
-                {role.permissions?.length || 0} selected
+                {localPermissionIds.size} selected
               </Badge>
             </Typography>
             <ScrollArea className="-mx-6 flex-1 px-6">
@@ -139,7 +192,7 @@ export function PermissionManager({
                           </div>
                           <div className="grid grid-cols-1 gap-2 pl-8 md:grid-cols-2">
                             {permissions.map((permission) => {
-                              const isAssigned = rolePermissionIds.has(
+                              const isAssigned = localPermissionIds.has(
                                 permission.id
                               );
                               const actionDisplay = getActionDisplay(
@@ -159,6 +212,7 @@ export function PermissionManager({
                                     onCheckedChange={() =>
                                       handleTogglePermission(permission)
                                     }
+                                    onClick={(e) => e.stopPropagation()}
                                     disabled={isLoading}
                                     className="mt-0.5"
                                   />

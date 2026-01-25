@@ -226,51 +226,58 @@ export const employeeRoleService = {
 
 export const dataScopeService = {
   /**
-   * Get all data scopes
+   * Get data scopes by employee ID
+   * GET /api/v1/rbac/employees/{employeeId}/scopes
    */
-  getAllDataScopes: async (): Promise<EmployeeDataScope[]> => {
-    const response = await axios.get(`/rbac/data-scopes`);
+  getDataScopesByEmployee: async (
+    employeeId: string
+  ): Promise<EmployeeDataScope[]> => {
+    const response = await axios.get(`/rbac/employees/${employeeId}/scopes`);
     return response.data;
   },
 
   /**
-   * Get data scopes by employee ID
+   * Create data scope for employee
+   * POST /api/v1/rbac/employees/{employeeId}/scopes
    */
-  getDataScopesByEmployee: async (
-    employeeId: number
-  ): Promise<EmployeeDataScope[]> => {
-    const response = await axios.get(
-      `/rbac/data-scopes/employee/${employeeId}`
+  createDataScope: async (
+    employeeId: string,
+    data: DataScopeRequest
+  ): Promise<EmployeeDataScope> => {
+    const response = await axios.post(
+      `/rbac/employees/${employeeId}/scopes`,
+      data
     );
     return response.data;
   },
 
   /**
-   * Create data scope
-   */
-  createDataScope: async (
-    data: DataScopeRequest
-  ): Promise<EmployeeDataScope> => {
-    const response = await axios.post(`/rbac/data-scopes`, data);
-    return response.data;
-  },
-
-  /**
    * Update data scope
+   * PUT /api/v1/rbac/employees/scopes/{scopeId}
    */
   updateDataScope: async (
-    scopeId: number,
-    data: DataScopeRequest
+    scopeId: string,
+    data: Partial<DataScopeRequest>
   ): Promise<EmployeeDataScope> => {
-    const response = await axios.put(`/rbac/data-scopes/${scopeId}`, data);
+    const response = await axios.put(`/rbac/employees/scopes/${scopeId}`, data);
     return response.data;
   },
 
   /**
    * Delete data scope
+   * DELETE /api/v1/rbac/employees/scopes/{scopeId}
    */
-  deleteDataScope: async (scopeId: number): Promise<void> => {
-    await axios.delete(`/rbac/data-scopes/${scopeId}`);
+  deleteDataScope: async (scopeId: string): Promise<void> => {
+    await axios.delete(`/rbac/employees/scopes/${scopeId}`);
+  },
+
+  /**
+   * Get data scope by ID
+   * GET /api/v1/rbac/employees/scopes/{scopeId}
+   */
+  getDataScopeById: async (scopeId: string): Promise<EmployeeDataScope> => {
+    const response = await axios.get(`/rbac/employees/scopes/${scopeId}`);
+    return response.data;
   },
 };
 
@@ -280,53 +287,45 @@ export const dataScopeService = {
 
 export const resourceACLService = {
   /**
-   * Get all ACLs (for admin view)
-   */
-  getAllACLs: async (): Promise<ResourceACL[]> => {
-    const response = await axios.get(`/rbac/acl`);
-    return response.data;
-  },
-
-  /**
    * Get ACLs for a specific resource
+   * GET /api/v1/rbac/acl/resource/{resourceType}/{resourceId}
    */
   getResourceACLs: async (
-    resourceType: string,
-    resourceId: number
+    resourceType: ResourceType,
+    resourceId: string
   ): Promise<ResourceACL[]> => {
     const response = await axios.get(`/rbac/acl/${resourceType}/${resourceId}`);
     return response.data;
   },
 
   /**
-   * Create resource ACL (add ACL entry to a specific resource)
+   * Grant access to a resource for an employee or role
+   * POST /api/v1/rbac/acl
    */
-  createResourceACL: async (
-    resourceType: ResourceType,
-    resourceId: number,
-    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">
+  grantResourceAccess: async (
+    data: ResourceACLRequest
   ): Promise<ResourceACL> => {
-    const response = await axios.post(
-      `/rbac/acl/${resourceType}/${resourceId}`,
-      data
-    );
+    const response = await axios.post(`/rbac/acl`, data);
     return response.data;
   },
 
   /**
-   * Delete resource ACL
+   * Update access level for an ACL
+   * PUT /api/v1/rbac/acl/{id}
    */
-  deleteResourceACL: async (aclId: number): Promise<void> => {
-    await axios.delete(`/rbac/acl/${aclId}`);
+  updateResourceAccess: async (
+    id: number,
+    data: ResourceACLRequest
+  ): Promise<ResourceACL> => {
+    const response = await axios.put(`/rbac/acl/${id}`, data);
+    return response.data;
   },
 
   /**
-   * Remove all ACLs for a resource
+   * Remove ACL entry
+   * DELETE /api/v1/rbac/acl/{id}
    */
-  removeAllACLsForResource: async (
-    resourceType: ResourceType,
-    resourceId: number
-  ): Promise<void> => {
-    await axios.delete(`/rbac/acl/${resourceType}/${resourceId}`);
+  revokeResourceAccess: async (id: number): Promise<void> => {
+    await axios.delete(`/rbac/acl/${id}`);
   },
 };

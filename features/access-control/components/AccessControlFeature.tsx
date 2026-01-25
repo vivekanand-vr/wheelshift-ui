@@ -19,7 +19,7 @@ import {
   Grid3x3,
   List,
   KeyRound,
-  MapPin,
+  Lock,
 } from "lucide-react";
 import { RolesGridView } from "./roles/RolesGridView";
 import { RolesListView } from "./roles/RolesListView";
@@ -32,20 +32,16 @@ import {
   DeletePermissionDialog,
 } from "./permissions";
 import { PermissionManager } from "./permissions/PermissionManager";
-import { EmployeeRoleDialog } from "./EmployeeRoleDialog";
-import { PermissionsTab } from "./permissions/PermissionsTab";
+import { EmployeeDataScopesDialog } from "./employee/EmployeeDataScopesDialog";
+import { EmployeeRolesDialog } from "./employee/EmployeeRolesDialog";
+import { PermissionsTab } from "./PermissionsTab";
 import { EmployeesTab } from "./EmployeesTab";
-import { DataScopesTab } from "./DataScopesTab";
-import { DataScopeDialog } from "./DataScopeDialog";
 import { ACLsTab } from "./ACLsTab";
-import { ResourceACLDialog } from "./ResourceACLDialog";
 import { RolesGridViewSkeleton, RolesListViewSkeleton } from "./shimmer";
 import {
   useRoleManagement,
   usePermissionManagement,
   useEmployeeManagement,
-  useDataScopeManagement,
-  useACLManagement,
 } from "../hooks";
 
 type ViewMode = "grid" | "list";
@@ -53,7 +49,7 @@ type ViewMode = "grid" | "list";
 export function TabsHeader() {
   return (
     <div className="mb-6 flex items-center justify-between gap-4">
-      <TabsList className="bg-muted grid w-full max-w-3xl grid-cols-5 p-1">
+      <TabsList className="bg-muted grid w-full max-w-2xl grid-cols-4 p-1">
         <TabsTrigger
           value="roles"
           className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
@@ -76,17 +72,10 @@ export function TabsHeader() {
           <span className="hidden sm:inline">Employees</span>
         </TabsTrigger>
         <TabsTrigger
-          value="data-scopes"
-          className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
-        >
-          <MapPin className="h-4 w-4" />
-          <span className="hidden sm:inline">Scopes</span>
-        </TabsTrigger>
-        <TabsTrigger
           value="acls"
           className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
         >
-          <Shield className="h-4 w-4" />
+          <Lock className="h-4 w-4" />
           <span className="hidden sm:inline">ACLs</span>
         </TabsTrigger>
       </TabsList>
@@ -111,16 +100,14 @@ export function AccessControlFeature() {
   const [deletePermissionDialogOpen, setDeletePermissionDialogOpen] =
     useState(false);
   const [permissionManagerOpen, setPermissionManagerOpen] = useState(false);
-  const [employeeRoleDialogOpen, setEmployeeRoleDialogOpen] = useState(false);
-  const [dataScopeDialogOpen, setDataScopeDialogOpen] = useState(false);
-  const [aclDialogOpen, setAclDialogOpen] = useState(false);
+  const [employeeRolesDialogOpen, setEmployeeRolesDialogOpen] = useState(false);
+  const [employeeScopesDialogOpen, setEmployeeScopesDialogOpen] =
+    useState(false);
 
   // Hooks with all business logic
   const roleManagement = useRoleManagement();
   const permissionManagement = usePermissionManagement();
   const employeeManagement = useEmployeeManagement();
-  const dataScopeManagement = useDataScopeManagement();
-  const aclManagement = useACLManagement();
 
   // Sync search state with current tab
   const search =
@@ -140,13 +127,17 @@ export function AccessControlFeature() {
     } else if (activeTab === "employees") {
       employeeManagement.setSearch(value);
     }
-    // Note: Data scopes and ACLs use hook-internal search
   };
 
-  // Handle employee click
-  const handleEmployeeClick = (employee: Employee) => {
+  // Handle employee actions
+  const handleManageRoles = (employee: Employee) => {
     employeeManagement.setSelectedEmployee(employee);
-    setEmployeeRoleDialogOpen(true);
+    setEmployeeRolesDialogOpen(true);
+  };
+
+  const handleManageScopes = (employee: Employee) => {
+    employeeManagement.setSelectedEmployee(employee);
+    setEmployeeScopesDialogOpen(true);
   };
 
   return (
@@ -209,18 +200,6 @@ export function AccessControlFeature() {
                 <Button onClick={() => setCreatePermissionDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   <span className="hidden sm:inline">New Permission</span>
-                </Button>
-              )}
-              {activeTab === "data-scopes" && isSuperAdmin && (
-                <Button onClick={() => setDataScopeDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">New Scope</span>
-                </Button>
-              )}
-              {activeTab === "acls" && isSuperAdmin && (
-                <Button onClick={() => setAclDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">New ACL</span>
                 </Button>
               )}
             </div>
@@ -306,31 +285,13 @@ export function AccessControlFeature() {
             currentPage={employeeManagement.currentPage}
             pageSize={employeeManagement.pageSize}
             search={search}
-            onEmployeeClick={handleEmployeeClick}
+            onManageRoles={handleManageRoles}
+            onManageScopes={handleManageScopes}
             onPageChange={employeeManagement.setCurrentPage}
           />
 
-          {/* Data Scopes Tab */}
-          <DataScopesTab
-            dataScopes={dataScopeManagement.allScopes}
-            scopesLoading={dataScopeManagement.scopesLoading}
-            search=""
-            onCreateScope={() => setDataScopeDialogOpen(true)}
-            onDeleteScope={dataScopeManagement.handleDeleteScope}
-            isDeleting={dataScopeManagement.isDeleting}
-          />
-
           {/* ACLs Tab */}
-          <ACLsTab
-            acls={aclManagement.filteredACLs}
-            aclsLoading={aclManagement.aclsLoading}
-            search=""
-            filterSubjectType={aclManagement.filterSubjectType}
-            onFilterChange={aclManagement.setFilterSubjectType}
-            onCreateACL={() => setAclDialogOpen(true)}
-            onDeleteACL={aclManagement.handleDeleteACL}
-            isDeleting={aclManagement.isDeleting}
-          />
+          <ACLsTab />
         </Tabs>
       </div>
 
@@ -438,10 +399,10 @@ export function AccessControlFeature() {
         isLoading={roleManagement.isManagingPermissions}
       />
 
-      <EmployeeRoleDialog
-        open={employeeRoleDialogOpen}
+      <EmployeeRolesDialog
+        open={employeeRolesDialogOpen}
         onClose={() => {
-          setEmployeeRoleDialogOpen(false);
+          setEmployeeRolesDialogOpen(false);
           employeeManagement.setSelectedEmployee(null);
         }}
         employee={employeeManagement.selectedEmployee}
@@ -454,24 +415,13 @@ export function AccessControlFeature() {
         isRemoving={employeeManagement.isRemovingRole}
       />
 
-      <DataScopeDialog
-        open={dataScopeDialogOpen}
-        onClose={() => setDataScopeDialogOpen(false)}
-        onSubmit={(data) => {
-          dataScopeManagement.handleCreateScope(data);
-          setDataScopeDialogOpen(false);
+      <EmployeeDataScopesDialog
+        open={employeeScopesDialogOpen}
+        onClose={() => {
+          setEmployeeScopesDialogOpen(false);
+          employeeManagement.setSelectedEmployee(null);
         }}
-        isLoading={dataScopeManagement.isCreating}
-      />
-
-      <ResourceACLDialog
-        open={aclDialogOpen}
-        onClose={() => setAclDialogOpen(false)}
-        onSubmit={(resourceType, resourceId, data) => {
-          aclManagement.handleCreateACL(resourceType, resourceId, data);
-          setAclDialogOpen(false);
-        }}
-        isLoading={aclManagement.isCreating}
+        employee={employeeManagement.selectedEmployee}
       />
 
       {/* Error Dialogs */}

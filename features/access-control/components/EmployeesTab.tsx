@@ -8,7 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Users, ChevronLeft, ChevronRight, Shield } from "lucide-react";
+import { Users, ChevronLeft, ChevronRight, Shield, MapPin } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EmployeesTabSkeleton } from "./shimmer";
 import type { Employee } from "@/types";
 
@@ -20,7 +26,8 @@ interface EmployeesTabProps {
   currentPage: number;
   pageSize: number;
   search: string;
-  onEmployeeClick: (employee: Employee) => void;
+  onManageRoles: (employee: Employee) => void;
+  onManageScopes: (employee: Employee) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -32,7 +39,8 @@ export function EmployeesTab({
   currentPage,
   pageSize,
   search,
-  onEmployeeClick,
+  onManageRoles,
+  onManageScopes,
   onPageChange,
 }: EmployeesTabProps) {
   const startIndex = (currentPage - 1) * pageSize + 1;
@@ -170,15 +178,31 @@ export function EmployeesTab({
 
                       {/* Actions */}
                       <td className="px-6 py-4 text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onEmployeeClick(employee)}
-                        >
-                          <Shield className="mr-2 h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">Manage Roles</span>
-                          <span className="sm:hidden">Roles</span>
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Shield className="mr-2 h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">
+                                Manage Access
+                              </span>
+                              <span className="sm:hidden">Access</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => onManageRoles(employee)}
+                            >
+                              <Shield className="mr-2 h-4 w-4" />
+                              Edit Roles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => onManageScopes(employee)}
+                            >
+                              <MapPin className="mr-2 h-4 w-4" />
+                              Data Scopes
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}

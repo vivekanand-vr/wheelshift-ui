@@ -25,7 +25,7 @@ export const accessControlKeys = {
   dataScopes: () => [...accessControlKeys.all, "data-scopes"] as const,
   dataScopesByEmployee: (employeeId: number) =>
     [...accessControlKeys.dataScopes(), "employee", employeeId] as const,
-  resourceACLs: (resourceType: string, resourceId: number) =>
+  resourceACLs: (resourceType: string, resourceId: string) =>
     [...accessControlKeys.all, "acl", resourceType, resourceId] as const,
 };
 
@@ -93,18 +93,10 @@ export const useEmployeePermissions = (employeeId: number) => {
 // DATA SCOPE QUERIES
 // ============================================================================
 
-export const useDataScopes = () => {
-  return useQuery({
-    queryKey: accessControlKeys.dataScopes(),
-    queryFn: dataScopeService.getAllDataScopes,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
-
 export const useDataScopesByEmployee = (employeeId: number) => {
   return useQuery({
     queryKey: accessControlKeys.dataScopesByEmployee(employeeId),
-    queryFn: () => dataScopeService.getDataScopesByEmployee(employeeId),
+    queryFn: () => dataScopeService.getDataScopesByEmployee(String(employeeId)),
     enabled: !!employeeId,
   });
 };
@@ -115,7 +107,7 @@ export const useDataScopesByEmployee = (employeeId: number) => {
 
 export const useResourceACLs = (
   resourceType: ResourceType,
-  resourceId: number
+  resourceId: string
 ) => {
   return useQuery({
     queryKey: accessControlKeys.resourceACLs(resourceType, resourceId),

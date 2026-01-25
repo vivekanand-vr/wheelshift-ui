@@ -75,12 +75,10 @@ export interface EmployeeDataScope {
 export interface ResourceACL {
   id: number;
   resourceType: ResourceType;
-  resourceId: number;
+  resourceId: string; // Changed from number to string (e.g., "CAR-123")
   subjectType: SubjectType;
   subjectId: number;
-  access: AccessLevel;
-  reason?: string;
-  grantedBy: number;
+  accessLevel: AccessLevel; // Changed from 'access' to 'accessLevel'
   createdAt: string;
   updatedAt: string;
 }
@@ -107,8 +105,24 @@ export interface PermissionRequest {
 
 export type PermissionResponse = Permission;
 
+// Export alias for DataScope
+export type DataScope = EmployeeDataScope;
+
+// Request types for data scopes
+export interface CreateDataScopeInput {
+  scopeType: ScopeType;
+  scopeValue: string;
+  effect: ScopeEffect;
+  description?: string;
+}
+
+export interface UpdateDataScopeInput {
+  effect?: ScopeEffect;
+  description?: string;
+}
+
 export interface DataScopeRequest {
-  employeeId: number;
+  employeeId?: number;
   scopeType: ScopeType;
   scopeValue: string;
   effect: ScopeEffect;
@@ -119,11 +133,10 @@ export type DataScopeResponse = EmployeeDataScope;
 
 export interface ResourceACLRequest {
   resourceType: ResourceType;
-  resourceId: number;
+  resourceId: string; // Changed from number to string
   subjectType: SubjectType;
   subjectId: number;
-  access: AccessLevel;
-  reason?: string;
+  accessLevel: AccessLevel; // Changed from 'access' to 'accessLevel'
 }
 
 export type ResourceACLResponse = ResourceACL;
