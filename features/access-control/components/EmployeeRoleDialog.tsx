@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,14 @@ interface EmployeeRoleDialogProps {
   isRemoving: boolean;
 }
 
-export function EmployeeRoleDialog({
+type EmployeeRoleDialogContentProps = Omit<
+  EmployeeRoleDialogProps,
+  "employee"
+> & {
+  employee: Employee;
+};
+
+function EmployeeRoleDialogContent({
   open,
   onClose,
   employee,
@@ -41,23 +49,19 @@ export function EmployeeRoleDialog({
   onRemoveRole,
   isAssigning,
   isRemoving,
-}: EmployeeRoleDialogProps) {
-  const [localRoleIds, setLocalRoleIds] = useState<Set<number>>(new Set());
+}: EmployeeRoleDialogContentProps) {
+  const buildRoleIdSet = () => new Set(employeeRoles.map((r) => r.id));
+  const [localRoleIds, setLocalRoleIds] = useState<Set<number>>(buildRoleIdSet);
 
-  // Sync local state with employee roles while avoiding unnecessary state updates
-  useEffect(() => {
-    if (!open || !employeeRoles) return;
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setLocalRoleIds(buildRoleIdSet());
+      onClose();
+      return;
+    }
 
-    const nextRoleIds = new Set(employeeRoles.map((r) => r.id));
-
-    setLocalRoleIds((prev) => {
-      const hasDifference =
-        prev.size !== nextRoleIds.size ||
-        [...nextRoleIds].some((id) => !prev.has(id));
-
-      return hasDifference ? nextRoleIds : prev;
-    });
-  }, [open, employeeRoles]);
+    setLocalRoleIds(buildRoleIdSet());
+  };
 
   const handleToggleRole = async (roleId: number) => {
     if (!employee) return;
@@ -106,7 +110,7 @@ export function EmployeeRoleDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage Employee Roles</DialogTitle>
@@ -117,9 +121,12 @@ export function EmployeeRoleDialog({
           <div className="bg-accent/50 flex items-center gap-3 rounded-lg border p-4">
             <Avatar className="h-12 w-12">
               {employee.avatar ? (
-                <img
+                <Image
                   src={employee.avatar}
                   alt={employee.name}
+                  width={48}
+                  height={48}
+                  sizes="48px"
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -242,5 +249,17 @@ export function EmployeeRoleDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function EmployeeRoleDialog(props: EmployeeRoleDialogProps) {
+  if (!props.employee) return null;
+
+  return (
+    <EmployeeRoleDialogContent
+      key={props.employee.id}
+      {...props}
+      employee={props.employee}
+    />
   );
 }

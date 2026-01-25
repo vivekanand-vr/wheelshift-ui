@@ -14,8 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Typography } from "@/components/ui/typography";
 import { Search } from "lucide-react";
-import type { Role, Permission } from "../types";
-import { getResourceDisplay, getActionDisplay } from "../utils";
+import type { Role, Permission } from "../../types";
+import { getResourceDisplay, getActionDisplay } from "../../utils";
 
 interface PermissionManagerProps {
   open: boolean;

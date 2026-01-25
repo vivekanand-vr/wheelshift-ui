@@ -3,6 +3,9 @@
  * Matches backend RBAC entities
  */
 
+// Re-export API error type from global types
+export type { ApiErrorResponse } from "@/types";
+
 export type RoleType =
   | "SUPER_ADMIN"
   | "ADMIN"
@@ -140,7 +143,12 @@ export interface PermissionGroup {
   permissions: Permission[];
 }
 
-export type AccessControlTab = "roles" | "permissions" | "employees" | "scopes";
+export type AccessControlTab =
+  | "roles"
+  | "permissions"
+  | "employees"
+  | "data-scopes"
+  | "acls";
 
 export interface AccessControlFilters {
   search: string;

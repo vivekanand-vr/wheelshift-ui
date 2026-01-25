@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,9 +88,12 @@ export function EmployeesTab({
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 shrink-0">
                             {employee.avatar ? (
-                              <img
+                              <Image
                                 src={employee.avatar}
                                 alt={employee.name}
+                                width={40}
+                                height={40}
+                                sizes="40px"
                                 className="h-full w-full object-cover"
                               />
                             ) : (
@@ -184,7 +188,7 @@ export function EmployeesTab({
           </Card>
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <Card className="p-4">
               <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
                 <Typography variant="small" className="text-muted-foreground">

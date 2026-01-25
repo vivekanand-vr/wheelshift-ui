@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Typography } from "@/components/ui/typography";
 import { MoreVertical, Edit, Trash2, Wrench } from "lucide-react";
-import type { Role } from "../types";
-import { getRoleDisplay } from "../utils";
+import type { Role } from "../../types";
+import { getRoleDisplay } from "../../utils";
 
 interface RolesListViewProps {
   roles: Role[];
@@ -88,9 +88,9 @@ export function RolesListView({
                     variant="small"
                     className="text-muted-foreground text-xs font-medium"
                   >
-                    Permissions
+                    Permissions:
                   </Typography>
-                  <Typography variant="small" className="text-lg font-bold">
+                  <Typography variant="small" className="ml-1 font-bold">
                     {role.permissions?.length || 0}
                   </Typography>
                 </div>

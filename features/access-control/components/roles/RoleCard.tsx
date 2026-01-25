@@ -10,9 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Typography } from "@/components/ui/typography";
+import { RoleGuard } from "@/components/common/RoleGuard";
 import { MoreVertical, Edit, Trash2, Wrench } from "lucide-react";
-import type { Role } from "../types";
-import { getRoleDisplay } from "../utils";
+import type { Role } from "../../types";
+import { getRoleDisplay } from "../../utils";
 
 interface RoleCardProps {
   role: Role;
@@ -30,7 +31,7 @@ export function RoleCard({
   isSuperAdmin,
 }: RoleCardProps) {
   const canEdit = isSuperAdmin || !role.isSystem;
-  const canDelete = isSuperAdmin && !role.isSystem;
+  const canDelete = isSuperAdmin || !role.isSystem;
   const roleDisplay = getRoleDisplay(role.name);
   const RoleIcon = roleDisplay.icon;
 
@@ -55,7 +56,7 @@ export function RoleCard({
               >
                 {roleDisplay.label}
               </Typography>
-              <div className="mt-1 flex flex-col gap-1.5">
+              <div className="mt-1 flex flex-row gap-1.5">
                 <Badge variant="outline" className="w-fit font-mono text-xs">
                   {role.name}
                 </Badge>
@@ -68,38 +69,36 @@ export function RoleCard({
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 shrink-0 p-0"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => onManagePermissions(role)}>
-                <Wrench className="mr-2 h-4 w-4" />
-                Manage Permissions
-              </DropdownMenuItem>
-              {canEdit && (
-                <DropdownMenuItem onClick={() => onEdit(role)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Role
-                </DropdownMenuItem>
-              )}
-              {canDelete && (
-                <DropdownMenuItem
-                  onClick={() => onDelete(role)}
-                  className="text-destructive focus:text-destructive"
+          <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 shrink-0 p-0"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Role
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {canEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(role)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Role
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete(role)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Role
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </RoleGuard>
         </div>
 
         {/* Description */}

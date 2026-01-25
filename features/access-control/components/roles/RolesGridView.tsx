@@ -1,7 +1,7 @@
 "use client";
 
 import { RoleCard } from "./RoleCard";
-import type { Role } from "../types";
+import type { Role } from "../../types";
 
 interface RolesGridViewProps {
   roles: Role[];

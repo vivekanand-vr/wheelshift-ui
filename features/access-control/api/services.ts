@@ -15,6 +15,7 @@ import type {
   DataScopeRequest,
   ResourceACLRequest,
   AssignRoleRequest,
+  ResourceType,
 } from "../types";
 
 // Backend response wrapper type
@@ -279,6 +280,14 @@ export const dataScopeService = {
 
 export const resourceACLService = {
   /**
+   * Get all ACLs (for admin view)
+   */
+  getAllACLs: async (): Promise<ResourceACL[]> => {
+    const response = await axios.get(`/rbac/acl`);
+    return response.data;
+  },
+
+  /**
    * Get ACLs for a specific resource
    */
   getResourceACLs: async (
@@ -290,10 +299,17 @@ export const resourceACLService = {
   },
 
   /**
-   * Create resource ACL
+   * Create resource ACL (add ACL entry to a specific resource)
    */
-  createResourceACL: async (data: ResourceACLRequest): Promise<ResourceACL> => {
-    const response = await axios.post(`/rbac/acl`, data);
+  createResourceACL: async (
+    resourceType: ResourceType,
+    resourceId: number,
+    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">
+  ): Promise<ResourceACL> => {
+    const response = await axios.post(
+      `/rbac/acl/${resourceType}/${resourceId}`,
+      data
+    );
     return response.data;
   },
 
@@ -302,5 +318,15 @@ export const resourceACLService = {
    */
   deleteResourceACL: async (aclId: number): Promise<void> => {
     await axios.delete(`/rbac/acl/${aclId}`);
+  },
+
+  /**
+   * Remove all ACLs for a resource
+   */
+  removeAllACLsForResource: async (
+    resourceType: ResourceType,
+    resourceId: number
+  ): Promise<void> => {
+    await axios.delete(`/rbac/acl/${resourceType}/${resourceId}`);
   },
 };

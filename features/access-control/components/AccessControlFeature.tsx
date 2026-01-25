@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/common/EmptyState";
-import { ConfirmationDialog } from "@/components/common/ConfirmationDialog";
+import { ErrorDialog } from "@/components/common/ErrorDialog";
 import {
   Plus,
   Search,
@@ -19,20 +19,33 @@ import {
   Grid3x3,
   List,
   KeyRound,
+  MapPin,
 } from "lucide-react";
-import { RolesGridView } from "./RolesGridView";
-import { RolesListView } from "./RolesListView";
-import { RoleDialog } from "./RoleDialog";
-import { PermissionManager } from "./PermissionManager";
-import { PermissionDialog } from "./PermissionDialog";
+import { RolesGridView } from "./roles/RolesGridView";
+import { RolesListView } from "./roles/RolesListView";
+import { CreateRoleDialog } from "./roles/CreateRoleDialog";
+import { UpdateRoleDialog } from "./roles/UpdateRoleDialog";
+import { DeleteRoleDialog } from "./roles/DeleteRoleDialog";
+import {
+  CreatePermissionDialog,
+  UpdatePermissionDialog,
+  DeletePermissionDialog,
+} from "./permissions";
+import { PermissionManager } from "./permissions/PermissionManager";
 import { EmployeeRoleDialog } from "./EmployeeRoleDialog";
-import { PermissionsTab } from "./PermissionsTab";
+import { PermissionsTab } from "./permissions/PermissionsTab";
 import { EmployeesTab } from "./EmployeesTab";
+import { DataScopesTab } from "./DataScopesTab";
+import { DataScopeDialog } from "./DataScopeDialog";
+import { ACLsTab } from "./ACLsTab";
+import { ResourceACLDialog } from "./ResourceACLDialog";
 import { RolesGridViewSkeleton, RolesListViewSkeleton } from "./shimmer";
 import {
   useRoleManagement,
   usePermissionManagement,
   useEmployeeManagement,
+  useDataScopeManagement,
+  useACLManagement,
 } from "../hooks";
 
 type ViewMode = "grid" | "list";
@@ -40,7 +53,7 @@ type ViewMode = "grid" | "list";
 export function TabsHeader() {
   return (
     <div className="mb-6 flex items-center justify-between gap-4">
-      <TabsList className="bg-muted grid w-full max-w-md grid-cols-3 p-1">
+      <TabsList className="bg-muted grid w-full max-w-3xl grid-cols-5 p-1">
         <TabsTrigger
           value="roles"
           className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
@@ -62,6 +75,20 @@ export function TabsHeader() {
           <Users className="h-4 w-4" />
           <span className="hidden sm:inline">Employees</span>
         </TabsTrigger>
+        <TabsTrigger
+          value="data-scopes"
+          className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
+        >
+          <MapPin className="h-4 w-4" />
+          <span className="hidden sm:inline">Scopes</span>
+        </TabsTrigger>
+        <TabsTrigger
+          value="acls"
+          className="data-[state=active]:bg-background data-[state=active]:text-foreground gap-2 data-[state=active]:shadow-md"
+        >
+          <Shield className="h-4 w-4" />
+          <span className="hidden sm:inline">ACLs</span>
+        </TabsTrigger>
       </TabsList>
     </div>
   );
@@ -74,16 +101,26 @@ export function AccessControlFeature() {
   // Local UI state
   const [activeTab, setActiveTab] = useState("roles");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
-  const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
+  const [createRoleDialogOpen, setCreateRoleDialogOpen] = useState(false);
+  const [updateRoleDialogOpen, setUpdateRoleDialogOpen] = useState(false);
+  const [deleteRoleDialogOpen, setDeleteRoleDialogOpen] = useState(false);
+  const [createPermissionDialogOpen, setCreatePermissionDialogOpen] =
+    useState(false);
+  const [updatePermissionDialogOpen, setUpdatePermissionDialogOpen] =
+    useState(false);
+  const [deletePermissionDialogOpen, setDeletePermissionDialogOpen] =
+    useState(false);
   const [permissionManagerOpen, setPermissionManagerOpen] = useState(false);
   const [employeeRoleDialogOpen, setEmployeeRoleDialogOpen] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [dataScopeDialogOpen, setDataScopeDialogOpen] = useState(false);
+  const [aclDialogOpen, setAclDialogOpen] = useState(false);
 
   // Hooks with all business logic
   const roleManagement = useRoleManagement();
   const permissionManagement = usePermissionManagement();
   const employeeManagement = useEmployeeManagement();
+  const dataScopeManagement = useDataScopeManagement();
+  const aclManagement = useACLManagement();
 
   // Sync search state with current tab
   const search =
@@ -103,6 +140,7 @@ export function AccessControlFeature() {
     } else if (activeTab === "employees") {
       employeeManagement.setSearch(value);
     }
+    // Note: Data scopes and ACLs use hook-internal search
   };
 
   // Handle employee click
@@ -162,15 +200,27 @@ export function AccessControlFeature() {
 
               {/* Action Buttons */}
               {activeTab === "roles" && isSuperAdmin && (
-                <Button onClick={() => setRoleDialogOpen(true)}>
+                <Button onClick={() => setCreateRoleDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   <span className="hidden sm:inline">New Role</span>
                 </Button>
               )}
               {activeTab === "permissions" && isSuperAdmin && (
-                <Button onClick={() => setPermissionDialogOpen(true)}>
+                <Button onClick={() => setCreatePermissionDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   <span className="hidden sm:inline">New Permission</span>
+                </Button>
+              )}
+              {activeTab === "data-scopes" && isSuperAdmin && (
+                <Button onClick={() => setDataScopeDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">New Scope</span>
+                </Button>
+              )}
+              {activeTab === "acls" && isSuperAdmin && (
+                <Button onClick={() => setAclDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">New ACL</span>
                 </Button>
               )}
             </div>
@@ -198,12 +248,12 @@ export function AccessControlFeature() {
               <RolesGridView
                 roles={roleManagement.filteredRoles}
                 onEdit={(role) => {
-                  roleManagement.openEditDialog(role);
-                  setRoleDialogOpen(true);
+                  roleManagement.setSelectedRole(role);
+                  setUpdateRoleDialogOpen(true);
                 }}
                 onDelete={(role) => {
-                  roleManagement.openDeleteDialog(role);
-                  setDeleteConfirmOpen(true);
+                  roleManagement.setSelectedRole(role);
+                  setDeleteRoleDialogOpen(true);
                 }}
                 onManagePermissions={(role) => {
                   roleManagement.setSelectedRole(role);
@@ -215,12 +265,12 @@ export function AccessControlFeature() {
               <RolesListView
                 roles={roleManagement.filteredRoles}
                 onEdit={(role) => {
-                  roleManagement.openEditDialog(role);
-                  setRoleDialogOpen(true);
+                  roleManagement.setSelectedRole(role);
+                  setUpdateRoleDialogOpen(true);
                 }}
                 onDelete={(role) => {
-                  roleManagement.openDeleteDialog(role);
-                  setDeleteConfirmOpen(true);
+                  roleManagement.setSelectedRole(role);
+                  setDeleteRoleDialogOpen(true);
                 }}
                 onManagePermissions={(role) => {
                   roleManagement.setSelectedRole(role);
@@ -236,6 +286,15 @@ export function AccessControlFeature() {
             permissionsLoading={permissionManagement.permissionsLoading}
             groupedPermissions={permissionManagement.groupedPermissions}
             search={search}
+            onEdit={(permission) => {
+              permissionManagement.setSelectedPermission(permission);
+              setUpdatePermissionDialogOpen(true);
+            }}
+            onDelete={(permission) => {
+              permissionManagement.setSelectedPermission(permission);
+              setDeletePermissionDialogOpen(true);
+            }}
+            isSuperAdmin={isSuperAdmin}
           />
 
           {/* Employees Tab */}
@@ -250,43 +309,120 @@ export function AccessControlFeature() {
             onEmployeeClick={handleEmployeeClick}
             onPageChange={employeeManagement.setCurrentPage}
           />
+
+          {/* Data Scopes Tab */}
+          <DataScopesTab
+            dataScopes={dataScopeManagement.allScopes}
+            scopesLoading={dataScopeManagement.scopesLoading}
+            search=""
+            onCreateScope={() => setDataScopeDialogOpen(true)}
+            onDeleteScope={dataScopeManagement.handleDeleteScope}
+            isDeleting={dataScopeManagement.isDeleting}
+          />
+
+          {/* ACLs Tab */}
+          <ACLsTab
+            acls={aclManagement.filteredACLs}
+            aclsLoading={aclManagement.aclsLoading}
+            search=""
+            filterSubjectType={aclManagement.filterSubjectType}
+            onFilterChange={aclManagement.setFilterSubjectType}
+            onCreateACL={() => setAclDialogOpen(true)}
+            onDeleteACL={aclManagement.handleDeleteACL}
+            isDeleting={aclManagement.isDeleting}
+          />
         </Tabs>
       </div>
 
       {/* Dialogs */}
-      <RoleDialog
-        open={roleDialogOpen}
+      <CreateRoleDialog
+        open={createRoleDialogOpen}
+        onClose={() => setCreateRoleDialogOpen(false)}
+        onSubmit={(data) => {
+          roleManagement.handleCreateRole(data, () =>
+            setCreateRoleDialogOpen(false)
+          );
+        }}
+        existingRoles={roleManagement.roles}
+        isLoading={roleManagement.isCreating}
+      />
+
+      <UpdateRoleDialog
+        open={updateRoleDialogOpen}
         onClose={() => {
-          setRoleDialogOpen(false);
+          setUpdateRoleDialogOpen(false);
           roleManagement.setSelectedRole(null);
         }}
-        onSubmit={(data) => {
+        onSubmit={(roleId, data) => {
+          roleManagement.handleUpdateRole(roleId, data, () =>
+            setUpdateRoleDialogOpen(false)
+          );
+        }}
+        role={roleManagement.selectedRole}
+        isLoading={roleManagement.isUpdating}
+      />
+
+      <DeleteRoleDialog
+        open={deleteRoleDialogOpen}
+        onClose={() => {
+          setDeleteRoleDialogOpen(false);
+          roleManagement.setSelectedRole(null);
+        }}
+        onConfirm={() => {
           if (roleManagement.selectedRole) {
-            roleManagement.handleUpdateRole(
+            roleManagement.handleDeleteRole(
               roleManagement.selectedRole.id,
-              data,
-              () => setRoleDialogOpen(false)
-            );
-          } else {
-            roleManagement.handleCreateRole(data, () =>
-              setRoleDialogOpen(false)
+              () => setDeleteRoleDialogOpen(false)
             );
           }
         }}
         role={roleManagement.selectedRole}
-        isLoading={roleManagement.isCreating || roleManagement.isUpdating}
-        isSuperAdmin={isSuperAdmin}
+        isLoading={roleManagement.isDeleting}
       />
 
-      <PermissionDialog
-        open={permissionDialogOpen}
-        onClose={() => setPermissionDialogOpen(false)}
+      <CreatePermissionDialog
+        open={createPermissionDialogOpen}
+        onClose={() => setCreatePermissionDialogOpen(false)}
         onSubmit={(data) => {
           permissionManagement.handleCreatePermission(data, () =>
-            setPermissionDialogOpen(false)
+            setCreatePermissionDialogOpen(false)
           );
         }}
         isLoading={permissionManagement.isCreating}
+        permissions={permissionManagement.permissions}
+      />
+
+      <UpdatePermissionDialog
+        open={updatePermissionDialogOpen}
+        onClose={() => {
+          setUpdatePermissionDialogOpen(false);
+          permissionManagement.setSelectedPermission(null);
+        }}
+        onSubmit={(permissionId, data) => {
+          permissionManagement.handleUpdatePermission(permissionId, data, () =>
+            setUpdatePermissionDialogOpen(false)
+          );
+        }}
+        permission={permissionManagement.selectedPermission}
+        isLoading={permissionManagement.isUpdating}
+      />
+
+      <DeletePermissionDialog
+        open={deletePermissionDialogOpen}
+        onClose={() => {
+          setDeletePermissionDialogOpen(false);
+          permissionManagement.setSelectedPermission(null);
+        }}
+        onConfirm={() => {
+          if (permissionManagement.selectedPermission) {
+            permissionManagement.handleDeletePermission(
+              permissionManagement.selectedPermission.id,
+              () => setDeletePermissionDialogOpen(false)
+            );
+          }
+        }}
+        permission={permissionManagement.selectedPermission}
+        isLoading={permissionManagement.isDeleting}
       />
 
       <PermissionManager
@@ -318,19 +454,51 @@ export function AccessControlFeature() {
         isRemoving={employeeManagement.isRemovingRole}
       />
 
-      <ConfirmationDialog
-        open={deleteConfirmOpen}
-        onClose={() => {
-          setDeleteConfirmOpen(false);
-          roleManagement.setRoleToDelete(null);
+      <DataScopeDialog
+        open={dataScopeDialogOpen}
+        onClose={() => setDataScopeDialogOpen(false)}
+        onSubmit={(data) => {
+          dataScopeManagement.handleCreateScope(data);
+          setDataScopeDialogOpen(false);
         }}
-        onConfirm={() => {
-          roleManagement.handleDeleteRole(() => setDeleteConfirmOpen(false));
+        isLoading={dataScopeManagement.isCreating}
+      />
+
+      <ResourceACLDialog
+        open={aclDialogOpen}
+        onClose={() => setAclDialogOpen(false)}
+        onSubmit={(resourceType, resourceId, data) => {
+          aclManagement.handleCreateACL(resourceType, resourceId, data);
+          setAclDialogOpen(false);
         }}
-        title="Delete Role"
-        description={`Are you sure you want to delete the role "${roleManagement.roleToDelete?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        isLoading={roleManagement.isDeleting}
+        isLoading={aclManagement.isCreating}
+      />
+
+      {/* Error Dialogs */}
+      <ErrorDialog
+        open={roleManagement.errorDialogOpen}
+        onClose={() => roleManagement.setErrorDialogOpen(false)}
+        type={roleManagement.apiError?.status === 500 ? "error" : "warning"}
+        title={roleManagement.apiError?.title || "Error"}
+        detail={roleManagement.apiError?.detail}
+        code={roleManagement.apiError?.code}
+        timestamp={roleManagement.apiError?.timestamp}
+      />
+
+      <ErrorDialog
+        open={permissionManagement.errorDialogOpen}
+        onClose={() => permissionManagement.setErrorDialogOpen(false)}
+        type={
+          permissionManagement.apiError?.status === 409
+            ? "info"
+            : permissionManagement.apiError?.status === 500
+              ? "error"
+              : "warning"
+        }
+        title={permissionManagement.apiError?.title || "Error"}
+        detail={permissionManagement.apiError?.detail}
+        code={permissionManagement.apiError?.code}
+        timestamp={permissionManagement.apiError?.timestamp}
       />
     </Container>
   );

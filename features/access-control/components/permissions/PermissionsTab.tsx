@@ -1,23 +1,37 @@
 import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Key } from "lucide-react";
-import { getResourceDisplay, getActionDisplay } from "../utils";
-import { PermissionsTabSkeleton } from "./shimmer";
-import type { Permission } from "../types";
+import { RoleGuard } from "@/components/common/RoleGuard";
+import { Key, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { getResourceDisplay, getActionDisplay } from "../../utils";
+import { PermissionsTabSkeleton } from "../shimmer";
+import type { Permission } from "../../types";
 
 interface PermissionsTabProps {
   permissionsLoading: boolean;
   groupedPermissions: Record<string, Permission[]>;
   search: string;
+  onEdit: (permission: Permission) => void;
+  onDelete: (permission: Permission) => void;
+  isSuperAdmin: boolean;
 }
 
 export function PermissionsTab({
   permissionsLoading,
   groupedPermissions,
   search,
+  onEdit,
+  onDelete,
+  isSuperAdmin,
 }: PermissionsTabProps) {
   return (
     <TabsContent value="permissions" className="mt-0 space-y-6">
@@ -79,10 +93,40 @@ export function PermissionsTab({
                           <ActionIcon className="h-3.5 w-3.5 shrink-0" />
                           <Typography
                             variant="small"
-                            className="truncate text-sm font-semibold"
+                            className="flex-1 truncate text-sm font-semibold"
                           >
                             {actionDisplay.label}
                           </Typography>
+                          {isSuperAdmin && (
+                            <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 shrink-0 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                  >
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => onEdit(permission)}
+                                  >
+                                    <Edit className="mr-2 h-3.5 w-3.5" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => onDelete(permission)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </RoleGuard>
+                          )}
                         </div>
                         {permission.description && (
                           <Typography
