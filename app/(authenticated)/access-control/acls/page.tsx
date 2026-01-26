@@ -1,3 +1,4 @@
+import { RoleGuard } from "@/components/common";
 import { ACLsFeature } from "@/features/access-control";
 import type { Metadata } from "next";
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function ACLsPage() {
-  return <ACLsFeature />;
+  return (
+    <RoleGuard allowedRoles={["SUPER_ADMIN"]} showErrorPage={true}>
+      <ACLsFeature />
+    </RoleGuard>
+  );
 }

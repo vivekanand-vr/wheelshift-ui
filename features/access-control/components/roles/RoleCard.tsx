@@ -69,7 +69,7 @@ export function RoleCard({
             </div>
           </div>
 
-          <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+          <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

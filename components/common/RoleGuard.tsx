@@ -31,9 +31,16 @@ interface RoleGuardProps {
 
   /**
    * Content to render when not authorized (optional)
-   * If not provided, default 403 error page will be rendered
+   * If not provided, content will be hidden (returns null)
    */
   fallback?: ReactNode;
+
+  /**
+   * Whether to show full 403 error page when not authorized
+   * Use this for full-page protection. Defaults to false.
+   * When false, unauthorized content is simply hidden.
+   */
+  showErrorPage?: boolean;
 
   /**
    * Whether to show loading state while checking auth
@@ -46,45 +53,13 @@ interface RoleGuardProps {
   loadingComponent?: ReactNode;
 }
 
-/**
- * RoleGuard Component
- *
- * Protects content based on user roles and/or permissions.
- * Gets authentication state from Redux store.
- *
- * @example
- * // Only show to ADMIN users
- * <RoleGuard allowedRoles={["ADMIN"]}>
- *   <AdminPanel />
- * </RoleGuard>
- *
- * @example
- * // Show to users with specific permission
- * <RoleGuard requiredPermissions={["storage:manage"]}>
- *   <StorageManager />
- * </RoleGuard>
- *
- * @example
- * // Show to users with any of the specified roles
- * <RoleGuard allowedRoles={["ADMIN", "STORE_MANAGER"]} requirementType="any">
- *   <InventoryView />
- * </RoleGuard>
- *
- * @example
- * // Show fallback when not authorized
- * <RoleGuard
- *   allowedRoles={["SUPER_ADMIN"]}
- *   fallback={<div>Access Denied</div>}
- * >
- *   <SuperAdminPanel />
- * </RoleGuard>
- */
 export const RoleGuard = ({
   allowedRoles,
   requiredPermissions,
   requirementType = "any",
   children,
   fallback,
+  showErrorPage = false,
   showLoadingState = false,
   loadingComponent = <div>Loading...</div>,
 }: RoleGuardProps) => {
@@ -97,9 +72,15 @@ export const RoleGuard = ({
     return <>{loadingComponent}</>;
   }
 
-  // If not authenticated, show fallback or default 403 page
+  // If not authenticated, show fallback, error page, or hide content
   if (!isAuthenticated || !user) {
-    return <>{fallback ?? <Error403 />}</>;
+    if (fallback !== undefined) {
+      return <>{fallback}</>;
+    }
+    if (showErrorPage) {
+      return <Error403 />;
+    }
+    return null; // Hide content by default
   }
 
   // If no restrictions specified, allow access
@@ -161,6 +142,20 @@ export const RoleGuard = ({
     isAuthorized = hasRequiredPermissions;
   }
 
-  // Render children if authorized, otherwise render fallback or default 403 page
-  return <>{isAuthorized ? children : (fallback ?? <Error403 />)}</>;
+  // Render children if authorized, otherwise render fallback, error page, or hide
+  if (isAuthorized) {
+    return <>{children}</>;
+  }
+
+  // Not authorized - check what to render
+  if (fallback !== undefined) {
+    return <>{fallback}</>;
+  }
+
+  if (showErrorPage) {
+    return <Error403 />;
+  }
+
+  // Default: hide the content
+  return null;
 };

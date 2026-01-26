@@ -1,3 +1,4 @@
+import { RoleGuard } from "@/components/common";
 import { EmployeesFeature } from "@/features/access-control";
 import type { Metadata } from "next";
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function EmployeesPage() {
-  return <EmployeesFeature />;
+  return (
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]} showErrorPage={true}>
+      <EmployeesFeature />
+    </RoleGuard>
+  );
 }
