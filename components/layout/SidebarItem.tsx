@@ -5,6 +5,12 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Typography } from "@/components/ui/typography";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import type { NavigationItem } from "@/lib/constants/navigation";
@@ -16,14 +22,27 @@ interface SidebarItemProps {
 
 export function SidebarItem({ item, collapsed }: SidebarItemProps) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const isActive =
     pathname === item.href || pathname.startsWith(item.href + "/");
   const hasChildren = item.children && item.children.length > 0;
 
+  // Default to open if any child is active
+  const hasActiveChild =
+    hasChildren &&
+    item.children?.some(
+      (child) =>
+        pathname === child.href || pathname.startsWith(child.href + "/")
+    );
+
+  const [isManuallyOpen, setIsManuallyOpen] = useState(false);
+  const isOpen = hasActiveChild || isManuallyOpen;
+
   const handleClick = () => {
     if (hasChildren) {
-      setIsOpen(!isOpen);
+      // Keep sections with an active child open; otherwise allow manual toggle
+      if (!hasActiveChild) {
+        setIsManuallyOpen((prev) => !prev);
+      }
     }
   };
 
@@ -57,21 +76,67 @@ export function SidebarItem({ item, collapsed }: SidebarItemProps) {
   );
 
   if (hasChildren) {
+    // When collapsed, show a dropdown menu
+    if (collapsed) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                "flex w-full items-center justify-center gap-3 rounded-lg px-3 py-2.5 transition-all",
+                "hover:bg-sidebar-hover dark:hover:bg-neutral-800",
+                isActive && "bg-sidebar-active dark:bg-neutral-800"
+              )}
+              title={item.title}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="right"
+            align="start"
+            className="w-48 dark:bg-neutral-950"
+          >
+            {item.children?.map((child) => {
+              const ChildIcon = child.icon;
+              const isChildActive =
+                pathname === child.href ||
+                pathname.startsWith(child.href + "/");
+              return (
+                <DropdownMenuItem key={child.href} asChild>
+                  <Link
+                    href={child.href}
+                    className={cn(
+                      "flex items-center gap-2",
+                      isChildActive && "bg-accent"
+                    )}
+                  >
+                    <ChildIcon className="h-4 w-4" />
+                    <span>{child.title}</span>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    // When expanded, show inline nested list
     return (
       <div>
         <button
           onClick={handleClick}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-all",
+            "flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-all",
             "hover:bg-sidebar-hover dark:hover:bg-neutral-800",
-            isActive && "bg-sidebar-active dark:bg-neutral-800",
-            collapsed && "justify-center"
+            isActive && "bg-sidebar-active dark:bg-neutral-800"
           )}
         >
           {ItemContent}
         </button>
-        {isOpen && !collapsed && (
-          <div className="mt-1 ml-4 space-y-1 border-l-2 border-neutral-200 pl-4 dark:border-neutral-800">
+        {isOpen && (
+          <div className="mt-1 ml-4 space-y-1 border-l-2 border-neutral-200 pl-4 dark:border-neutral-950">
             {item.children?.map((child) => (
               <SidebarItem
                 key={child.href}

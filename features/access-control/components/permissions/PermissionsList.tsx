@@ -1,4 +1,3 @@
-import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +11,11 @@ import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { Key, MoreVertical, Edit, Trash2 } from "lucide-react";
-import { getResourceDisplay, getActionDisplay } from "../utils";
-import { PermissionsTabSkeleton } from "./shimmer";
-import type { Permission } from "../types";
+import { getResourceDisplay, getActionDisplay } from "../../utils";
+import { PermissionsTabSkeleton } from "../shimmer";
+import type { Permission } from "../../types";
 
-interface PermissionsTabProps {
+interface PermissionsListProps {
   permissionsLoading: boolean;
   groupedPermissions: Record<string, Permission[]>;
   search: string;
@@ -25,16 +24,16 @@ interface PermissionsTabProps {
   isSuperAdmin: boolean;
 }
 
-export function PermissionsTab({
+export function PermissionsList({
   permissionsLoading,
   groupedPermissions,
   search,
   onEdit,
   onDelete,
   isSuperAdmin,
-}: PermissionsTabProps) {
+}: PermissionsListProps) {
   return (
-    <TabsContent value="permissions" className="mt-0 space-y-6">
+    <div className="space-y-6">
       {permissionsLoading ? (
         <PermissionsTabSkeleton />
       ) : Object.keys(groupedPermissions).length === 0 ? (
@@ -145,6 +144,6 @@ export function PermissionsTab({
           })}
         </div>
       )}
-    </TabsContent>
+    </div>
   );
 }

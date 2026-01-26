@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +21,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EmployeesTabSkeleton } from "./shimmer";
+import { EmployeesTabSkeleton } from "../shimmer";
 import type { Employee } from "@/types";
 
-interface EmployeesTabProps {
+interface EmployeesTableProps {
   employees: Employee[];
   employeesLoading: boolean;
   totalPages: number;
@@ -39,7 +38,7 @@ interface EmployeesTabProps {
   onPageChange: (page: number) => void;
 }
 
-export function EmployeesTab({
+export function EmployeesTable({
   employees,
   employeesLoading,
   totalPages,
@@ -51,12 +50,12 @@ export function EmployeesTab({
   onManageScopes,
   onManagePermissions,
   onPageChange,
-}: EmployeesTabProps) {
+}: EmployeesTableProps) {
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(currentPage * pageSize, totalElements);
 
   return (
-    <TabsContent value="employees" className="mt-0 space-y-6">
+    <div className="space-y-6">
       {employeesLoading ? (
         <EmployeesTabSkeleton />
       ) : employees.length === 0 ? (
@@ -286,6 +285,6 @@ export function EmployeesTab({
           )}
         </>
       )}
-    </TabsContent>
+    </div>
   );
 }

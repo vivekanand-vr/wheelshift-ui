@@ -11,6 +11,9 @@ import {
   UserCircle,
   Bell,
   Shield,
+  UserCog,
+  Key,
+  Lock,
 } from "lucide-react";
 import type { UserRole } from "../../types";
 
@@ -93,6 +96,32 @@ export const navigationItems: NavigationItem[] = [
     href: "/access-control",
     icon: Shield,
     roles: ["SUPER_ADMIN", "ADMIN"],
+    children: [
+      {
+        title: "Roles",
+        href: "/access-control/roles",
+        icon: Shield,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "Permissions",
+        href: "/access-control/permissions",
+        icon: Key,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "Employees",
+        href: "/access-control/employees",
+        icon: UserCog,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "ACLs",
+        href: "/access-control/acls",
+        icon: Lock,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+    ],
   },
   {
     title: "Notifications",

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,27 +18,17 @@ import {
 } from "@/components/ui/select";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { ErrorDialog } from "@/components/common/ErrorDialog";
+import { Shield, Trash2, Plus, Search, Lock } from "lucide-react";
+import { CreateACLDialog } from "./CreateACLDialog";
+import { DeleteACLDialog } from "./DeleteACLDialog";
+import { useACLManagement } from "../../hooks/useACLManagement";
+import type { ResourceACL, SubjectType, ResourceType } from "../../types";
 import {
-  Shield,
-  Eye,
-  Edit,
-  User,
-  Users,
-  Building2,
-  Trash2,
-  Plus,
-  Search,
-  Lock,
-} from "lucide-react";
-import { CreateACLDialog } from "./acls/CreateACLDialog";
-import { DeleteACLDialog } from "./acls/DeleteACLDialog";
-import { useACLManagement } from "../hooks/useACLManagement";
-import type {
-  ResourceACL,
-  SubjectType,
-  AccessLevel,
-  ResourceType,
-} from "../types";
+  getAccessIcon,
+  getAccessColor,
+  getSubjectIcon,
+  getSubjectColor,
+} from "../../utils";
 
 const RESOURCE_TYPES: ResourceType[] = [
   "CAR",
@@ -50,7 +39,7 @@ const RESOURCE_TYPES: ResourceType[] = [
   "TRANSACTION",
 ];
 
-export function ACLsTab() {
+export function ACLs() {
   const {
     resourceACLs,
     aclsLoading,
@@ -129,60 +118,8 @@ export function ACLsTab() {
     return matchesSearch && matchesFilter;
   });
 
-  const getAccessIcon = (level: AccessLevel) => {
-    switch (level) {
-      case "READ":
-        return Eye;
-      case "WRITE":
-        return Edit;
-      case "ADMIN":
-        return Shield;
-      default:
-        return Eye;
-    }
-  };
-
-  const getAccessColor = (level: AccessLevel) => {
-    switch (level) {
-      case "READ":
-        return "text-blue-600";
-      case "WRITE":
-        return "text-orange-600";
-      case "ADMIN":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
-  const getSubjectIcon = (type: SubjectType) => {
-    switch (type) {
-      case "EMPLOYEE":
-        return User;
-      case "ROLE":
-        return Users;
-      case "DEPARTMENT":
-        return Building2;
-      default:
-        return User;
-    }
-  };
-
-  const getSubjectColor = (type: SubjectType) => {
-    switch (type) {
-      case "EMPLOYEE":
-        return "text-blue-600";
-      case "ROLE":
-        return "text-purple-600";
-      case "DEPARTMENT":
-        return "text-green-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
   return (
-    <TabsContent value="acls" className="mt-0 space-y-6">
+    <div className="space-y-6">
       {/* Resource Selector */}
       <Card className="p-6">
         <div className="space-y-4">
@@ -451,6 +388,6 @@ export function ACLsTab() {
           timestamp={apiError.timestamp}
         />
       )}
-    </TabsContent>
+    </div>
   );
 }
