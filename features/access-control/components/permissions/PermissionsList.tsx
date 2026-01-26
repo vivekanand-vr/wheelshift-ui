@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { Key, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { getResourceDisplay, getActionDisplay } from "../../utils";
-import { PermissionsTabSkeleton } from "../shimmer";
+import { PermissionsListSkeleton } from "../shimmer";
 import type { Permission } from "../../types";
 
 interface PermissionsListProps {
@@ -35,7 +35,7 @@ export function PermissionsList({
   return (
     <div className="space-y-6">
       {permissionsLoading ? (
-        <PermissionsTabSkeleton />
+        <PermissionsListSkeleton />
       ) : Object.keys(groupedPermissions).length === 0 ? (
         <EmptyState
           icon={<Key className="h-6 w-6" />}

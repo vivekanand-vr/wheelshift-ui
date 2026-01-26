@@ -90,26 +90,6 @@ export const checkAuthAsync = createAsyncThunk(
   }
 );
 
-/**
- * Async thunk to validate current session
- * Checks if the session is still valid and not expired
- * Used for periodic session validation
- * @returns Session validation result
- */
-export const validateSessionAsync = createAsyncThunk(
-  "auth/validateSession",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await authApi.validateSession();
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.code || "SESSION_VALIDATION_FAILED"
-      );
-    }
-  }
-);
-
 const authSlice = createSlice({
   name: "auth",
   initialState,

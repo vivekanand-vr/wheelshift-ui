@@ -28,15 +28,9 @@ export interface LoginResponse {
   name: string;
   roles: string[];
   permissions: string[];
-}
-
-export interface SessionValidationResponse {
-  valid: boolean;
-  expired: boolean;
-  message: string;
-  employeeId?: number;
-  email?: string;
-  errorCode?: string;
+  accessToken: string;
+  tokenType: string;
+  message?: string;
 }
 
 // Component Types

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth, SessionGuard } from "@/features/auth";
+import { useAuth } from "@/features/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 
@@ -39,14 +39,12 @@ export default function AuthenticatedLayout({
   }
 
   return (
-    <SessionGuard>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <Header />
-          <main className="bg-background flex-1 overflow-auto">{children}</main>
-        </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header />
+        <main className="bg-background flex-1 overflow-auto">{children}</main>
       </div>
-    </SessionGuard>
+    </div>
   );
 }
