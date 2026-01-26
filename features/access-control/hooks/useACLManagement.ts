@@ -87,18 +87,13 @@ export function useACLManagement() {
   const handleDeleteACL = (aclId: number, onSuccess?: () => void) => {
     if (!selectedResource) return;
 
-    deleteMutation.mutate(
-      {
-        aclId,
+    deleteMutation.mutate(aclId, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedACL(null);
       },
-      {
-        onSuccess: () => {
-          onSuccess?.();
-          setSelectedACL(null);
-        },
-        onError: handleApiError,
-      }
-    );
+      onError: handleApiError,
+    });
   };
 
   const handleSelectResource = (resource: ResourceIdentifier | null) => {

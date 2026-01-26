@@ -9,3 +9,4 @@ export * from "./useEmployeeManagement";
 export * from "./useDataScopeManagement";
 export * from "./useACLManagement";
 export * from "./useEmployeeDataScopes";
+export * from "./useEmployeeCustomPermissions";

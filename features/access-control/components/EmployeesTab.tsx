@@ -8,7 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Users, ChevronLeft, ChevronRight, Shield, MapPin } from "lucide-react";
+import {
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Shield,
+  MapPin,
+  Key,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +35,7 @@ interface EmployeesTabProps {
   search: string;
   onManageRoles: (employee: Employee) => void;
   onManageScopes: (employee: Employee) => void;
+  onManagePermissions: (employee: Employee) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -41,6 +49,7 @@ export function EmployeesTab({
   search,
   onManageRoles,
   onManageScopes,
+  onManagePermissions,
   onPageChange,
 }: EmployeesTabProps) {
   const startIndex = (currentPage - 1) * pageSize + 1;
@@ -194,6 +203,12 @@ export function EmployeesTab({
                             >
                               <Shield className="mr-2 h-4 w-4" />
                               Edit Roles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => onManagePermissions(employee)}
+                            >
+                              <Key className="mr-2 h-4 w-4" />
+                              Edit Permissions
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => onManageScopes(employee)}

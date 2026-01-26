@@ -10,11 +10,13 @@ import type {
   Permission,
   EmployeeDataScope,
   ResourceACL,
+  EmployeePermission,
   RoleRequest,
   PermissionRequest,
   DataScopeRequest,
   ResourceACLRequest,
   AssignRoleRequest,
+  EmployeePermissionRequest,
   ResourceType,
 } from "../types";
 
@@ -114,6 +116,19 @@ export const permissionService = {
    */
   getPermissionById: async (permissionId: number): Promise<Permission> => {
     const response = await axios.get(`/rbac/permissions/${permissionId}`);
+    return response.data;
+  },
+
+  /**
+   * Get all permissions for a specific employee (both custom and role-based)
+   * GET /api/v1/rbac/permissions/employee/{employeeId}
+   */
+  getEmployeeAllPermissions: async (
+    employeeId: number
+  ): Promise<Permission[]> => {
+    const response = await axios.get(
+      `/rbac/permissions/employee/${employeeId}`
+    );
     return response.data;
   },
 
@@ -327,5 +342,71 @@ export const resourceACLService = {
    */
   revokeResourceAccess: async (id: number): Promise<void> => {
     await axios.delete(`/rbac/acl/${id}`);
+  },
+};
+
+// ============================================================================
+// EMPLOYEE PERMISSION SERVICES
+// ============================================================================
+
+export const employeePermissionService = {
+  /**
+   * Get employee's custom permissions
+   * GET /api/v1/rbac/employee-permissions/employees/{employeeId}
+   */
+  getEmployeeCustomPermissions: async (
+    employeeId: number
+  ): Promise<EmployeePermission[]> => {
+    const response = await axios.get(
+      `/rbac/employee-permissions/employees/${employeeId}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Assign custom permission to employee
+   * POST /api/v1/rbac/employee-permissions/employees/{employeeId}
+   */
+  assignPermissionToEmployee: async (
+    employeeId: number,
+    data: EmployeePermissionRequest
+  ): Promise<EmployeePermission> => {
+    const response = await axios.post(
+      `/rbac/employee-permissions/employees/${employeeId}`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Remove custom permission from employee
+   * DELETE /api/v1/rbac/employee-permissions/employees/{employeeId}/permissions/{permissionId}
+   */
+  removePermissionFromEmployee: async (
+    employeeId: number,
+    permissionId: number
+  ): Promise<void> => {
+    await axios.delete(
+      `/rbac/employee-permissions/employees/${employeeId}/permissions/${permissionId}`
+    );
+  },
+
+  /**
+   * Remove all custom permissions from employee
+   * DELETE /api/v1/rbac/employee-permissions/employees/{employeeId}
+   */
+  removeAllCustomPermissions: async (employeeId: number): Promise<void> => {
+    await axios.delete(`/rbac/employee-permissions/employees/${employeeId}`);
+  },
+
+  /**
+   * Get employee permission by ID
+   * GET /api/v1/rbac/employee-permissions/{id}
+   */
+  getEmployeePermissionById: async (
+    id: number
+  ): Promise<EmployeePermission> => {
+    const response = await axios.get(`/rbac/employee-permissions/${id}`);
+    return response.data;
   },
 };

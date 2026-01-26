@@ -8,6 +8,7 @@ import {
   roleService,
   permissionService,
   employeeRoleService,
+  employeePermissionService,
   dataScopeService,
   resourceACLService,
 } from "./services";
@@ -18,6 +19,7 @@ import type {
   DataScopeRequest,
   ResourceACLRequest,
   AssignRoleRequest,
+  EmployeePermissionRequest,
 } from "../types";
 
 // ============================================================================
@@ -228,6 +230,98 @@ export const useAssignRolesToEmployee = () => {
 };
 
 // ============================================================================
+// EMPLOYEE CUSTOM PERMISSION MUTATIONS
+// ============================================================================
+
+export const useAssignPermissionToEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      employeeId,
+      data,
+    }: {
+      employeeId: number;
+      data: EmployeePermissionRequest;
+    }) =>
+      employeePermissionService.assignPermissionToEmployee(employeeId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(
+          variables.employeeId
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(variables.employeeId),
+      });
+      toast.success("Permission assigned to employee");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to assign permission"
+      );
+    },
+  });
+};
+
+export const useRemovePermissionFromEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      employeeId,
+      permissionId,
+    }: {
+      employeeId: number;
+      permissionId: number;
+    }) =>
+      employeePermissionService.removePermissionFromEmployee(
+        employeeId,
+        permissionId
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(
+          variables.employeeId
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(variables.employeeId),
+      });
+      toast.success("Permission removed from employee");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to remove permission"
+      );
+    },
+  });
+};
+
+export const useRemoveAllCustomPermissions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (employeeId: number) =>
+      employeePermissionService.removeAllCustomPermissions(employeeId),
+    onSuccess: (_, employeeId) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(employeeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(employeeId),
+      });
+      toast.success("All custom permissions removed");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to remove permissions"
+      );
+    },
+  });
+};
+
+// ============================================================================
 // DATA SCOPE MUTATIONS
 // ============================================================================
 
@@ -322,14 +416,8 @@ export const useCreateResourceACL = () => {
   return useMutation({
     mutationFn: (data: ResourceACLRequest) =>
       resourceACLService.grantResourceAccess(data),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: accessControlKeys.resourceACLs(
-          variables.resourceType,
-          variables.resourceId
-        ),
-      });
       toast.success("Access control entry created successfully");
     },
     onError: (error: any) => {
@@ -342,9 +430,9 @@ export const useDeleteResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ aclId }: { aclId: number }) =>
+    mutationFn: (aclId: number) =>
       resourceACLService.revokeResourceAccess(aclId),
-    onSuccess: (_) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
       toast.success("Access control entry deleted successfully");
     },

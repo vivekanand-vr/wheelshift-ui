@@ -7,6 +7,7 @@ import {
   roleService,
   permissionService,
   employeeRoleService,
+  employeePermissionService,
   dataScopeService,
   resourceACLService,
 } from "./services";
@@ -22,6 +23,14 @@ export const accessControlKeys = {
   employees: () => [...accessControlKeys.all, "employees"] as const,
   employeePermissions: (employeeId: number) =>
     [...accessControlKeys.employees(), employeeId, "permissions"] as const,
+  employeeCustomPermissions: (employeeId: number) =>
+    [
+      ...accessControlKeys.employees(),
+      employeeId,
+      "custom-permissions",
+    ] as const,
+  employeeAllPermissions: (employeeId: number) =>
+    [...accessControlKeys.employees(), employeeId, "all-permissions"] as const,
   dataScopes: () => [...accessControlKeys.all, "data-scopes"] as const,
   dataScopesByEmployee: (employeeId: number) =>
     [...accessControlKeys.dataScopes(), "employee", employeeId] as const,
@@ -86,6 +95,25 @@ export const useEmployeePermissions = (employeeId: number) => {
     queryKey: accessControlKeys.employeePermissions(employeeId),
     queryFn: () => employeeRoleService.getEmployeePermissions(employeeId),
     enabled: !!employeeId,
+  });
+};
+
+export const useEmployeeCustomPermissions = (employeeId: number) => {
+  return useQuery({
+    queryKey: accessControlKeys.employeeCustomPermissions(employeeId),
+    queryFn: () =>
+      employeePermissionService.getEmployeeCustomPermissions(employeeId),
+    enabled: !!employeeId,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+};
+
+export const useEmployeeAllPermissions = (employeeId: number) => {
+  return useQuery({
+    queryKey: accessControlKeys.employeeAllPermissions(employeeId),
+    queryFn: () => permissionService.getEmployeeAllPermissions(employeeId),
+    enabled: !!employeeId,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 };
 

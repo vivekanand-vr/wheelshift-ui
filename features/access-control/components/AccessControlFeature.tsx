@@ -34,6 +34,7 @@ import {
 import { PermissionManager } from "./permissions/PermissionManager";
 import { EmployeeDataScopesDialog } from "./employee/EmployeeDataScopesDialog";
 import { EmployeeRolesDialog } from "./employee/EmployeeRolesDialog";
+import { EmployeePermissionsDialog } from "./employee/EmployeePermissionsDialog";
 import { PermissionsTab } from "./PermissionsTab";
 import { EmployeesTab } from "./EmployeesTab";
 import { ACLsTab } from "./ACLsTab";
@@ -103,6 +104,8 @@ export function AccessControlFeature() {
   const [employeeRolesDialogOpen, setEmployeeRolesDialogOpen] = useState(false);
   const [employeeScopesDialogOpen, setEmployeeScopesDialogOpen] =
     useState(false);
+  const [employeePermissionsDialogOpen, setEmployeePermissionsDialogOpen] =
+    useState(false);
 
   // Hooks with all business logic
   const roleManagement = useRoleManagement();
@@ -138,6 +141,11 @@ export function AccessControlFeature() {
   const handleManageScopes = (employee: Employee) => {
     employeeManagement.setSelectedEmployee(employee);
     setEmployeeScopesDialogOpen(true);
+  };
+
+  const handleManagePermissions = (employee: Employee) => {
+    employeeManagement.setSelectedEmployee(employee);
+    setEmployeePermissionsDialogOpen(true);
   };
 
   return (
@@ -286,6 +294,7 @@ export function AccessControlFeature() {
             pageSize={employeeManagement.pageSize}
             search={search}
             onManageRoles={handleManageRoles}
+            onManagePermissions={handleManagePermissions}
             onManageScopes={handleManageScopes}
             onPageChange={employeeManagement.setCurrentPage}
           />
@@ -423,6 +432,17 @@ export function AccessControlFeature() {
         }}
         employee={employeeManagement.selectedEmployee}
       />
+
+      {employeeManagement.selectedEmployee && (
+        <EmployeePermissionsDialog
+          open={employeePermissionsDialogOpen}
+          onClose={() => {
+            setEmployeePermissionsDialogOpen(false);
+            employeeManagement.setSelectedEmployee(null);
+          }}
+          employee={employeeManagement.selectedEmployee}
+        />
+      )}
 
       {/* Error Dialogs */}
       <ErrorDialog

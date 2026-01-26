@@ -145,6 +145,29 @@ export interface AssignRoleRequest {
   roleIds: number[];
 }
 
+export interface EmployeePermission {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  permissionId: number;
+  permissionName: string;
+  permissionResource: string;
+  permissionAction: string;
+  grantedBy: number;
+  grantedByName: string;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployeePermissionRequest {
+  permissionId: number;
+  reason?: string;
+}
+
+export type EmployeePermissionResponse = EmployeePermission;
+
 // UI-specific types
 export interface RoleWithStats extends Role {
   employeeCount?: number;
