@@ -235,11 +235,19 @@ export const useCreateDataScope = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: DataScopeRequest) =>
-      dataScopeService.createDataScope(data),
-    onSuccess: () => {
+    mutationFn: ({
+      employeeId,
+      data,
+    }: {
+      employeeId: number;
+      data: DataScopeRequest;
+    }) => dataScopeService.createDataScope(String(employeeId), data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.dataScopesByEmployee(variables.employeeId),
       });
       toast.success("Data scope created successfully");
     },
@@ -259,14 +267,22 @@ export const useUpdateDataScope = () => {
       scopeId,
       data,
     }: {
-      scopeId: number;
+      scopeId: number | string;
       data: DataScopeRequest;
-    }) => dataScopeService.updateDataScope(scopeId, data),
-    onSuccess: () => {
+      employeeId?: number;
+    }) => dataScopeService.updateDataScope(String(scopeId), data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
       });
       toast.success("Data scope updated successfully");
+      if (variables.employeeId) {
+        queryClient.invalidateQueries({
+          queryKey: accessControlKeys.dataScopesByEmployee(
+            variables.employeeId
+          ),
+        });
+      }
     },
     onError: (error: any) => {
       toast.error(
@@ -280,8 +296,9 @@ export const useDeleteDataScope = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (scopeId: number) => dataScopeService.deleteDataScope(scopeId),
-    onSuccess: () => {
+    mutationFn: ({ scopeId }: { scopeId: number | string }) =>
+      dataScopeService.deleteDataScope(String(scopeId)),
+    onSuccess: (_) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
       });
@@ -304,9 +321,15 @@ export const useCreateResourceACL = () => {
 
   return useMutation({
     mutationFn: (data: ResourceACLRequest) =>
-      resourceACLService.createResourceACL(data),
-    onSuccess: () => {
+      resourceACLService.grantResourceAccess(data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
       toast.success("Access control entry created successfully");
     },
     onError: (error: any) => {
@@ -319,8 +342,9 @@ export const useDeleteResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (aclId: number) => resourceACLService.deleteResourceACL(aclId),
-    onSuccess: () => {
+    mutationFn: ({ aclId }: { aclId: number }) =>
+      resourceACLService.revokeResourceAccess(aclId),
+    onSuccess: (_) => {
       queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
       toast.success("Access control entry deleted successfully");
     },

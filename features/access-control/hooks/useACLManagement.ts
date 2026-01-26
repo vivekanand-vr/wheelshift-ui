@@ -6,9 +6,8 @@
  */
 
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { resourceACLService } from "../api/services";
+import { useCreateResourceACL, useDeleteResourceACL } from "../api/mutations";
+import { useResourceACLs } from "../api/queries";
 import type {
   ResourceACL,
   ResourceACLRequest,
@@ -23,7 +22,6 @@ interface ResourceIdentifier {
 }
 
 export function useACLManagement() {
-  const queryClient = useQueryClient();
   const [selectedResource, setSelectedResource] =
     useState<ResourceIdentifier | null>(null);
   const [selectedACL, setSelectedACL] = useState<ResourceACL | null>(null);
@@ -33,27 +31,20 @@ export function useACLManagement() {
   const [apiError, setApiError] = useState<ApiErrorResponse | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
+  const resourceType = selectedResource?.resourceType as ResourceType;
+  const resourceId = selectedResource
+    ? String(selectedResource.resourceId)
+    : "";
+
   // Fetch ACLs for selected resource only (no "all ACLs" query)
   const {
     data: resourceACLs = [],
     isLoading: aclsLoading,
     error: aclsError,
-  } = useQuery({
-    queryKey: [
-      "acls",
-      "resource",
-      selectedResource?.resourceType,
-      selectedResource?.resourceId,
-    ],
-    queryFn: () =>
-      selectedResource
-        ? resourceACLService.getResourceACLs(
-            selectedResource.resourceType,
-            String(selectedResource.resourceId)
-          )
-        : Promise.resolve([]),
-    enabled: !!selectedResource,
-  });
+  } = useResourceACLs(resourceType, resourceId);
+
+  const createMutation = useCreateResourceACL();
+  const deleteMutation = useDeleteResourceACL();
 
   // Error handler
   const handleApiError = (error: any) => {
@@ -72,28 +63,6 @@ export function useACLManagement() {
     }
   };
 
-  // Create ACL mutation
-  const createMutation = useMutation({
-    mutationFn: (data: ResourceACLRequest) =>
-      resourceACLService.grantResourceAccess(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["acls"] });
-      toast.success("ACL entry created successfully");
-    },
-    onError: handleApiError,
-  });
-
-  // Delete ACL mutation
-  const deleteMutation = useMutation({
-    mutationFn: (aclId: number) =>
-      resourceACLService.revokeResourceAccess(aclId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["acls"] });
-      toast.success("ACL entry deleted successfully");
-    },
-    onError: handleApiError,
-  });
-
   // Handler functions
   const handleCreateACL = (
     resourceType: ResourceType,
@@ -111,16 +80,25 @@ export function useACLManagement() {
         onSuccess?.();
         setSelectedACL(null);
       },
+      onError: handleApiError,
     });
   };
 
   const handleDeleteACL = (aclId: number, onSuccess?: () => void) => {
-    deleteMutation.mutate(aclId, {
-      onSuccess: () => {
-        onSuccess?.();
-        setSelectedACL(null);
+    if (!selectedResource) return;
+
+    deleteMutation.mutate(
+      {
+        aclId,
       },
-    });
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          setSelectedACL(null);
+        },
+        onError: handleApiError,
+      }
+    );
   };
 
   const handleSelectResource = (resource: ResourceIdentifier | null) => {
