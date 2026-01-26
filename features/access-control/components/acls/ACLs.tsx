@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,7 @@ import { Shield, Trash2, Plus, Search, Lock } from "lucide-react";
 import { CreateACLDialog } from "./CreateACLDialog";
 import { DeleteACLDialog } from "./DeleteACLDialog";
 import { useACLManagement } from "../../hooks/useACLManagement";
-import type { ResourceACL, SubjectType, ResourceType } from "../../types";
+import type { SubjectType, ResourceType } from "../../types";
 import {
   getAccessIcon,
   getAccessColor,
@@ -41,7 +40,7 @@ const RESOURCE_TYPES: ResourceType[] = [
 
 export function ACLs() {
   const {
-    resourceACLs,
+    filteredACLs,
     aclsLoading,
     selectedResource,
     selectedACL,
@@ -50,81 +49,38 @@ export function ACLs() {
     errorDialogOpen,
     isCreating,
     isDeleting,
-    setSelectedACL,
+    searchQuery,
+    resourceType,
+    resourceId,
+    inputWarning,
+    createDialogOpen,
+    deleteDialogOpen,
     setErrorDialogOpen,
+    setSearchQuery,
+    setResourceType,
+    setResourceId,
+    setInputWarning,
     handleCreateACL,
     handleDeleteACL,
-    handleSelectResource,
+    handleLoadResource,
+    handleOpenCreateDialog,
+    handleOpenDeleteDialog,
+    handleCloseCreateDialog,
+    handleCloseDeleteDialog,
     setFilterSubjectType,
   } = useACLManagement();
-
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [resourceType, setResourceType] = useState<ResourceType>("CAR");
-  const [resourceId, setResourceId] = useState("");
-  const [inputWarning, setInputWarning] = useState<string | null>(null);
-
-  const handleLoadResource = () => {
-    const parsedId = parseInt(resourceId);
-    if (!resourceType || !resourceId) return;
-
-    if (isNaN(parsedId)) {
-      setInputWarning(
-        "Resource ID must be numeric (e.g., 123). Non-numeric values are rejected by the API."
-      );
-      return;
-    }
-
-    handleSelectResource({ resourceType, resourceId: parsedId });
-  };
-
-  const handleOpenCreateDialog = () => {
-    setCreateDialogOpen(true);
-  };
-
-  const handleOpenDeleteDialog = (acl: ResourceACL) => {
-    setSelectedACL(acl);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleCloseCreateDialog = () => {
-    setCreateDialogOpen(false);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setSelectedACL(null);
-  };
 
   const handleCreateSubmit = (
     resType: ResourceType,
     resId: number,
     data: any
   ) => {
-    handleCreateACL(resType, String(resId), data, () => {
-      setCreateDialogOpen(false);
-    });
+    handleCreateACL(resType, String(resId), data, () => {});
   };
 
   const handleDeleteConfirm = (aclId: number) => {
-    handleDeleteACL(aclId, () => {
-      setDeleteDialogOpen(false);
-    });
+    handleDeleteACL(aclId, () => {});
   };
-
-  // Filter ACLs based on search and subject type
-  const filteredACLs = resourceACLs.filter((acl) => {
-    const matchesSearch =
-      acl.resourceType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      acl.subjectType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      String(acl.subjectId).includes(searchQuery);
-
-    const matchesFilter =
-      filterSubjectType === "all" || acl.subjectType === filterSubjectType;
-
-    return matchesSearch && matchesFilter;
-  });
 
   return (
     <div className="space-y-6">

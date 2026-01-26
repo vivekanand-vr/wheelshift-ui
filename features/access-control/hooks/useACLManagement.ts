@@ -5,7 +5,7 @@
  * Handles resource access control list operations with React Query
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCreateResourceACL, useDeleteResourceACL } from "../api/mutations";
 import { useResourceACLs } from "../api/queries";
 import type {
@@ -31,8 +31,32 @@ export function useACLManagement() {
   const [apiError, setApiError] = useState<ApiErrorResponse | null>(null);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
-  const resourceType = selectedResource?.resourceType as ResourceType;
-  const resourceId = selectedResource
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  // Resource selection state
+  const [resourceType, setResourceType] = useState<ResourceType>("CAR");
+  const [resourceId, setResourceId] = useState("");
+  const [inputWarning, setInputWarning] = useState<string | null>(null);
+
+  // Dialog states
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  const selectedResourceType = selectedResource?.resourceType as ResourceType;
+  const selectedResourceId = selectedResource
     ? String(selectedResource.resourceId)
     : "";
 
@@ -41,7 +65,7 @@ export function useACLManagement() {
     data: resourceACLs = [],
     isLoading: aclsLoading,
     error: aclsError,
-  } = useResourceACLs(resourceType, resourceId);
+  } = useResourceACLs(selectedResourceType, selectedResourceId);
 
   const createMutation = useCreateResourceACL();
   const deleteMutation = useDeleteResourceACL();
@@ -100,11 +124,54 @@ export function useACLManagement() {
     setSelectedResource(resource);
   };
 
-  // Filter resource ACLs by subject type (only works when a resource is selected)
-  const filteredACLs =
-    filterSubjectType === "all"
-      ? resourceACLs
-      : resourceACLs.filter((acl) => acl.subjectType === filterSubjectType);
+  const handleLoadResource = () => {
+    const parsedId = parseInt(resourceId);
+    if (!resourceType || !resourceId) return;
+
+    if (isNaN(parsedId)) {
+      setInputWarning(
+        "Resource ID must be numeric (e.g., 123). Non-numeric values are rejected by the API."
+      );
+      return;
+    }
+
+    handleSelectResource({ resourceType, resourceId: parsedId });
+  };
+
+  const handleOpenCreateDialog = () => {
+    setCreateDialogOpen(true);
+  };
+
+  const handleOpenDeleteDialog = (acl: ResourceACL) => {
+    setSelectedACL(acl);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseCreateDialog = () => {
+    setCreateDialogOpen(false);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedACL(null);
+  };
+
+  // Filter resource ACLs by subject type and search query
+  const filteredACLs = resourceACLs.filter((acl) => {
+    const matchesSearch =
+      acl.resourceType
+        .toLowerCase()
+        .includes(debouncedSearchQuery.toLowerCase()) ||
+      acl.subjectType
+        .toLowerCase()
+        .includes(debouncedSearchQuery.toLowerCase()) ||
+      String(acl.subjectId).includes(debouncedSearchQuery);
+
+    const matchesFilter =
+      filterSubjectType === "all" || acl.subjectType === filterSubjectType;
+
+    return matchesSearch && matchesFilter;
+  });
 
   return {
     // Data
@@ -115,6 +182,13 @@ export function useACLManagement() {
     filterSubjectType,
     apiError,
     errorDialogOpen,
+    searchQuery,
+    debouncedSearchQuery,
+    resourceType,
+    resourceId,
+    inputWarning,
+    createDialogOpen,
+    deleteDialogOpen,
 
     // Loading states
     aclsLoading,
@@ -127,9 +201,20 @@ export function useACLManagement() {
     // Actions
     setSelectedACL,
     setErrorDialogOpen,
+    setSearchQuery,
+    setResourceType,
+    setResourceId,
+    setInputWarning,
+    setCreateDialogOpen,
+    setDeleteDialogOpen,
     handleCreateACL,
     handleDeleteACL,
     handleSelectResource,
+    handleLoadResource,
+    handleOpenCreateDialog,
+    handleOpenDeleteDialog,
+    handleCloseCreateDialog,
+    handleCloseDeleteDialog,
     setFilterSubjectType,
   };
 }
