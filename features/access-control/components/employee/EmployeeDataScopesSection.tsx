@@ -250,6 +250,7 @@ export function EmployeeDataScopesSection({
         onSubmit={(data: CreateDataScopeInput) =>
           handleCreateScope(data, () => setCreateDialogOpen(false))
         }
+        employeeId={employeeId}
         isLoading={isCreating}
       />
 

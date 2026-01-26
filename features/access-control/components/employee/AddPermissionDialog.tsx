@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Shield, UserCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "../../api/queries";
+import { formatResourceName } from "../../utils";
 
 interface AddPermissionDialogProps {
   open: boolean;
@@ -77,7 +78,7 @@ export function AddPermissionDialog({
     customPermissionIds.has(p.id)
   );
   const availablePermissions = filteredPermissions.filter(
-    (p) => !employeeAllPermissionIds.has(p.id)
+    (p) => !employeeAllPermissionIds.has(p.id) && !customPermissionIds.has(p.id)
   );
 
   const handleToggle = async (permission: Permission, isChecked: boolean) => {
@@ -145,7 +146,7 @@ export function AddPermissionDialog({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
-                                {permission.resource}
+                                {formatResourceName(permission.resource)}
                               </span>
                               <Badge variant="outline" className="text-xs">
                                 {permission.action.charAt(0).toUpperCase() +
@@ -190,7 +191,7 @@ export function AddPermissionDialog({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
-                                {permission.resource}
+                                {formatResourceName(permission.resource)}
                               </span>
                               <Badge variant="outline" className="text-xs">
                                 {permission.action.charAt(0).toUpperCase() +
@@ -234,7 +235,7 @@ export function AddPermissionDialog({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
-                                {permission.resource}
+                                {formatResourceName(permission.resource)}
                               </span>
                               <Badge variant="outline" className="text-xs">
                                 {permission.action.charAt(0).toUpperCase() +

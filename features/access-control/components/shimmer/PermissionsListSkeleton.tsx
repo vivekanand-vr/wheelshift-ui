@@ -1,13 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface PermissionsTabSkeletonProps {
+interface PermissionsListSkeletonProps {
   count?: number;
 }
 
-export function PermissionsTabSkeleton({
+export function PermissionsListSkeleton({
   count = 8,
-}: PermissionsTabSkeletonProps) {
+}: PermissionsListSkeletonProps) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {[...Array(count)].map((_, i) => (

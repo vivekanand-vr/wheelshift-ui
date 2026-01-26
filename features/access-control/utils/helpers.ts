@@ -1,6 +1,15 @@
 import { Shield, Eye, Edit, User, Users, Building2 } from "lucide-react";
 import type { SubjectType, AccessLevel } from "../types";
 
+const formatResourceName = (resource: string) =>
+  resource
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
 const getAccessIcon = (level: AccessLevel) => {
   switch (level) {
     case "READ":
@@ -53,4 +62,10 @@ const getSubjectColor = (type: SubjectType) => {
   }
 };
 
-export { getAccessIcon, getAccessColor, getSubjectIcon, getSubjectColor };
+export {
+  formatResourceName,
+  getAccessIcon,
+  getAccessColor,
+  getSubjectIcon,
+  getSubjectColor,
+};

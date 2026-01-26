@@ -39,6 +39,7 @@ interface CreateDataScopeDialogProps {
   onClose: () => void;
   onSubmit: (data: DataScopeRequest) => void;
   employee?: Employee;
+  employeeId: number;
   isLoading?: boolean;
 }
 
@@ -78,6 +79,7 @@ export function CreateDataScopeDialog({
   onClose,
   onSubmit,
   employee,
+  employeeId,
   isLoading,
 }: CreateDataScopeDialogProps) {
   type FormState = Omit<DataScopeRequest, "employeeId">;
@@ -93,8 +95,7 @@ export function CreateDataScopeDialog({
   );
 
   const [formData, setFormData] = useState<FormState>(createInitialFormState);
-
-  const employeeId = employee?.id ?? 0;
+  const resolvedEmployeeId = employeeId ?? employee?.id ?? 0;
 
   const resetForm = useCallback(() => {
     setFormData(createInitialFormState());
@@ -116,7 +117,7 @@ export function CreateDataScopeDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...formData, employeeId });
+    onSubmit({ ...formData, employeeId: resolvedEmployeeId });
   };
 
   const selectedIcon = SCOPE_TYPE_ICONS[formData.scopeType];
@@ -293,7 +294,9 @@ export function CreateDataScopeDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || !formData.scopeValue || !employeeId}
+                disabled={
+                  isLoading || !formData.scopeValue || !resolvedEmployeeId
+                }
               >
                 {isLoading ? "Creating..." : "Create Scope"}
               </Button>

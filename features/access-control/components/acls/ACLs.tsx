@@ -63,12 +63,20 @@ export function ACLs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [resourceType, setResourceType] = useState<ResourceType>("CAR");
   const [resourceId, setResourceId] = useState("");
+  const [inputWarning, setInputWarning] = useState<string | null>(null);
 
   const handleLoadResource = () => {
     const parsedId = parseInt(resourceId);
-    if (resourceType && resourceId && !isNaN(parsedId)) {
-      handleSelectResource({ resourceType, resourceId: parsedId });
+    if (!resourceType || !resourceId) return;
+
+    if (isNaN(parsedId)) {
+      setInputWarning(
+        "Resource ID must be numeric (e.g., 123). Non-numeric values are rejected by the API."
+      );
+      return;
     }
+
+    handleSelectResource({ resourceType, resourceId: parsedId });
   };
 
   const handleOpenCreateDialog = () => {
@@ -377,6 +385,16 @@ export function ACLs() {
         acl={selectedACL}
         isLoading={isDeleting}
       />
+
+      {inputWarning && (
+        <ErrorDialog
+          open={!!inputWarning}
+          onClose={() => setInputWarning(null)}
+          type="warning"
+          title="Resource ID must be numeric"
+          detail={inputWarning}
+        />
+      )}
 
       {apiError && (
         <ErrorDialog

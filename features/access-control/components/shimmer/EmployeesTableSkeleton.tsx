@@ -1,11 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface EmployeesTabSkeletonProps {
+interface EmployeesTableSkeletonProps {
   count?: number;
 }
 
-export function EmployeesTabSkeleton({ count = 6 }: EmployeesTabSkeletonProps) {
+export function EmployeesTableSkeleton({
+  count = 6,
+}: EmployeesTableSkeletonProps) {
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">

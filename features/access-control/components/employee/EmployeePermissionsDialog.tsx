@@ -25,7 +25,7 @@ import {
 import { useEmployeeCustomPermissions } from "../../hooks/useEmployeeCustomPermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AddPermissionDialog } from "./AddPermissionDialog";
-
+import { formatResourceName } from "../../utils";
 interface EmployeePermissionsDialogProps {
   open: boolean;
   onClose: () => void;
@@ -159,36 +159,36 @@ export function EmployeePermissionsDialog({
                     return (
                       <div
                         key={permission.id}
-                        className="border-muted bg-card flex items-center justify-between rounded-lg border px-4 py-3"
+                        className="border-muted bg-card flex items-start justify-between rounded-lg border px-4 py-3"
                       >
-                        <div className="flex flex-1 items-center gap-3">
-                          {isCustom ? (
-                            <Badge variant="default" className="gap-1 text-xs">
-                              <Shield className="h-3 w-3" />
-                              Custom
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold">
+                              {formatResourceName(permission.resource)}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {permission.action.charAt(0).toUpperCase() +
+                                permission.action.slice(1).toLowerCase()}
                             </Badge>
-                          ) : (
-                            <Badge
-                              variant="secondary"
-                              className="gap-1 text-xs"
-                            >
-                              <UserCheck className="h-3 w-3" />
-                              Role
-                            </Badge>
-                          )}
-                          <span className="text-sm font-medium">
-                            {permission.resource}
-                          </span>
-                          <Badge variant="outline" className="text-xs">
-                            {permission.action.charAt(0).toUpperCase() +
-                              permission.action.slice(1).toLowerCase()}
-                          </Badge>
+                          </div>
                           {permission.description && (
-                            <span className="text-muted-foreground truncate text-xs">
+                            <span className="text-muted-foreground text-xs">
                               {permission.description}
                             </span>
                           )}
                         </div>
+
+                        {isCustom ? (
+                          <Badge variant="default" className="gap-1 text-xs">
+                            <Shield className="h-3 w-3" />
+                            Custom
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="gap-1 text-xs">
+                            <UserCheck className="h-3 w-3" />
+                            Role
+                          </Badge>
+                        )}
                       </div>
                     );
                   })}

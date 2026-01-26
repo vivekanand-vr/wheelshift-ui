@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Shield,
   MapPin,
-  Key,
+  ShieldUser,
+  RotateCcwKey,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EmployeesTabSkeleton } from "../shimmer";
+import { EmployeesTableSkeleton } from "../shimmer";
 import type { Employee } from "@/types";
 
 interface EmployeesTableProps {
@@ -57,7 +58,7 @@ export function EmployeesTable({
   return (
     <div className="space-y-6">
       {employeesLoading ? (
-        <EmployeesTabSkeleton />
+        <EmployeesTableSkeleton />
       ) : employees.length === 0 ? (
         <EmptyState
           icon={<Users className="h-6 w-6" />}
@@ -189,14 +190,17 @@ export function EmployeesTable({
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
-                              <Shield className="mr-2 h-3.5 w-3.5" />
+                              <ShieldUser className="mr-2 h-3.5 w-3.5" />
                               <span className="hidden sm:inline">
                                 Manage Access
                               </span>
                               <span className="sm:hidden">Access</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent
+                            align="end"
+                            className="dark:bg-neutral-950"
+                          >
                             <DropdownMenuItem
                               onClick={() => onManageRoles(employee)}
                             >
@@ -206,7 +210,7 @@ export function EmployeesTable({
                             <DropdownMenuItem
                               onClick={() => onManagePermissions(employee)}
                             >
-                              <Key className="mr-2 h-4 w-4" />
+                              <RotateCcwKey className="mr-2 h-4 w-4" />
                               Edit Permissions
                             </DropdownMenuItem>
                             <DropdownMenuItem
