@@ -15,6 +15,7 @@ import { NotificationsWidget } from "../widgets/NotificationsWidget";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import { formatDistanceToNow } from "date-fns";
 
 interface InspectorDashboardProps {
@@ -113,23 +114,23 @@ export const InspectorDashboard = ({ data }: InspectorDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Location Summary</h3>
+            <Typography variant="large">Location Summary</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-2 pr-4">
               {data.locationSummary.map((location, index) => (
                 <div key={index} className="bg-muted/50 rounded-lg p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <h4 className="text-sm font-semibold">
+                    <Typography variant="small">
                       {location.locationName}
-                    </h4>
+                    </Typography>
                     <Badge variant="outline">
                       {location.pendingCount} pending
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground text-xs">
+                  <Typography variant="muted" className="text-xs">
                     {location.completedThisWeek} completed this week
-                  </p>
+                  </Typography>
                 </div>
               ))}
             </div>
@@ -139,7 +140,7 @@ export const InspectorDashboard = ({ data }: InspectorDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <ClipboardCheck className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Recent Inspections</h3>
+            <Typography variant="large">Recent Inspections</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-2 pr-4">
@@ -160,14 +161,14 @@ export const InspectorDashboard = ({ data }: InspectorDashboardProps) => {
                       {inspection.status}
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground mb-1 text-[10px]">
+                  <Typography variant="muted" className="mb-1 text-[10px]">
                     {inspection.findings}
-                  </p>
-                  <p className="text-muted-foreground text-[10px]">
+                  </Typography>
+                  <Typography variant="muted" className="text-[10px]">
                     {formatDistanceToNow(new Date(inspection.completedAt), {
                       addSuffix: true,
                     })}
-                  </p>
+                  </Typography>
                 </div>
               ))}
             </div>

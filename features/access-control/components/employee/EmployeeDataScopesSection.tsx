@@ -15,18 +15,12 @@ import {
 import { EmptyState } from "@/components/common/EmptyState";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { ErrorDialog } from "@/components/common/ErrorDialog";
-import {
-  Plus,
-  MapPin,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { Plus, MapPin, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { CreateDataScopeDialog } from "../data-scopes/CreateDataScopeDialog";
 import { UpdateDataScopeDialog } from "../data-scopes/UpdateDataScopeDialog";
 import { DeleteDataScopeDialog } from "../data-scopes/DeleteDataScopeDialog";
 import { useEmployeeDataScopes } from "../../hooks";
+import Loader from "@/components/common/Loader";
 
 interface EmployeeDataScopesSectionProps {
   employeeId: number;
@@ -149,11 +143,9 @@ export function EmployeeDataScopesSection({
         </div>
 
         {/* Content */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="h-100 flex-1">
           {scopesLoading ? (
-            <div className="flex h-full items-center justify-center py-12">
-              <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
-            </div>
+            <Loader />
           ) : scopes.length === 0 ? (
             <EmptyState
               icon={<MapPin className="h-5 w-5" />}

@@ -74,7 +74,7 @@ function EmployeeDataScopesDialogContent({
           </div>
         </div>
 
-        <div className="max-h-120 overflow-auto px-6 py-4">
+        <div className="flex-1 overflow-hidden px-6 py-4">
           <EmployeeDataScopesSection employeeId={employee.id} />
         </div>
 

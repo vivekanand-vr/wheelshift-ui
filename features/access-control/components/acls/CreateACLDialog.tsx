@@ -36,6 +36,7 @@ import type {
   SubjectType,
   AccessLevel,
 } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 interface CreateACLDialogProps {
   open: boolean;
@@ -160,6 +161,24 @@ export function CreateACLDialog({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Info Card */}
             <Card className="border-blue-500/20 bg-blue-500/10 p-4">
+              <div className="flex items-start gap-3">
+                <Shield className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+                <div className="flex-1">
+                  <Typography
+                    variant="small"
+                    className="font-medium text-blue-900 dark:text-blue-100"
+                  >
+                    Creating a new ACL entry
+                  </Typography>
+                  <Typography
+                    variant="muted"
+                    className="mt-1 text-xs text-blue-800 dark:text-blue-200"
+                  >
+                    This will grant specific permissions to access a resource.
+                    Choose the resource, subject, and access level carefully.
+                  </Typography>
+                </div>
+              </div>
               <div className="flex items-start gap-3">
                 <Info className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
                 <div className="flex-1">

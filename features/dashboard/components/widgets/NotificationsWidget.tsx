@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import { Bell, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import { NotificationsData } from "../../types";
 import { WidgetEmpty } from "./WidgetEmpty";
@@ -50,7 +51,7 @@ export const NotificationsWidget = ({ data }: NotificationsWidgetProps) => {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bell className="text-primary h-5 w-5" />
-          <h3 className="text-lg font-semibold">Notifications</h3>
+          <Typography variant="large">Notifications</Typography>
         </div>
         {data.unreadCount > 0 && (
           <Badge variant="default">{data.unreadCount} New</Badge>
@@ -74,16 +75,19 @@ export const NotificationsWidget = ({ data }: NotificationsWidgetProps) => {
                 </div>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-xs font-medium">
+                    <Typography variant="small" className="text-xs">
                       {notification.subject}
-                    </h4>
+                    </Typography>
                     {!notification.isRead && (
                       <div className="bg-primary h-2 w-2 shrink-0 rounded-full" />
                     )}
                   </div>
-                  <p className="text-muted-foreground line-clamp-2 text-[10px]">
+                  <Typography
+                    variant="muted"
+                    className="line-clamp-2 text-[10px]"
+                  >
                     {notification.body}
-                  </p>
+                  </Typography>
                   <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
                     <span>
                       {formatDistanceToNow(new Date(notification.createdAt), {

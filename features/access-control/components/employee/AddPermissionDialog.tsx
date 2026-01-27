@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Employee } from "@/types";
 import type { Permission, EmployeePermission } from "../../types";
+import { EmptyState } from "@/components/common/EmptyState";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Typography } from "@/components/ui/typography";
 import { Search, Shield, UserCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermissions } from "../../api/queries";
@@ -129,9 +131,9 @@ export function AddPermissionDialog({
                   <div>
                     <div className="mb-3 flex items-center gap-2">
                       <UserCheck className="h-4 w-4 text-blue-500" />
-                      <h3 className="text-sm font-semibold">
+                      <Typography variant="small">
                         From Roles ({roleBasedPermissions.length})
-                      </h3>
+                      </Typography>
                       <Badge variant="secondary" className="text-xs">
                         Cannot be removed
                       </Badge>
@@ -154,9 +156,12 @@ export function AddPermissionDialog({
                               </Badge>
                             </div>
                             {permission.description && (
-                              <p className="text-muted-foreground mt-1 truncate text-xs">
+                              <Typography
+                                variant="muted"
+                                className="mt-1 truncate text-xs"
+                              >
                                 {permission.description}
-                              </p>
+                              </Typography>
                             )}
                           </div>
                         </div>
@@ -170,9 +175,9 @@ export function AddPermissionDialog({
                   <div>
                     <div className="mb-3 flex items-center gap-2">
                       <Shield className="text-primary h-4 w-4" />
-                      <h3 className="text-sm font-semibold">
+                      <Typography variant="small">
                         Custom Permissions ({customPermissionsFiltered.length})
-                      </h3>
+                      </Typography>
                     </div>
                     <div className="space-y-2">
                       {customPermissionsFiltered.map((permission) => (
@@ -199,9 +204,12 @@ export function AddPermissionDialog({
                               </Badge>
                             </div>
                             {permission.description && (
-                              <p className="text-muted-foreground mt-1 truncate text-xs">
+                              <Typography
+                                variant="muted"
+                                className="mt-1 truncate text-xs"
+                              >
                                 {permission.description}
-                              </p>
+                              </Typography>
                             )}
                           </div>
                         </div>
@@ -214,9 +222,9 @@ export function AddPermissionDialog({
                 {availablePermissions.length > 0 && (
                   <div>
                     <div className="mb-3">
-                      <h3 className="text-sm font-semibold">
+                      <Typography variant="small">
                         Available Permissions ({availablePermissions.length})
-                      </h3>
+                      </Typography>
                     </div>
                     <div className="space-y-2">
                       {availablePermissions.map((permission) => (
@@ -243,9 +251,12 @@ export function AddPermissionDialog({
                               </Badge>
                             </div>
                             {permission.description && (
-                              <p className="text-muted-foreground mt-1 truncate text-xs">
+                              <Typography
+                                variant="muted"
+                                className="mt-1 truncate text-xs"
+                              >
                                 {permission.description}
-                              </p>
+                              </Typography>
                             )}
                           </div>
                         </div>
@@ -255,12 +266,10 @@ export function AddPermissionDialog({
                 )}
 
                 {filteredPermissions.length === 0 && (
-                  <div className="border-muted bg-muted/20 flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-                    <Shield className="text-muted-foreground mb-2 h-8 w-8" />
-                    <p className="text-muted-foreground text-sm">
-                      No permissions found
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={<Shield className="h-8 w-8" />}
+                    title="No permissions found"
+                  />
                 )}
               </div>
             </ScrollArea>

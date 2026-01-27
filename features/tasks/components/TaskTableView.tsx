@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { format } from "date-fns";
+import { Typography } from "@/components/ui/typography";
 import { ArrowUpDown } from "lucide-react";
 import type { Task } from "@/features/tasks/types";
 import { Avatar } from "@/components/ui/avatar";
@@ -131,7 +132,9 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
               </span>
             </div>
           ) : (
-            <span className="text-sm text-neutral-400">Unassigned</span>
+            <Typography variant="small" className="text-neutral-400">
+              Unassigned
+            </Typography>
           ),
       },
       {
@@ -148,11 +151,16 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         ),
         cell: ({ row }) =>
           row.original.dueDate ? (
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            <Typography
+              variant="small"
+              className="text-neutral-700 dark:text-neutral-300"
+            >
               {format(new Date(row.original.dueDate), "MMM dd, yyyy")}
-            </span>
+            </Typography>
           ) : (
-            <span className="text-sm text-neutral-400">No due date</span>
+            <Typography variant="small" className="text-neutral-400">
+              No due date
+            </Typography>
           ),
       },
     ],

@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui/typography";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,10 +32,14 @@ export const StatCard = ({
     <Card className={cn("p-6", className)}>
       <div className="flex items-center justify-between">
         <div className="flex-1 space-y-2">
-          <p className="text-muted-foreground text-sm font-medium">{title}</p>
-          <h3 className="text-2xl font-bold">{value}</h3>
+          <Typography variant="small" className="text-muted-foreground">
+            {title}
+          </Typography>
+          <Typography variant="h4">{value}</Typography>
           {description && (
-            <p className="text-muted-foreground text-xs">{description}</p>
+            <Typography variant="muted" className="text-xs">
+              {description}
+            </Typography>
           )}
           {trend && (
             <Badge

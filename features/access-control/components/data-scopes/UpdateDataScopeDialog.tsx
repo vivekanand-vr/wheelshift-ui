@@ -37,6 +37,7 @@ import type {
   ScopeType,
   EmployeeDataScope,
 } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 interface UpdateDataScopeDialogProps {
   open: boolean;
@@ -124,13 +125,19 @@ function UpdateDataScopeDialogContent({
               <div className="flex items-start gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">
+                  <Typography
+                    variant="small"
+                    className="font-medium text-yellow-900 dark:text-yellow-100"
+                  >
                     Scope type and value cannot be changed
-                  </p>
-                  <p className="mt-1 text-xs text-yellow-800 dark:text-yellow-200">
+                  </Typography>
+                  <Typography
+                    variant="muted"
+                    className="mt-1 text-xs text-yellow-800 dark:text-yellow-200"
+                  >
                     To use a different scope type or value, delete this scope
                     and create a new one.
-                  </p>
+                  </Typography>
                 </div>
               </div>
             </Card>

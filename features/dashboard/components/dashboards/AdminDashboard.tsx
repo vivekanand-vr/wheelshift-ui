@@ -18,6 +18,7 @@ import { StatsGroupWidget } from "../widgets/StatsGroupWidget";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Typography } from "@/components/ui/typography";
 
 interface AdminDashboardProps {
   data: AdminDashboardResponse;
@@ -113,7 +114,7 @@ export const AdminDashboard = ({ data }: AdminDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <Package className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Inventory by Status</h3>
+            <Typography variant="large">Inventory by Status</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-2 pr-4">
@@ -140,7 +141,7 @@ export const AdminDashboard = ({ data }: AdminDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <Users className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Top Performers</h3>
+            <Typography variant="large">Top Performers</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-2 pr-4">
@@ -159,12 +160,12 @@ export const AdminDashboard = ({ data }: AdminDashboardProps) => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-xs font-medium">
+                      <Typography variant="small" className="text-xs">
                         {employee.employeeName}
-                      </p>
-                      <p className="text-muted-foreground text-[10px]">
+                      </Typography>
+                      <Typography variant="muted" className="text-[10px]">
                         {employee.salesCount} sales
-                      </p>
+                      </Typography>
                     </div>
                   </div>
                   <span className="text-xs font-semibold">

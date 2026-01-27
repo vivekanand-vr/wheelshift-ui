@@ -21,6 +21,7 @@ import {
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { ErrorDialog } from "@/components/common/ErrorDialog";
 import type { Role, RoleRequest } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 // Define fixed role enum values from backend
 const AVAILABLE_ROLES = [
@@ -151,9 +152,12 @@ export function CreateRoleDialog({
                   >
                     System Role
                   </Label>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
+                  <Typography
+                    variant="muted"
+                    className="text-xs leading-relaxed"
+                  >
                     System roles cannot be deleted
-                  </p>
+                  </Typography>
                 </div>
                 <Switch
                   id="isSystem"

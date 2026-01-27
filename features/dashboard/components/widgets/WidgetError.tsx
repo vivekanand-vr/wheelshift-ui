@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui/typography";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface WidgetErrorProps {
@@ -17,8 +18,12 @@ export const WidgetError = ({
     <Card className="p-6">
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <AlertCircle className="text-destructive mb-4 h-12 w-12" />
-        <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-        <p className="text-muted-foreground mb-4 max-w-sm text-sm">{message}</p>
+        <Typography variant="large" className="mb-2">
+          {title}
+        </Typography>
+        <Typography variant="muted" className="mb-4 max-w-sm">
+          {message}
+        </Typography>
         {onRetry && (
           <Button onClick={onRetry} variant="outline" size="sm">
             <RefreshCw className="mr-2 h-4 w-4" />

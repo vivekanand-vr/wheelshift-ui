@@ -8,3 +8,5 @@ export { RolesGridViewSkeleton } from "./RolesGridViewSkeleton";
 export { RolesListViewSkeleton } from "./RolesListViewSkeleton";
 export { PermissionsListSkeleton } from "./PermissionsListSkeleton";
 export { EmployeesTableSkeleton } from "./EmployeesTableSkeleton";
+export { EmployeeRolesSkeleton } from "./EmployeeRolesSkeleton";
+export { EmployeePermissionsSkeleton } from "./EmployeePermissionsSkeleton";

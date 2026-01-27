@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { EmployeeDataScope, ScopeType } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 interface DeleteDataScopeDialogProps {
   open: boolean;
@@ -99,9 +100,9 @@ export function DeleteDataScopeDialog({
                       </Badge>
                     </div>
                     {scope.description && (
-                      <p className="text-muted-foreground mt-1 text-sm">
+                      <Typography variant="muted" className="mt-1 text-sm">
                         {scope.description}
-                      </p>
+                      </Typography>
                     )}
                   </div>
                 </div>
@@ -113,14 +114,20 @@ export function DeleteDataScopeDialog({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                  <Typography
+                    variant="small"
+                    className="font-medium text-red-900 dark:text-red-100"
+                  >
                     This action cannot be undone
-                  </p>
-                  <p className="mt-1 text-xs text-red-800 dark:text-red-200">
+                  </Typography>
+                  <Typography
+                    variant="muted"
+                    className="mt-1 text-xs text-red-800 dark:text-red-200"
+                  >
                     Removing this scope will immediately expand the employee
-                    `&apos;`s data access. The employee will gain access to
+                    &apos;s data access. The employee will gain access to
                     resources that were previously restricted.
-                  </p>
+                  </Typography>
                 </div>
               </div>
             </Card>

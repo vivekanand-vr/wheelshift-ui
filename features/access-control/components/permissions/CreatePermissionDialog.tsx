@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { ErrorDialog } from "@/components/common/ErrorDialog";
 import type { PermissionRequest, Permission } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 const RESOURCES = [
   "cars",
@@ -149,9 +150,9 @@ export function CreatePermissionDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-muted-foreground text-xs leading-relaxed">
+              <Typography variant="muted" className="text-xs leading-relaxed">
                 Select the resource this permission applies to
-              </p>
+              </Typography>
             </div>
 
             <div className="space-y-2">

@@ -9,6 +9,7 @@ import { PlusCircle } from "lucide-react";
 import type { KanbanColumn, Task } from "@/features/tasks/types";
 import { SortableTaskCard } from "./SortableTaskCard";
 import { Badge } from "@/components/ui/badge";
+import { Typography } from "@/components/ui/typography";
 
 interface KanbanColumnProps {
   column: KanbanColumn;
@@ -32,9 +33,12 @@ export function KanbanColumnComponent({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`h-3 w-3 rounded-full ${column.color}`} />
-            <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">
+            <Typography
+              variant="small"
+              className="font-semibold text-neutral-900 dark:text-neutral-100"
+            >
               {column.title}
-            </h3>
+            </Typography>
           </div>
           <Badge variant="secondary" className="text-xs">
             {column.tasks.length}

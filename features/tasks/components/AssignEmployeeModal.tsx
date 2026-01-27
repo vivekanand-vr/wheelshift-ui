@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Typography } from "@/components/ui/typography";
 
 interface AssignEmployeeModalProps {
   open: boolean;
@@ -167,11 +168,14 @@ export function AssignEmployeeModal({
         {/* Pagination */}
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between border-t border-neutral-200 pt-4 dark:border-neutral-700">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <Typography
+              variant="small"
+              className="text-neutral-600 dark:text-neutral-400"
+            >
               Showing {(page - 1) * pageSize + 1} to{" "}
               {Math.min(page * pageSize, data.totalElements)} of{" "}
               {data.totalElements} employees
-            </p>
+            </Typography>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"

@@ -62,10 +62,32 @@ const getSubjectColor = (type: SubjectType) => {
   }
 };
 
+/**
+ * Get background styling for role icon based on color
+ * @param color - The role color (e.g., "text-purple-600", "text-blue-600")
+ * @returns Tailwind CSS classes for background and ring
+ */
+const getRoleIconBackground = (color: string): string => {
+  if (color.includes("purple")) {
+    return "bg-purple-500/10 ring-1 ring-purple-500/20";
+  }
+  if (color.includes("blue")) {
+    return "bg-blue-500/10 ring-1 ring-blue-500/20";
+  }
+  if (color.includes("green")) {
+    return "bg-green-500/10 ring-1 ring-green-500/20";
+  }
+  if (color.includes("orange")) {
+    return "bg-orange-500/10 ring-1 ring-orange-500/20";
+  }
+  return "bg-gray-500/10 ring-1 ring-gray-500/20";
+};
+
 export {
   formatResourceName,
   getAccessIcon,
   getAccessColor,
   getSubjectIcon,
   getSubjectColor,
+  getRoleIconBackground,
 };

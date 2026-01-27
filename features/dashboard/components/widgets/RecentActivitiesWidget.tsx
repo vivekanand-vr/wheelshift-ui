@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import { Activity } from "lucide-react";
 import { ActivityLog } from "../../types";
 import { WidgetEmpty } from "./WidgetEmpty";
@@ -41,7 +42,7 @@ export const RecentActivitiesWidget = ({
     <Card className="p-6">
       <div className="mb-4 flex items-center gap-2">
         <Activity className="text-primary h-5 w-5" />
-        <h3 className="text-lg font-semibold">Recent Activities</h3>
+        <Typography variant="large">Recent Activities</Typography>
       </div>
 
       <ScrollArea className="h-96 pr-4">
@@ -68,10 +69,10 @@ export const RecentActivitiesWidget = ({
                     })}
                   </span>
                 </div>
-                <p className="text-sm font-medium">{activity.description}</p>
-                <p className="text-muted-foreground mt-1 text-xs">
+                <Typography variant="small">{activity.description}</Typography>
+                <Typography variant="muted" className="mt-1 text-xs">
                   By {activity.performedBy}
-                </p>
+                </Typography>
               </div>
             </div>
           ))}

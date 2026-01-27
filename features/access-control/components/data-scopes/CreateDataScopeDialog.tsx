@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import type { DataScopeRequest, ScopeType, ScopeEffect } from "../../types";
 import type { Employee } from "@/types";
+import { Typography } from "@/components/ui/typography";
 
 interface CreateDataScopeDialogProps {
   open: boolean;
@@ -182,9 +183,9 @@ export function CreateDataScopeDialog({
                   })}
                 </SelectContent>
               </Select>
-              <p className="text-muted-foreground text-xs">
+              <Typography variant="muted" className="text-xs">
                 {SCOPE_TYPE_DESCRIPTIONS[formData.scopeType]}
-              </p>
+              </Typography>
             </div>
 
             {/* Scope Value */}

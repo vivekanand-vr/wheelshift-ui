@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/typography";
 
 interface SectionProps {
   children: React.ReactNode;
@@ -21,10 +22,17 @@ export function Section({
       {(title || description) && (
         <div className="space-y-1">
           {title && (
-            <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+            <Typography
+              variant="large"
+              className="font-semibold tracking-tight"
+            >
+              {title}
+            </Typography>
           )}
           {description && (
-            <p className="text-muted-foreground text-sm">{description}</p>
+            <Typography variant="muted" className="text-sm">
+              {description}
+            </Typography>
           )}
         </div>
       )}

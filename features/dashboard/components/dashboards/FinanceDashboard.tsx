@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 
 interface FinanceDashboardProps {
   data: FinanceDashboardResponse;
@@ -113,24 +114,24 @@ export const FinanceDashboard = ({ data }: FinanceDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <TrendingUp className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Profitability Metrics</h3>
+            <Typography variant="large">Profitability Metrics</Typography>
           </div>
           <div className="space-y-4">
             <div>
-              <p className="text-muted-foreground mb-1 text-sm">
+              <Typography variant="muted" className="mb-1">
                 Average Profit per Vehicle
-              </p>
-              <p className="text-2xl font-bold">
+              </Typography>
+              <Typography variant="h4">
                 ${data.profitability.avgProfitPerVehicle.toLocaleString()}
-              </p>
+              </Typography>
             </div>
             <div>
-              <p className="text-muted-foreground mb-1 text-sm">
+              <Typography variant="muted" className="mb-1">
                 Average Margin
-              </p>
-              <p className="text-2xl font-bold">
+              </Typography>
+              <Typography variant="h4">
                 {data.profitability.avgMargin.toFixed(1)}%
-              </p>
+              </Typography>
             </div>
           </div>
         </Card>
@@ -139,7 +140,7 @@ export const FinanceDashboard = ({ data }: FinanceDashboardProps) => {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <PieChart className="text-primary h-5 w-5" />
-              <h3 className="text-lg font-semibold">Budget Tracking</h3>
+              <Typography variant="large">Budget Tracking</Typography>
             </div>
             <Badge variant="default">
               {data.budgetTracking.utilizationRate}%
@@ -147,10 +148,10 @@ export const FinanceDashboard = ({ data }: FinanceDashboardProps) => {
           </div>
           <div className="space-y-4">
             <Progress value={data.budgetTracking.utilizationRate} />
-            <p className="text-muted-foreground text-xs">
+            <Typography variant="muted" className="text-xs">
               ${data.budgetTracking.spent.toLocaleString()} of $
               {data.budgetTracking.totalBudget.toLocaleString()} spent
-            </p>
+            </Typography>
             <ScrollArea className="h-48">
               <div className="space-y-2 pr-4">
                 {Object.entries(data.budgetTracking.categories).map(

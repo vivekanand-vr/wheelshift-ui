@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ResourceACL, AccessLevel, SubjectType } from "../../types";
+import { Typography } from "@/components/ui/typography";
 
 interface DeleteACLDialogProps {
   open: boolean;
@@ -84,28 +85,36 @@ export function DeleteACLDialog({
               <div className="space-y-3">
                 {/* Resource */}
                 <div>
-                  <p className="text-muted-foreground mb-1 text-xs">Resource</p>
+                  <Typography variant="muted" className="mb-1 text-xs">
+                    Resource
+                  </Typography>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">{acl.resourceType}</Badge>
-                    <span className="font-mono text-sm">#{acl.resourceId}</span>
+                    <Typography variant="small" className="font-mono">
+                      {acl.resourceId}
+                    </Typography>
                   </div>
                 </div>
 
                 {/* Subject */}
                 <div>
-                  <p className="text-muted-foreground mb-1 text-xs">Subject</p>
+                  <Typography variant="muted" className="mb-1 text-xs">
+                    Subject
+                  </Typography>
                   <div className="flex items-center gap-2">
                     <SubjectIcon className="text-muted-foreground h-4 w-4" />
                     <Badge variant="outline">{acl.subjectType}</Badge>
-                    <span className="font-mono text-sm">#{acl.subjectId}</span>
+                    <Typography variant="small" className="font-mono">
+                      {acl.subjectId}
+                    </Typography>
                   </div>
                 </div>
 
                 {/* Access Level */}
                 <div>
-                  <p className="text-muted-foreground mb-1 text-xs">
+                  <Typography variant="muted" className="mb-1 text-xs">
                     Access Level
-                  </p>
+                  </Typography>
                   <div className="flex items-center gap-2">
                     <AccessIcon className="text-primary h-4 w-4" />
                     <Badge
@@ -129,15 +138,20 @@ export function DeleteACLDialog({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                  <Typography
+                    variant="small"
+                    className="font-medium text-red-900 dark:text-red-100"
+                  >
                     This action cannot be undone
-                  </p>
-                  <p className="mt-1 text-xs text-red-800 dark:text-red-200">
+                  </Typography>
+                  <Typography
+                    variant="muted"
+                    className="mt-1 text-xs text-red-800 dark:text-red-200"
+                  >
                     Removing this ACL entry will immediately revoke the granted
-                    access. The subject will lose{" "}
-                    {acl.accessLevel.toLowerCase()} permissions to this
-                    resource.
-                  </p>
+                    access. The subject will lose {acl.accessLevel} permissions
+                    to this resource.
+                  </Typography>
                 </div>
               </div>
             </Card>

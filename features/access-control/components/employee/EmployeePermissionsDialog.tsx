@@ -13,6 +13,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import {
   UserCircle,
   Mail,
@@ -23,9 +24,9 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useEmployeeCustomPermissions } from "../../hooks/useEmployeeCustomPermissions";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AddPermissionDialog } from "./AddPermissionDialog";
 import { formatResourceName } from "../../utils";
+import { EmployeePermissionsSkeleton } from "../shimmer";
 interface EmployeePermissionsDialogProps {
   open: boolean;
   onClose: () => void;
@@ -119,11 +120,13 @@ export function EmployeePermissionsDialog({
           <div className="flex-1 overflow-hidden px-6 py-4">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Employee Permissions</h3>
-                <p className="text-muted-foreground text-sm">
+                <Typography variant="large" as="h3">
+                  Employee Permissions
+                </Typography>
+                <Typography variant="muted">
                   {employeeAllPermissions.length} total permission(s) ·{" "}
                   {customPermissions.length} custom
-                </p>
+                </Typography>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => setShowManageDialog(true)}>
@@ -134,21 +137,15 @@ export function EmployeePermissionsDialog({
             </div>
 
             {customPermissionsLoading || employeeAllPermissionsLoading ? (
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
+              <EmployeePermissionsSkeleton />
             ) : employeeAllPermissions.length === 0 ? (
               <div className="border-muted bg-muted/20 flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
                 <Shield className="text-muted-foreground mb-2 h-12 w-12" />
-                <p className="text-muted-foreground text-sm">
-                  No permissions assigned
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs">
+                <Typography variant="muted">No permissions assigned</Typography>
+                <Typography variant="muted" className="mt-1 text-xs">
                   Click &ldquo;Add Permission&rdquo; to assign custom
                   permissions
-                </p>
+                </Typography>
               </div>
             ) : (
               <ScrollArea className="h-100 pr-4">
