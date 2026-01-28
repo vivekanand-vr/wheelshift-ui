@@ -20,3 +20,4 @@ const RESOURCES = [
 const ACTIONS = ["read", "write", "delete", "*"];
 
 export { RESOURCES, ACTIONS };
+export * from "./aclConstants";

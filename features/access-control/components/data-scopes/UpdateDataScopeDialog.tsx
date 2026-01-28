@@ -191,11 +191,11 @@ function UpdateDataScopeDialogContent({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-muted-foreground text-xs">
+              <Typography variant="muted" className="text-xs">
                 {formData.effect === "INCLUDE"
                   ? "Whitelist: Only show resources matching this scope"
                   : "Blacklist: Hide resources matching this scope"}
-              </p>
+              </Typography>
             </div>
 
             {/* Description */}

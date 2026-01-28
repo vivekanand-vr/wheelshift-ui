@@ -124,23 +124,32 @@ export function AssignEmployeeModal({
 
                   <div className="flex-1 text-left">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                      <Typography
+                        variant="small"
+                        className="font-medium text-neutral-900 dark:text-neutral-100"
+                      >
                         {employee.name}
-                      </p>
+                      </Typography>
                       {currentAssigneeId === String(employee.id) && (
                         <Badge variant="default" className="text-xs">
                           Current
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                    <Typography
+                      variant="small"
+                      className="text-neutral-600 dark:text-neutral-400"
+                    >
                       {employee.email}
-                    </p>
+                    </Typography>
                     {employee.department && (
-                      <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-500">
+                      <Typography
+                        variant="muted"
+                        className="mt-1 text-xs text-neutral-500 dark:text-neutral-500"
+                      >
                         {employee.department}
                         {employee.position && ` • ${employee.position}`}
-                      </p>
+                      </Typography>
                     )}
                   </div>
 
@@ -153,13 +162,19 @@ export function AssignEmployeeModal({
           ) : (
             <div className="flex h-full flex-col items-center justify-center py-12 text-center">
               <User className="mb-3 h-12 w-12 text-neutral-400" />
-              <p className="text-neutral-600 dark:text-neutral-400">
+              <Typography
+                variant="muted"
+                className="text-neutral-600 dark:text-neutral-400"
+              >
                 {search ? "No employees found" : "No employees available"}
-              </p>
+              </Typography>
               {search && (
-                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-500">
+                <Typography
+                  variant="muted"
+                  className="mt-1 text-sm text-neutral-500 dark:text-neutral-500"
+                >
                   Try a different search term
-                </p>
+                </Typography>
               )}
             </div>
           )}
@@ -185,9 +200,12 @@ export function AssignEmployeeModal({
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <Typography
+                variant="small"
+                className="font-medium text-neutral-700 dark:text-neutral-300"
+              >
                 Page {page} of {data.totalPages}
-              </span>
+              </Typography>
               <Button
                 variant="outline"
                 size="sm"

@@ -177,9 +177,9 @@ export function CreatePermissionDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-muted-foreground text-xs leading-relaxed">
+              <Typography variant="muted" className="text-xs leading-relaxed">
                 Select the action allowed on this resource
-              </p>
+              </Typography>
             </div>
 
             {/* Permission Name Preview */}

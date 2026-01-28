@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar } from "@/components/ui/avatar";
 import { AssignEmployeeModal } from "./AssignEmployeeModal";
+import { Typography } from "@/components/ui/typography";
 
 const taskFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -288,9 +289,9 @@ export function TaskDetailModal({
                             )}
                           </Avatar>
                           <div>
-                            <p className="font-medium text-neutral-900 dark:text-neutral-100">
+                            <Typography className="font-medium text-neutral-900 dark:text-neutral-100">
                               {assignedEmployee?.name || task?.assigneeName}
-                            </p>
+                            </Typography>
                           </div>
                         </div>
                         <Button

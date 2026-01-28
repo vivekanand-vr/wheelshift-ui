@@ -63,13 +63,19 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         ),
         cell: ({ row }) => (
           <div className="min-w-50">
-            <div className="font-medium text-neutral-900 dark:text-neutral-100">
+            <Typography
+              variant="small"
+              className="font-medium text-neutral-900 dark:text-neutral-100"
+            >
               {row.original.title}
-            </div>
+            </Typography>
             {row.original.description && (
-              <p className="mt-1 line-clamp-1 text-sm text-neutral-600 dark:text-neutral-400">
+              <Typography
+                variant="muted"
+                className="mt-1 line-clamp-1 text-sm text-neutral-600 dark:text-neutral-400"
+              >
                 {row.original.description}
-              </p>
+              </Typography>
             )}
           </div>
         ),
@@ -127,9 +133,12 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
                     .slice(0, 2)}
                 </div>
               </Avatar>
-              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              <Typography
+                variant="small"
+                className="text-neutral-700 dark:text-neutral-300"
+              >
                 {row.original.assigneeName}
-              </span>
+              </Typography>
             </div>
           ) : (
             <Typography variant="small" className="text-neutral-400">
