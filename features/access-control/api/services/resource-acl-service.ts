@@ -4,11 +4,11 @@ import { ResourceType, ResourceACL, ResourceACLRequest } from "../../types";
 export const resourceACLService = {
   /**
    * Get ACLs for a specific resource
-   * GET /api/v1/rbac/acl/resource/{resourceType}/{resourceId}
+   * GET /api/v1/rbac/acl/{resourceType}/{resourceId}
    */
   getResourceACLs: async (
     resourceType: ResourceType,
-    resourceId: string
+    resourceId: number
   ): Promise<ResourceACL[]> => {
     const response = await api.get(`/rbac/acl/${resourceType}/${resourceId}`);
     return response.data;
@@ -16,24 +16,17 @@ export const resourceACLService = {
 
   /**
    * Grant access to a resource for an employee or role
-   * POST /api/v1/rbac/acl
+   * POST /api/v1/rbac/acl/{resourceType}/{resourceId}
    */
   grantResourceAccess: async (
+    resourceType: ResourceType,
+    resourceId: number,
     data: ResourceACLRequest
   ): Promise<ResourceACL> => {
-    const response = await api.post(`/rbac/acl`, data);
-    return response.data;
-  },
-
-  /**
-   * Update access level for an ACL
-   * PUT /api/v1/rbac/acl/{id}
-   */
-  updateResourceAccess: async (
-    id: number,
-    data: ResourceACLRequest
-  ): Promise<ResourceACL> => {
-    const response = await api.put(`/rbac/acl/${id}`, data);
+    const response = await api.post(
+      `/rbac/acl/${resourceType}/${resourceId}`,
+      data
+    );
     return response.data;
   },
 
@@ -43,5 +36,16 @@ export const resourceACLService = {
    */
   revokeResourceAccess: async (id: number): Promise<void> => {
     await api.delete(`/rbac/acl/${id}`);
+  },
+
+  /**
+   * Remove all ACL entries for a resource (Super Admin only)
+   * DELETE /api/v1/rbac/acl/{resourceType}/{resourceId}
+   */
+  revokeAllResourceAccess: async (
+    resourceType: ResourceType,
+    resourceId: number
+  ): Promise<void> => {
+    await api.delete(`/rbac/acl/${resourceType}/${resourceId}`);
   },
 };

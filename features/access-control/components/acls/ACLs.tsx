@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Typography } from "@/components/ui/typography";
 import { EmptyState } from "@/components/common/EmptyState";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,19 +14,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { RoleGuard } from "@/components/common/RoleGuard";
 import { ErrorDialog } from "@/components/common/ErrorDialog";
-import { Shield, Trash2, Plus, Search, Lock } from "lucide-react";
+import {
+  Shield,
+  Plus,
+  Search,
+  Lock,
+  ShieldAlert,
+  Car,
+  Users,
+  MessageSquare,
+  Calendar,
+  ShoppingCart,
+  Receipt,
+  Settings,
+  Briefcase,
+  ClipboardCheck,
+  MapPin,
+  ListTodo,
+  CalendarDays,
+  UserCog,
+  Key,
+  ShieldCheck,
+  Bell,
+} from "lucide-react";
 import { CreateACLDialog } from "./CreateACLDialog";
 import { DeleteACLDialog } from "./DeleteACLDialog";
+import { RevokeAllACLDialog } from "./RevokeAllACLDialog";
+import { ACLEntry } from "./ACLEntry";
+import { ACLEntrySkeleton } from "../shimmer";
 import { useACLManagement } from "../../hooks/useACLManagement";
-import type { SubjectType, ResourceType } from "../../types";
-import {
-  getAccessIcon,
-  getAccessColor,
-  getSubjectIcon,
-  getSubjectColor,
-} from "../../utils";
+import type {
+  SubjectType,
+  ResourceType,
+  ResourceACLRequest,
+} from "../../types";
 
 const RESOURCE_TYPES: ResourceType[] = [
   "CAR",
@@ -37,6 +65,28 @@ const RESOURCE_TYPES: ResourceType[] = [
   "SALE",
   "TRANSACTION",
 ];
+
+function getResourceIcon(type: ResourceType) {
+  const iconMap: Record<ResourceType, React.ElementType> = {
+    CAR: Car,
+    CLIENT: Users,
+    INQUIRY: MessageSquare,
+    RESERVATION: Calendar,
+    SALE: ShoppingCart,
+    TRANSACTION: Receipt,
+    CAR_MODEL: Settings,
+    EMPLOYEE: Briefcase,
+    INSPECTION: ClipboardCheck,
+    LOCATION: MapPin,
+    TASK: ListTodo,
+    EVENT: CalendarDays,
+    ROLE: UserCog,
+    PERMISSION: Key,
+    ACL: ShieldCheck,
+    NOTIFICATION: Bell,
+  };
+  return iconMap[type] || Shield;
+}
 
 export function ACLs() {
   const {
@@ -49,12 +99,14 @@ export function ACLs() {
     errorDialogOpen,
     isCreating,
     isDeleting,
+    isRevokingAll,
     searchQuery,
     resourceType,
     resourceId,
     inputWarning,
     createDialogOpen,
     deleteDialogOpen,
+    revokeAllDialogOpen,
     setErrorDialogOpen,
     setSearchQuery,
     setResourceType,
@@ -62,24 +114,29 @@ export function ACLs() {
     setInputWarning,
     handleCreateACL,
     handleDeleteACL,
+    handleRevokeAllACLs,
     handleLoadResource,
     handleOpenCreateDialog,
     handleOpenDeleteDialog,
     handleCloseCreateDialog,
     handleCloseDeleteDialog,
+    handleOpenRevokeAllDialog,
+    handleCloseRevokeAllDialog,
     setFilterSubjectType,
   } = useACLManagement();
 
   const handleCreateSubmit = (
     resType: ResourceType,
     resId: number,
-    data: any
+    data: ResourceACLRequest
   ) => {
-    handleCreateACL(resType, String(resId), data, () => {});
+    handleCreateACL(resType, resId, data, () => {});
   };
 
   const handleDeleteConfirm = (aclId: number) => {
-    handleDeleteACL(aclId, () => {});
+    handleDeleteACL(aclId, () => {
+      handleCloseDeleteDialog();
+    });
   };
 
   return (
@@ -106,7 +163,7 @@ export function ACLs() {
                   setResourceType(value as ResourceType)
                 }
               >
-                <SelectTrigger id="resourceType">
+                <SelectTrigger id="resourceType" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -182,30 +239,30 @@ export function ACLs() {
               </Select>
             </div>
 
-            <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-              <Button onClick={handleOpenCreateDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Grant Access
-              </Button>
-            </RoleGuard>
+            <div className="flex items-center gap-2">
+              <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                <Button onClick={handleOpenCreateDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Grant Access
+                </Button>
+              </RoleGuard>
+              {filteredACLs.length > 0 && (
+                <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
+                  <Button
+                    variant="destructive"
+                    onClick={handleOpenRevokeAllDialog}
+                  >
+                    <ShieldAlert className="mr-2 h-4 w-4" />
+                    Revoke All
+                  </Button>
+                </RoleGuard>
+              )}
+            </div>
           </div>
 
           {/* ACL List */}
           {aclsLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="p-6">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/4" />
-                    </div>
-                    <Skeleton className="h-9 w-9" />
-                  </div>
-                </Card>
-              ))}
-            </div>
+            <ACLEntrySkeleton />
           ) : filteredACLs.length === 0 ? (
             <EmptyState
               icon={<Shield />}
@@ -228,100 +285,66 @@ export function ACLs() {
               }
             />
           ) : (
-            <Card className="overflow-hidden">
-              {/* Resource Header */}
-              <div className="bg-accent/30 border-b px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 ring-primary/20 rounded-lg p-2 ring-1">
-                    <Shield className="text-primary h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <Typography variant="p" className="font-bold">
-                      {selectedResource.resourceType.replace(/_/g, " ")} #
-                      {selectedResource.resourceId}
-                    </Typography>
-                    <Typography
-                      variant="small"
-                      className="text-muted-foreground"
-                    >
-                      {filteredACLs.length} ACL
-                      {filteredACLs.length !== 1 ? "s" : ""}
-                    </Typography>
-                  </div>
-                  <Badge variant="secondary">{filteredACLs.length}</Badge>
-                </div>
-              </div>
-
-              {/* ACL List */}
-              <div className="divide-y">
-                {filteredACLs.map((acl) => {
-                  const AccessIcon = getAccessIcon(acl.accessLevel);
-                  const SubjectIcon = getSubjectIcon(acl.subjectType);
-                  const accessColor = getAccessColor(acl.accessLevel);
-                  const subjectColor = getSubjectColor(acl.subjectType);
-
-                  return (
-                    <div
-                      key={acl.id}
-                      className="hover:bg-accent/30 group flex items-start gap-4 p-6 transition-colors"
-                    >
-                      {/* Access Level Icon */}
-                      <div
-                        className={`mt-1 rounded-full p-2 ${
-                          acl.accessLevel === "READ"
-                            ? "bg-blue-500/10 ring-1 ring-blue-500/20"
-                            : acl.accessLevel === "WRITE"
-                              ? "bg-orange-500/10 ring-1 ring-orange-500/20"
-                              : "bg-red-500/10 ring-1 ring-red-500/20"
-                        }`}
-                      >
-                        <AccessIcon className={`h-4 w-4 ${accessColor}`} />
-                      </div>
-
-                      {/* ACL Info */}
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <SubjectIcon className={`h-4 w-4 ${subjectColor}`} />
-                          <Typography variant="p" className="font-semibold">
-                            {acl.subjectType} #{acl.subjectId}
-                          </Typography>
-                          <Typography
-                            variant="small"
-                            className="text-muted-foreground"
-                          >
-                            →
-                          </Typography>
-                          <Badge
-                            variant={
-                              acl.accessLevel === "READ"
-                                ? "outline"
-                                : acl.accessLevel === "WRITE"
-                                  ? "default"
-                                  : "destructive"
-                            }
-                          >
-                            {acl.accessLevel}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenDeleteDialog(acl)}
-                          disabled={isDeleting}
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </RoleGuard>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="resource-acls"
+            >
+              <AccordionItem
+                value="resource-acls"
+                className="rounded-lg border"
+              >
+                <AccordionTrigger className="hover:bg-accent/30 px-6 py-4 hover:no-underline">
+                  <div className="flex w-full items-center gap-3">
+                    <div className="bg-primary/10 ring-primary/20 rounded-lg p-2 ring-1">
+                      {(() => {
+                        const ResourceIcon = getResourceIcon(
+                          selectedResource.resourceType
+                        );
+                        return (
+                          <ResourceIcon className="text-primary h-5 w-5" />
+                        );
+                      })()}
                     </div>
-                  );
-                })}
-              </div>
-            </Card>
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <Typography variant="p" className="font-bold">
+                          {selectedResource.resourceType.replace(/_/g, " ")}
+                        </Typography>
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {selectedResource.resourceId}
+                        </Badge>
+                      </div>
+                      <Typography
+                        variant="small"
+                        className="text-muted-foreground mt-0.5"
+                      >
+                        {filteredACLs.length} ACL
+                        {filteredACLs.length !== 1 ? "s" : ""}
+                      </Typography>
+                    </div>
+                    <Badge variant="secondary" className="shrink-0">
+                      {filteredACLs.length}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+
+                <AccordionContent className="px-6 pt-2 pb-6">
+                  {/* ACL List - Grid Layout */}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {filteredACLs.map((acl) => (
+                      <ACLEntry
+                        key={acl.id}
+                        acl={acl}
+                        onDelete={handleOpenDeleteDialog}
+                        isDeleting={isDeleting}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
         </>
       )}
@@ -340,6 +363,16 @@ export function ACLs() {
         onConfirm={handleDeleteConfirm}
         acl={selectedACL}
         isLoading={isDeleting}
+      />
+
+      <RevokeAllACLDialog
+        open={revokeAllDialogOpen}
+        onClose={handleCloseRevokeAllDialog}
+        onConfirm={() => handleRevokeAllACLs(() => {})}
+        resourceType={selectedResource?.resourceType || null}
+        resourceId={selectedResource?.resourceId || null}
+        aclCount={filteredACLs.length}
+        isLoading={isRevokingAll}
       />
 
       {inputWarning && (

@@ -20,6 +20,7 @@ import type {
   ResourceACLRequest,
   AssignRoleRequest,
   EmployeePermissionRequest,
+  ResourceType,
 } from "../types";
 
 // ============================================================================
@@ -414,10 +415,24 @@ export const useCreateResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: ResourceACLRequest) =>
-      resourceACLService.grantResourceAccess(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
+    mutationFn: ({
+      resourceType,
+      resourceId,
+      data,
+    }: {
+      resourceType: ResourceType;
+      resourceId: number;
+      data: ResourceACLRequest;
+    }) =>
+      resourceACLService.grantResourceAccess(resourceType, resourceId, data),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
       toast.success("Access control entry created successfully");
     },
     onError: (error: any) => {
@@ -430,14 +445,52 @@ export const useDeleteResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (aclId: number) =>
-      resourceACLService.revokeResourceAccess(aclId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
+    mutationFn: ({
+      aclId,
+    }: {
+      aclId: number;
+      resourceType: ResourceType;
+      resourceId: number;
+    }) => resourceACLService.revokeResourceAccess(aclId),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
       toast.success("Access control entry deleted successfully");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete ACL");
+    },
+  });
+};
+
+export const useRevokeAllResourceACLs = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      resourceType,
+      resourceId,
+    }: {
+      resourceType: ResourceType;
+      resourceId: number;
+    }) => resourceACLService.revokeAllResourceAccess(resourceType, resourceId),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
+      toast.success("All access control entries removed successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to revoke all ACLs");
     },
   });
 };

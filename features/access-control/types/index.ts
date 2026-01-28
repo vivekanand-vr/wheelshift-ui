@@ -75,10 +75,12 @@ export interface EmployeeDataScope {
 export interface ResourceACL {
   id: number;
   resourceType: ResourceType;
-  resourceId: string; // Changed from number to string (e.g., "CAR-123")
+  resourceId: number; // ID is a number as per API specification
   subjectType: SubjectType;
   subjectId: number;
-  accessLevel: AccessLevel; // Changed from 'access' to 'accessLevel'
+  access: AccessLevel;
+  reason?: string; // Optional reason for the ACL entry
+  grantedBy?: number; // Employee ID who granted this ACL
   createdAt: string;
   updatedAt: string;
 }
@@ -131,12 +133,15 @@ export interface DataScopeRequest {
 
 export type DataScopeResponse = EmployeeDataScope;
 
+/**
+ * Request body for creating an ACL entry.
+ * Note: resourceType and resourceId are path parameters, not in the request body.
+ */
 export interface ResourceACLRequest {
-  resourceType: ResourceType;
-  resourceId: string; // Changed from number to string
   subjectType: SubjectType;
   subjectId: number;
-  accessLevel: AccessLevel; // Changed from 'access' to 'accessLevel'
+  access: AccessLevel;
+  reason?: string; // Optional reason for granting access
 }
 
 export type ResourceACLResponse = ResourceACL;

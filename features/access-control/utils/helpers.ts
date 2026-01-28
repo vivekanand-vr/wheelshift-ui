@@ -1,4 +1,3 @@
-import { Shield, Eye, Edit, User, Users, Building2 } from "lucide-react";
 import type { SubjectType, AccessLevel } from "../types";
 
 const formatResourceName = (resource: string) =>
@@ -10,18 +9,35 @@ const formatResourceName = (resource: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
-const getAccessIcon = (level: AccessLevel) => {
-  switch (level) {
-    case "READ":
-      return Eye;
-    case "WRITE":
-      return Edit;
-    case "ADMIN":
-      return Shield;
+function formatDateTime(date: string | Date): string {
+  const dateObj = new Date(date);
+
+  const day = dateObj.getDate();
+  const suffix = getDaySuffix(day);
+  const month = dateObj.toLocaleString("en-US", { month: "long" });
+  const year = dateObj.getFullYear();
+  const time = dateObj.toLocaleString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${day}${suffix} ${month} ${year} at ${time}`;
+}
+
+function getDaySuffix(day: number): string {
+  if (day >= 11 && day <= 13) return "th";
+  switch (day % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
     default:
-      return Eye;
+      return "th";
   }
-};
+}
 
 const getAccessColor = (level: AccessLevel) => {
   switch (level) {
@@ -33,19 +49,6 @@ const getAccessColor = (level: AccessLevel) => {
       return "text-red-600";
     default:
       return "text-gray-600";
-  }
-};
-
-const getSubjectIcon = (type: SubjectType) => {
-  switch (type) {
-    case "EMPLOYEE":
-      return User;
-    case "ROLE":
-      return Users;
-    case "DEPARTMENT":
-      return Building2;
-    default:
-      return User;
   }
 };
 
@@ -85,9 +88,9 @@ const getRoleIconBackground = (color: string): string => {
 
 export {
   formatResourceName,
-  getAccessIcon,
+  formatDateTime,
   getAccessColor,
-  getSubjectIcon,
   getSubjectColor,
   getRoleIconBackground,
+  getDaySuffix,
 };

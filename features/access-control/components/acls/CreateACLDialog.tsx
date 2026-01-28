@@ -44,7 +44,7 @@ interface CreateACLDialogProps {
   onSubmit: (
     resourceType: ResourceType,
     resourceId: number,
-    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">
+    data: ResourceACLRequest
   ) => void;
   isLoading?: boolean;
 }
@@ -61,12 +61,10 @@ export function CreateACLDialog({
 }: CreateACLDialogProps) {
   const [resourceType, setResourceType] = useState<ResourceType>("CAR");
   const [resourceId, setResourceId] = useState<string>("");
-  const [formData, setFormData] = useState<
-    Omit<ResourceACLRequest, "resourceType" | "resourceId">
-  >({
+  const [formData, setFormData] = useState<ResourceACLRequest>({
     subjectType: "EMPLOYEE",
     subjectId: 0,
-    accessLevel: "READ",
+    access: "READ",
   });
 
   const resetForm = () => {
@@ -75,7 +73,7 @@ export function CreateACLDialog({
     setFormData({
       subjectType: "EMPLOYEE",
       subjectId: 0,
-      accessLevel: "READ",
+      access: "READ",
     });
   };
 
@@ -263,9 +261,9 @@ export function CreateACLDialog({
               </Label>
               <div className="flex flex-row items-center space-x-2">
                 <Select
-                  value={formData.accessLevel}
+                  value={formData.access}
                   onValueChange={(value: AccessLevel) =>
-                    setFormData({ ...formData, accessLevel: value })
+                    setFormData({ ...formData, access: value })
                   }
                 >
                   <SelectTrigger id="access" className="w-1/2">
@@ -294,7 +292,7 @@ export function CreateACLDialog({
                       *
                     </Typography>
                     <Typography variant="muted" className="text-xs">
-                      {ACCESS_LEVEL_DESCRIPTIONS[formData.accessLevel]}
+                      {ACCESS_LEVEL_DESCRIPTIONS[formData.access]}
                     </Typography>
                   </div>
                 </div>

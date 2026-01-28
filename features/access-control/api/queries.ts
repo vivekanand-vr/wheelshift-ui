@@ -34,7 +34,7 @@ export const accessControlKeys = {
   dataScopes: () => [...accessControlKeys.all, "data-scopes"] as const,
   dataScopesByEmployee: (employeeId: number) =>
     [...accessControlKeys.dataScopes(), "employee", employeeId] as const,
-  resourceACLs: (resourceType: string, resourceId: string) =>
+  resourceACLs: (resourceType: string, resourceId: number) =>
     [...accessControlKeys.all, "acl", resourceType, resourceId] as const,
 };
 
@@ -135,7 +135,7 @@ export const useDataScopesByEmployee = (employeeId: number) => {
 
 export const useResourceACLs = (
   resourceType: ResourceType,
-  resourceId: string
+  resourceId: number
 ) => {
   return useQuery({
     queryKey: accessControlKeys.resourceACLs(resourceType, resourceId),

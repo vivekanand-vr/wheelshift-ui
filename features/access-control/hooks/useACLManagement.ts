@@ -6,7 +6,11 @@
  */
 
 import { useState, useEffect } from "react";
-import { useCreateResourceACL, useDeleteResourceACL } from "../api/mutations";
+import {
+  useCreateResourceACL,
+  useDeleteResourceACL,
+  useRevokeAllResourceACLs,
+} from "../api/mutations";
 import { useResourceACLs } from "../api/queries";
 import type {
   ResourceACL,
@@ -43,6 +47,7 @@ export function useACLManagement() {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [revokeAllDialogOpen, setRevokeAllDialogOpen] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -56,19 +61,18 @@ export function useACLManagement() {
   }, [searchQuery]);
 
   const selectedResourceType = selectedResource?.resourceType as ResourceType;
-  const selectedResourceId = selectedResource
-    ? String(selectedResource.resourceId)
-    : "";
+  const selectedResourceId = selectedResource?.resourceId;
 
   // Fetch ACLs for selected resource only (no "all ACLs" query)
   const {
     data: resourceACLs = [],
     isLoading: aclsLoading,
     error: aclsError,
-  } = useResourceACLs(selectedResourceType, selectedResourceId);
+  } = useResourceACLs(selectedResourceType, selectedResourceId ?? 0);
 
   const createMutation = useCreateResourceACL();
   const deleteMutation = useDeleteResourceACL();
+  const revokeAllMutation = useRevokeAllResourceACLs();
 
   // Error handler
   const handleApiError = (error: any) => {
@@ -90,34 +94,58 @@ export function useACLManagement() {
   // Handler functions
   const handleCreateACL = (
     resourceType: ResourceType,
-    resourceId: string,
-    data: Omit<ResourceACLRequest, "resourceType" | "resourceId">,
+    resourceId: number,
+    data: ResourceACLRequest,
     onSuccess?: () => void
   ) => {
-    const fullData: ResourceACLRequest = {
-      resourceType,
-      resourceId,
-      ...data,
-    };
-    createMutation.mutate(fullData, {
-      onSuccess: () => {
-        onSuccess?.();
-        setSelectedACL(null);
-      },
-      onError: handleApiError,
-    });
+    createMutation.mutate(
+      { resourceType, resourceId, data },
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          setSelectedACL(null);
+          setCreateDialogOpen(false);
+        },
+        onError: handleApiError,
+      }
+    );
   };
 
   const handleDeleteACL = (aclId: number, onSuccess?: () => void) => {
     if (!selectedResource) return;
 
-    deleteMutation.mutate(aclId, {
-      onSuccess: () => {
-        onSuccess?.();
-        setSelectedACL(null);
+    deleteMutation.mutate(
+      {
+        aclId,
+        resourceType: selectedResource.resourceType,
+        resourceId: selectedResource.resourceId,
       },
-      onError: handleApiError,
-    });
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          setSelectedACL(null);
+        },
+        onError: handleApiError,
+      }
+    );
+  };
+
+  const handleRevokeAllACLs = (onSuccess?: () => void) => {
+    if (!selectedResource) return;
+
+    revokeAllMutation.mutate(
+      {
+        resourceType: selectedResource.resourceType,
+        resourceId: selectedResource.resourceId,
+      },
+      {
+        onSuccess: () => {
+          onSuccess?.();
+          setRevokeAllDialogOpen(false);
+        },
+        onError: handleApiError,
+      }
+    );
   };
 
   const handleSelectResource = (resource: ResourceIdentifier | null) => {
@@ -156,6 +184,14 @@ export function useACLManagement() {
     setSelectedACL(null);
   };
 
+  const handleOpenRevokeAllDialog = () => {
+    setRevokeAllDialogOpen(true);
+  };
+
+  const handleCloseRevokeAllDialog = () => {
+    setRevokeAllDialogOpen(false);
+  };
+
   // Filter resource ACLs by subject type and search query
   const filteredACLs = resourceACLs.filter((acl) => {
     const matchesSearch =
@@ -189,11 +225,13 @@ export function useACLManagement() {
     inputWarning,
     createDialogOpen,
     deleteDialogOpen,
+    revokeAllDialogOpen,
 
     // Loading states
     aclsLoading,
     isCreating: createMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isRevokingAll: revokeAllMutation.isPending,
 
     // Errors
     aclsError,
@@ -207,14 +245,18 @@ export function useACLManagement() {
     setInputWarning,
     setCreateDialogOpen,
     setDeleteDialogOpen,
+    setRevokeAllDialogOpen,
     handleCreateACL,
     handleDeleteACL,
+    handleRevokeAllACLs,
     handleSelectResource,
     handleLoadResource,
     handleOpenCreateDialog,
     handleOpenDeleteDialog,
     handleCloseCreateDialog,
     handleCloseDeleteDialog,
+    handleOpenRevokeAllDialog,
+    handleCloseRevokeAllDialog,
     setFilterSubjectType,
   };
 }

@@ -11,60 +11,38 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RoleGuard } from "@/components/common/RoleGuard";
-import {
-  Eye,
-  Edit,
-  Shield,
-  User,
-  Users,
-  Building2,
-  AlertTriangle,
-  type LucideIcon,
-} from "lucide-react";
-import type { ResourceACL, AccessLevel, SubjectType } from "../../types";
+import { ShieldAlert, AlertTriangle } from "lucide-react";
+import type { ResourceType } from "../../types";
 import { Typography } from "@/components/ui/typography";
 
-interface DeleteACLDialogProps {
+interface RevokeAllACLDialogProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (aclId: number) => void;
-  acl: ResourceACL | null;
+  onConfirm: () => void;
+  resourceType: ResourceType | null;
+  resourceId: number | null;
+  aclCount: number;
   isLoading?: boolean;
 }
 
-const ACCESS_LEVEL_ICONS: Record<AccessLevel, LucideIcon> = {
-  READ: Eye,
-  WRITE: Edit,
-  ADMIN: Shield,
-};
-
-const SUBJECT_TYPE_ICONS: Record<SubjectType, LucideIcon> = {
-  EMPLOYEE: User,
-  ROLE: Users,
-  DEPARTMENT: Building2,
-};
-
 /**
- * Delete ACL Dialog - SUPER_ADMIN only
- * Deletes a resource access control entry with confirmation
+ * Revoke All ACL Dialog - SUPER_ADMIN only
+ * Removes all access control entries for a resource with confirmation
  */
-export function DeleteACLDialog({
+export function RevokeAllACLDialog({
   open,
   onClose,
   onConfirm,
-  acl,
+  resourceType,
+  resourceId,
+  aclCount,
   isLoading,
-}: DeleteACLDialogProps) {
+}: RevokeAllACLDialogProps) {
   const handleConfirm = () => {
-    if (acl) {
-      onConfirm(acl.id);
-    }
+    onConfirm();
   };
 
-  if (!acl) return null;
-
-  const AccessIcon = ACCESS_LEVEL_ICONS[acl.access];
-  const SubjectIcon = SUBJECT_TYPE_ICONS[acl.subjectType];
+  if (!resourceType || !resourceId) return null;
 
   return (
     <RoleGuard allowedRoles={["SUPER_ADMIN"]}>
@@ -72,15 +50,16 @@ export function DeleteACLDialog({
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle className="text-destructive">
-              Delete ACL Entry
+              Revoke All ACL Entries
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove this access control entry?
+              This will permanently remove all access control entries for this
+              resource. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* ACL Details */}
+            {/* Resource Details */}
             <Card className="bg-muted/50 p-4">
               <div className="space-y-3">
                 {/* Resource */}
@@ -89,45 +68,27 @@ export function DeleteACLDialog({
                     Resource
                   </Typography>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{acl.resourceType}</Badge>
+                    <Badge variant="outline">{resourceType}</Badge>
                     <Typography variant="small" className="font-mono">
-                      {acl.resourceId}
+                      {resourceId}
                     </Typography>
                   </div>
                 </div>
 
-                {/* Subject */}
+                {/* ACL Count */}
                 <div>
                   <Typography variant="muted" className="mb-1 text-xs">
-                    Subject
+                    ACL Entries to Remove
                   </Typography>
                   <div className="flex items-center gap-2">
-                    <SubjectIcon className="text-muted-foreground h-4 w-4" />
-                    <Badge variant="outline">{acl.subjectType}</Badge>
-                    <Typography variant="small" className="font-mono">
-                      {acl.subjectId}
-                    </Typography>
-                  </div>
-                </div>
-
-                {/* Access Level */}
-                <div>
-                  <Typography variant="muted" className="mb-1 text-xs">
-                    Access Level
-                  </Typography>
-                  <div className="flex items-center gap-2">
-                    <AccessIcon className="text-primary h-4 w-4" />
-                    <Badge
-                      variant={
-                        acl.access === "ADMIN"
-                          ? "destructive"
-                          : acl.access === "WRITE"
-                            ? "default"
-                            : "outline"
-                      }
+                    <ShieldAlert className="text-destructive h-4 w-4" />
+                    <Badge variant="destructive">{aclCount}</Badge>
+                    <Typography
+                      variant="small"
+                      className="text-muted-foreground"
                     >
-                      {acl.access}
-                    </Badge>
+                      {aclCount === 1 ? "entry" : "entries"}
+                    </Typography>
                   </div>
                 </div>
               </div>
@@ -148,9 +109,32 @@ export function DeleteACLDialog({
                     variant="muted"
                     className="mt-1 text-xs text-red-800 dark:text-red-200"
                   >
-                    Removing this ACL entry will immediately revoke the granted
-                    access. The subject will lose {acl.access} permissions to
-                    this resource.
+                    All {aclCount} access control{" "}
+                    {aclCount === 1 ? "entry" : "entries"} for this resource
+                    will be permanently removed. Users and roles will lose their
+                    custom access permissions.
+                  </Typography>
+                </div>
+              </div>
+            </Card>
+
+            {/* Confirmation Message */}
+            <Card className="border-amber-500/20 bg-amber-500/10 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <div className="flex-1">
+                  <Typography
+                    variant="small"
+                    className="font-medium text-amber-900 dark:text-amber-100"
+                  >
+                    Super Admin Action
+                  </Typography>
+                  <Typography
+                    variant="muted"
+                    className="mt-1 text-xs text-amber-800 dark:text-amber-200"
+                  >
+                    This action is restricted to Super Admins only. Make sure
+                    you want to remove all access controls before proceeding.
                   </Typography>
                 </div>
               </div>
@@ -159,21 +143,17 @@ export function DeleteACLDialog({
 
           {/* Actions */}
           <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
             <Button
-              type="button"
               variant="destructive"
               onClick={handleConfirm}
               disabled={isLoading}
             >
-              {isLoading ? "Deleting..." : "Delete ACL Entry"}
+              {isLoading
+                ? "Removing..."
+                : `Remove All ${aclCount} ${aclCount === 1 ? "Entry" : "Entries"}`}
             </Button>
           </div>
         </DialogContent>
