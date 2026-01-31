@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Typography } from "@/components/ui/typography";
 interface PageHeaderProps {
   title: string;
   description?: string;
@@ -23,9 +24,13 @@ export function PageHeader({
       )}
     >
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        <Typography variant="h2" className="text-3xl tracking-tight">
+          {title}
+        </Typography>
         {description && (
-          <p className="text-muted-foreground mt-1">{description}</p>
+          <Typography variant="muted" className="mt-1">
+            {description}
+          </Typography>
         )}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

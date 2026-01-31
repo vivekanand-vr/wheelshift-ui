@@ -2,7 +2,7 @@
 
 This document explains the standardized architecture pattern for all features in WheelShiftProUI.
 
-## 📁 Standard Feature Structure
+## Standard Feature Structure
 
 Every feature follows this consistent folder structure:
 
@@ -40,7 +40,7 @@ features/
     └── index.ts                 # Main feature exports
 ```
 
-## 🔄 Architecture Flow
+## Architecture Flow
 
 The architecture follows a clear unidirectional data flow:
 
@@ -108,7 +108,7 @@ The architecture follows a clear unidirectional data flow:
                     └─────────────────────┘
 ```
 
-## 📦 Layer Responsibilities
+## Layer Responsibilities
 
 ### 1. **Services Layer** (`api/services.ts`)
 
@@ -147,7 +147,119 @@ The architecture follows a clear unidirectional data flow:
   - Persisted to localStorage
   - Accessed by multiple components
 
-## 🎯 Where Things Go
+## UI Components & Patterns
+
+### Using Shadcn UI Components
+
+**Always use components from `components/ui/`** for consistent design:
+
+- `Button`, `Input`, `Select`, `Card`, `Dialog`, `Badge`, etc.
+- All components are pre-configured with theme support
+- Located in `components/ui/` folder
+
+### Typography
+
+**Use `Typography` component for all text:**
+
+```tsx
+import { Typography } from "@/components/ui/typography";
+
+// Headings
+<Typography variant="h1">Main Title</Typography>
+<Typography variant="h2">Section Title</Typography>
+
+// Body text
+<Typography variant="p">Regular paragraph text</Typography>
+<Typography variant="small">Smaller text</Typography>
+<Typography variant="extraSmall">Extra small text</Typography>
+<Typography variant="muted">Muted/secondary text</Typography>
+
+// Other variants
+<Typography variant="lead">Lead paragraph</Typography>
+<Typography variant="large">Large text</Typography>
+<Typography variant="code">Inline code</Typography>
+```
+
+**For unusual/edge cases only:**
+
+- Use custom `<span>` or `<p>` tags when Typography variants don't fit
+- Keep these minimal and justified
+
+### Loading States
+
+**1. Page/Section Loading** - Use `Loader` component:
+
+```tsx
+import Loader from "@/components/common/Loader";
+
+{
+  isLoading && <Loader />;
+}
+```
+
+**2. Component Loading** - Build shimmer/skeleton components:
+
+```tsx
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Create loading skeletons for your components
+<Card>
+  <Skeleton className="h-8 w-full" />
+  <Skeleton className="mt-2 h-4 w-3/4" />
+</Card>;
+```
+
+### Error & Info Modals
+
+**Use `ErrorDialog` for errors, warnings, and info:**
+
+```tsx
+import { ErrorDialog } from "@/components/common/ErrorDialog";
+
+<ErrorDialog
+  open={showError}
+  onClose={() => setShowError(false)}
+  type="error" // or "warning" | "info"
+  title="Operation Failed"
+  detail="Could not complete the operation"
+  code="ERROR_CODE"
+  timestamp={new Date().toISOString()}
+/>;
+```
+
+### Empty States
+
+**Use `EmptyState` when no data is available:**
+
+```tsx
+import { EmptyState } from "@/components/common/EmptyState";
+import { PackageOpen } from "lucide-react";
+
+<EmptyState
+  icon={<PackageOpen className="h-12 w-12" />}
+  title="No items found"
+  description="Get started by creating your first item"
+  action={<Button onClick={onCreate}>Create Item</Button>}
+/>;
+```
+
+### Role-Based Access Control
+
+**Use `RoleGuard` for protected content:**
+
+```tsx
+import { RoleGuard } from "@/components/common/RoleGuard";
+
+<RoleGuard allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+  <AdminPanel />
+</RoleGuard>;
+```
+
+**Full RoleGuard documentation:** [RoleGuard README](./roleGuard/README.md)
+
+---
+
+## Where Things Go
 
 ### Feature-Specific Items
 
@@ -187,7 +299,7 @@ The architecture follows a clear unidirectional data flow:
 - Shared Zod schemas
 - Common form validations
 
-## 🔐 Role-Based Access Control
+## Role-Based Access Control
 
 Wrap components in `RoleGuard` when needed:
 
@@ -203,7 +315,7 @@ Page Component
 
 The RoleGuard checks user roles/permissions from Redux store and conditionally renders content.
 
-## 📄 Page Integration
+## Page Integration
 
 Pages import and use the main feature component:
 
@@ -218,7 +330,7 @@ app/
 
 Pages should be minimal - just import the feature component and render it (with RoleGuard if needed).
 
-## ✅ Development Checklist
+## Development Checklist
 
 When building a new feature:
 
@@ -254,7 +366,7 @@ When building a new feature:
    - [ ] Test components
    - [ ] Test role guards
 
-## 🚫 Common Mistakes to Avoid
+## Common Mistakes to Avoid
 
 ❌ **DON'T:**
 
@@ -274,7 +386,7 @@ When building a new feature:
 - Export through index.ts
 - Check role requirements
 
-## 📚 Key Principles
+## Key Principles
 
 1. **Separation of Concerns** - Each layer has one job
 2. **Feature Cohesion** - All feature code together

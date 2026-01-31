@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import { LucideIcon } from "lucide-react";
 
 interface StatItemProps {
@@ -25,7 +26,7 @@ export const StatsGroupWidget = ({
     <Card className="relative overflow-hidden p-6">
       <div className="mb-4 flex items-center gap-2">
         {Icon && <Icon className="text-primary h-5 w-5" />}
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <Typography variant="large">{title}</Typography>
       </div>
 
       <ScrollArea className="h-64">
@@ -43,11 +44,16 @@ export const StatsGroupWidget = ({
                       <StatIcon className="text-primary h-4 w-4" />
                     </div>
                   )}
-                  <span className="text-muted-foreground text-xs font-medium">
+                  <Typography
+                    variant="small"
+                    className="text-muted-foreground text-xs"
+                  >
                     {stat.label}
-                  </span>
+                  </Typography>
                 </div>
-                <span className="text-base font-bold">{stat.value}</span>
+                <Typography variant="small" className="text-base font-bold">
+                  {stat.value}
+                </Typography>
               </div>
             );
           })}

@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
@@ -22,12 +23,12 @@ export function EmptyState({
   return (
     <Card className={cn("border-dashed", className)}>
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-        {icon && <div className="text-muted-foreground mb-4">{icon}</div>}
-        <h3 className="text-lg font-semibold">{title}</h3>
+        {icon && <div className="text-muted-foreground mb-2">{icon}</div>}
+        <Typography variant="h5">{title}</Typography>
         {description && (
-          <p className="text-muted-foreground mt-2 max-w-sm text-sm">
+          <Typography variant="muted" className="max-w-sm">
             {description}
-          </p>
+          </Typography>
         )}
         {action && <div className="mt-4">{action}</div>}
       </CardContent>

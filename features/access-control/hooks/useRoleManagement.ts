@@ -15,12 +15,14 @@ import {
   useAddPermissionToRole,
   useRemovePermissionFromRole,
 } from "../api";
-import type { Role, RoleRequest } from "../types";
+import type { Role, RoleRequest, ApiErrorResponse } from "../types";
 
 export function useRoleManagement() {
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [apiError, setApiError] = useState<ApiErrorResponse | null>(null);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
   // Queries
   const { data: roles = [], isLoading: rolesLoading } = useRoles();
@@ -41,6 +43,24 @@ export function useRoleManagement() {
       role.description?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Error handler
+  const handleApiError = (error: any) => {
+    // Check if error response has the expected structure
+    if (error?.response?.data) {
+      const errorData = error.response.data;
+      setApiError({
+        type: errorData.type || "about:blank",
+        title: errorData.title || "An Error Occurred",
+        status: errorData.status || 500,
+        detail: errorData.detail || "An unexpected error occurred",
+        instance: errorData.instance || "",
+        code: errorData.code || "UNKNOWN_ERROR",
+        timestamp: errorData.timestamp || new Date().toISOString(),
+      });
+      setErrorDialogOpen(true);
+    }
+  };
+
   // Handlers
   const handleCreateRole = (data: RoleRequest, onSuccess?: () => void) => {
     createRoleMutation.mutate(data, {
@@ -48,6 +68,7 @@ export function useRoleManagement() {
         onSuccess?.();
         setSelectedRole(null);
       },
+      onError: handleApiError,
     });
   };
 
@@ -63,27 +84,33 @@ export function useRoleManagement() {
           onSuccess?.();
           setSelectedRole(null);
         },
+        onError: handleApiError,
       }
     );
   };
 
-  const handleDeleteRole = (onSuccess?: () => void) => {
-    if (roleToDelete) {
-      deleteRoleMutation.mutate(roleToDelete.id, {
-        onSuccess: () => {
-          onSuccess?.();
-          setRoleToDelete(null);
-        },
-      });
-    }
+  const handleDeleteRole = (roleId: number, onSuccess?: () => void) => {
+    deleteRoleMutation.mutate(roleId, {
+      onSuccess: () => {
+        onSuccess?.();
+        setSelectedRole(null);
+      },
+      onError: handleApiError,
+    });
   };
 
   const handleAddPermission = (roleId: number, permissionId: number) => {
-    addPermissionMutation.mutate({ roleId, permissionId });
+    addPermissionMutation.mutate(
+      { roleId, permissionId },
+      { onError: handleApiError }
+    );
   };
 
   const handleRemovePermission = (roleId: number, permissionId: number) => {
-    removePermissionMutation.mutate({ roleId, permissionId });
+    removePermissionMutation.mutate(
+      { roleId, permissionId },
+      { onError: handleApiError }
+    );
   };
 
   const openEditDialog = (role: Role) => {
@@ -108,6 +135,8 @@ export function useRoleManagement() {
     roles,
     filteredRoles,
     permissions,
+    apiError,
+    errorDialogOpen,
 
     // Loading states
     rolesLoading,
@@ -122,6 +151,7 @@ export function useRoleManagement() {
     setSearch,
     setSelectedRole,
     setRoleToDelete,
+    setErrorDialogOpen,
     handleCreateRole,
     handleUpdateRole,
     handleDeleteRole,

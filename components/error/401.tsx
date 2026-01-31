@@ -2,6 +2,7 @@
 
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui/typography";
 import { useRouter } from "next/navigation";
 
 interface Error401Props {
@@ -59,17 +60,15 @@ export const Error401 = ({
 
         {/* Error Code */}
         <div>
-          <h1 className="text-6xl font-bold text-gray-900 dark:text-gray-100">
+          <Typography variant="h1" className="text-6xl">
             401
-          </h1>
+          </Typography>
         </div>
 
         {/* Title and Description */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {title}
-          </h2>
-          <p className="text-muted-foreground">{description}</p>
+          <Typography variant="h3">{title}</Typography>
+          <Typography variant="muted">{description}</Typography>
         </div>
 
         {/* Actions */}

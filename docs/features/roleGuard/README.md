@@ -6,10 +6,45 @@ The `RoleGuard` component provides flexible role-based and permission-based acce
 
 - ✅ **Role-based access control** - Restrict content by user roles
 - ✅ **Permission-based access control** - Restrict content by user permissions
+- ✅ **Smart default behavior** - Hides unauthorized content by default (no broken layouts)
 - ✅ **Flexible logic** - Support for "any" or "all" requirement checking
 - ✅ **Custom fallbacks** - Show custom content when access is denied
+- ✅ **Full page protection** - Optional 403 error page for full-page guards
 - ✅ **Loading states** - Optional loading indicators during auth checks
 - ✅ **Redux integration** - Automatically reads from auth store
+
+## How It Works
+
+### Default Behavior: Hide Unauthorized Content
+
+By default, `RoleGuard` **hides** unauthorized content by returning `null`. This is perfect for:
+
+- Buttons and action items
+- Navigation links
+- Dropdown menu items
+- UI components within cards or forms
+
+**Result**: Clean UI without broken layouts or error messages in unexpected places.
+
+### Custom Fallbacks
+
+You can show alternative content when access is denied:
+
+```tsx
+<RoleGuard allowedRoles={["ADMIN"]} fallback={<DisabledButton />}>
+  <EditButton />
+</RoleGuard>
+```
+
+### Full Page Protection
+
+For full-page content, use `showErrorPage={true}` to display a 403 error page:
+
+```tsx
+<RoleGuard allowedRoles={["ADMIN"]} showErrorPage={true}>
+  <AdminDashboard />
+</RoleGuard>
+```
 
 ## Basic Usage
 
@@ -105,7 +140,8 @@ import { RoleGuard } from "@/components/common";
 | `requiredPermissions` | `string[]`       | `undefined`             | Array of permissions required to access the content                              |
 | `requirementType`     | `"any" \| "all"` | `"any"`                 | Logic for multiple roles/permissions: "any" = at least one, "all" = all required |
 | `children`            | `ReactNode`      | required                | Content to render when authorized                                                |
-| `fallback`            | `ReactNode`      | `null`                  | Content to render when not authorized                                            |
+| `fallback`            | `ReactNode`      | `null`                  | Content to render when not authorized. If not provided, content is hidden        |
+| `showErrorPage`       | `boolean`        | `false`                 | Show 403 error page when not authorized. Use for full-page protection            |
 | `showLoadingState`    | `boolean`        | `false`                 | Whether to show loading state during auth check                                  |
 | `loadingComponent`    | `ReactNode`      | `<div>Loading...</div>` | Custom loading component                                                         |
 
@@ -160,6 +196,21 @@ export default function StoragePage() {
   return (
     <RoleGuard
       allowedRoles={["STORE_MANAGER", "ADMIN"]}
+      showErrorPage={true} // Show 403 error page for full-page protection
+    >
+      <div>
+        <h1>Storage Management</h1>
+        <StorageContent />
+      </div>
+    </RoleGuard>
+  );
+}
+
+// Or with custom fallback
+export default function StoragePageAlt() {
+  return (
+    <RoleGuard
+      allowedRoles={["STORE_MANAGER", "ADMIN"]}
       fallback={<AccessDenied />}
     >
       <div>
@@ -177,21 +228,107 @@ export default function StoragePage() {
 <div>
   <h2>Vehicle Details</h2>
 
+  {/* Button is hidden for unauthorized users - clean UI */}
   <RoleGuard requiredPermissions={["cars:write"]}>
     <Button onClick={handleEdit}>Edit</Button>
   </RoleGuard>
 
+  {/* Button is hidden for non-admins */}
   <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
     <Button onClick={handleDelete} variant="destructive">
       Delete
     </Button>
   </RoleGuard>
+
+  {/* Show disabled button instead of hiding */}
+  <RoleGuard
+    requiredPermissions={["cars:write"]}
+    fallback={<Button disabled>Edit (No Permission)</Button>}
+  >
+    <Button onClick={handleEdit}>Edit</Button>
+  </RoleGuard>
 </div>
+```
+
+### Protect Dropdown Menu Items
+
+```tsx
+<DropdownMenu>
+  <DropdownMenuTrigger>Actions</DropdownMenuTrigger>
+  <DropdownMenuContent>
+    {/* These menu items are hidden for unauthorized users */}
+    <RoleGuard requiredPermissions={["cars:write"]}>
+      <DropdownMenuItem>Edit</DropdownMenuItem>
+    </RoleGuard>
+
+    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
+      <DropdownMenuItem>Delete</DropdownMenuItem>
+    </RoleGuard>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+## When to Use What
+
+### ✅ Default (Hidden) - Best for UI Components
+
+Use the default behavior (no `fallback` or `showErrorPage`) when protecting:
+
+- Buttons
+- Menu items
+- Navigation links
+- Cards or sections within a page
+- Action items in toolbars
+
+**Why**: Keeps the UI clean without gaps or error messages in unexpected places.
+
+```tsx
+<RoleGuard allowedRoles={["ADMIN"]}>
+  <DeleteButton />
+</RoleGuard>
+```
+
+### 🔄 Custom Fallback - Show Alternative Content
+
+Use `fallback` when you want to show alternative content:
+
+- Disabled buttons with explanation
+- "Upgrade to access" messages
+- Alternative UI for non-authorized users
+
+```tsx
+<RoleGuard
+  allowedRoles={["ADMIN"]}
+  fallback={
+    <Button disabled tooltip="Admin only">
+      Edit
+    </Button>
+  }
+>
+  <Button onClick={handleEdit}>Edit</Button>
+</RoleGuard>
+```
+
+### 🚫 Error Page - Full Page Protection
+
+Use `showErrorPage={true}` for:
+
+- Full page content
+- Entire route protection
+- When you want to explicitly tell users they don't have access
+
+```tsx
+<RoleGuard allowedRoles={["ADMIN"]} showErrorPage={true}>
+  <AdminDashboard />
+</RoleGuard>
 ```
 
 ## Notes
 
 - The component reads authentication state from Redux store (`state.auth`)
+- **Default behavior**: Unauthorized content is **hidden** (returns `null`) - perfect for buttons, menus, and UI components
+- Use `showErrorPage={true}` for full-page protection to show 403 error page
+- Use `fallback` prop to show custom content when access is denied
 - If no restrictions are specified (no roles or permissions), access is granted
-- When not authenticated, fallback content is shown
 - The component is flexible enough to handle complex authorization scenarios
+- Priority order: `fallback` (if provided) → `showErrorPage` (if true) → hide content (default)

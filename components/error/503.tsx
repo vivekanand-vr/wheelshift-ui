@@ -2,6 +2,7 @@
 
 import { CloudOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Typography } from "@/components/ui/typography";
 import { useRouter } from "next/navigation";
 
 interface Error503Props {
@@ -64,21 +65,22 @@ export const Error503 = ({
 
         {/* Error Code */}
         <div>
-          <h1 className="text-6xl font-bold text-gray-900 dark:text-gray-100">
+          <Typography variant="h1" className="text-6xl">
             503
-          </h1>
+          </Typography>
         </div>
 
         {/* Title and Description */}
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            {title}
-          </h2>
-          <p className="text-muted-foreground">{description}</p>
+          <Typography variant="h3">{title}</Typography>
+          <Typography variant="muted">{description}</Typography>
           {estimatedTime && (
-            <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+            <Typography
+              variant="small"
+              className="font-medium text-purple-600 dark:text-purple-400"
+            >
               Estimated time: {estimatedTime}
-            </p>
+            </Typography>
           )}
         </div>
 

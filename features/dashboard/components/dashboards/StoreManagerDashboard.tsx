@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 
 interface StoreManagerDashboardProps {
   data: StoreManagerDashboardResponse;
@@ -114,7 +115,7 @@ export const StoreManagerDashboard = ({ data }: StoreManagerDashboardProps) => {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Package className="text-primary h-5 w-5" />
-              <h3 className="text-lg font-semibold">Capacity Overview</h3>
+              <Typography variant="large">Capacity Overview</Typography>
             </div>
             <Badge
               variant={
@@ -134,10 +135,10 @@ export const StoreManagerDashboard = ({ data }: StoreManagerDashboardProps) => {
           </div>
           <div className="space-y-4">
             <Progress value={data.locationOverview.utilizationRate} />
-            <p className="text-muted-foreground text-xs">
+            <Typography variant="muted" className="text-xs">
               {data.locationOverview.currentOccupancy} /{" "}
               {data.locationOverview.totalCapacity} spaces occupied
-            </p>
+            </Typography>
             <ScrollArea className="h-64">
               <div className="space-y-2 pr-4">
                 {data.capacityAlerts.details.map(
@@ -165,9 +166,9 @@ export const StoreManagerDashboard = ({ data }: StoreManagerDashboardProps) => {
                           {alert.utilizationRate.toFixed(0)}%
                         </Badge>
                       </div>
-                      <p className="text-muted-foreground text-[10px]">
+                      <Typography variant="muted" className="text-[10px]">
                         {alert.occupancy} / {alert.capacity} spaces
-                      </p>
+                      </Typography>
                     </div>
                   )
                 )}
@@ -179,12 +180,17 @@ export const StoreManagerDashboard = ({ data }: StoreManagerDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <MapPin className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Vehicle Distribution</h3>
+            <Typography variant="large">Vehicle Distribution</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-4 pr-4">
               <div>
-                <h4 className="mb-2 text-xs font-semibold">By Location</h4>
+                <Typography
+                  variant="small"
+                  className="mb-2 text-xs font-semibold"
+                >
+                  By Location
+                </Typography>
                 <div className="space-y-2">
                   {Object.entries(data.vehicleDistribution.byLocation).map(
                     ([location, count]) => (
@@ -200,7 +206,12 @@ export const StoreManagerDashboard = ({ data }: StoreManagerDashboardProps) => {
                 </div>
               </div>
               <div>
-                <h4 className="mb-2 text-xs font-semibold">By Status</h4>
+                <Typography
+                  variant="small"
+                  className="mb-2 text-xs font-semibold"
+                >
+                  By Status
+                </Typography>
                 <div className="space-y-2">
                   {Object.entries(data.vehicleDistribution.byStatus).map(
                     ([status, count]) => (

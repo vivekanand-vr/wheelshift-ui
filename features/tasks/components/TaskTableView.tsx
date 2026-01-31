@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { format } from "date-fns";
+import { Typography } from "@/components/ui/typography";
 import { ArrowUpDown } from "lucide-react";
 import type { Task } from "@/features/tasks/types";
 import { Avatar } from "@/components/ui/avatar";
@@ -62,13 +63,19 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         ),
         cell: ({ row }) => (
           <div className="min-w-50">
-            <div className="font-medium text-neutral-900 dark:text-neutral-100">
+            <Typography
+              variant="small"
+              className="font-medium text-neutral-900 dark:text-neutral-100"
+            >
               {row.original.title}
-            </div>
+            </Typography>
             {row.original.description && (
-              <p className="mt-1 line-clamp-1 text-sm text-neutral-600 dark:text-neutral-400">
+              <Typography
+                variant="muted"
+                className="mt-1 line-clamp-1 text-sm text-neutral-600 dark:text-neutral-400"
+              >
                 {row.original.description}
-              </p>
+              </Typography>
             )}
           </div>
         ),
@@ -126,12 +133,17 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
                     .slice(0, 2)}
                 </div>
               </Avatar>
-              <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              <Typography
+                variant="small"
+                className="text-neutral-700 dark:text-neutral-300"
+              >
                 {row.original.assigneeName}
-              </span>
+              </Typography>
             </div>
           ) : (
-            <span className="text-sm text-neutral-400">Unassigned</span>
+            <Typography variant="small" className="text-neutral-400">
+              Unassigned
+            </Typography>
           ),
       },
       {
@@ -148,11 +160,16 @@ export function TaskTableView({ tasks, onTaskClick }: TaskTableViewProps) {
         ),
         cell: ({ row }) =>
           row.original.dueDate ? (
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            <Typography
+              variant="small"
+              className="text-neutral-700 dark:text-neutral-300"
+            >
               {format(new Date(row.original.dueDate), "MMM dd, yyyy")}
-            </span>
+            </Typography>
           ) : (
-            <span className="text-sm text-neutral-400">No due date</span>
+            <Typography variant="small" className="text-neutral-400">
+              No due date
+            </Typography>
           ),
       },
     ],

@@ -1,54 +1,81 @@
-# Authentication Session Management Fix
+# Authentication JWT Token Management
 
 ## Overview
 
-This update fixes the session management issues where session cookies weren't being sent properly, causing 403 errors. The solution implements comprehensive session validation, automatic expiry detection, and user-friendly error handling with toast notifications.
+This implementation uses JWT (JSON Web Token) based authentication where the backend returns an `accessToken` upon successful login. This token is stored in localStorage and included in the Authorization header for all subsequent API requests.
 
 ## Changes Made
 
 ### 1. **Enhanced Type Definitions** ([types/index.ts](../types/index.ts))
 
-Added `SessionValidationResponse` interface to handle session validation responses:
+Updated `LoginResponse` interface to include `accessToken`:
 
 ```typescript
-export interface SessionValidationResponse {
-  valid: boolean;
-  expired: boolean;
-  message: string;
-  employeeId?: number;
-  email?: string;
-  errorCode?: string;
+export interface LoginResponse {
+  employeeId: number;
+  email: string;
+  name: string;
+  roles: string[];
+  permissions: string[];
+  accessToken: string;
 }
 ```
 
-### 2. **Session Validation API** ([api/services.ts](../api/services.ts))
+### 2. **JWT Token Management** ([lib/api/axios.ts](../../lib/api/axios.ts))
 
-Added `validateSession` method to check session validity:
+**Key Features:**
+
+- Stores JWT token in localStorage upon successful login
+- Automatically adds `Authorization: Bearer <token>` header to all requests
+- Handles token expiration (401 errors with TOKEN_EXPIRED code)
+- Clears token and redirects to login on expiration
+- Handles permission errors (403) with appropriate messages
+
+**Token Storage Functions:**
 
 ```typescript
-validateSession: async (): Promise<SessionValidationResponse> => {
-  const response = await api.get<SessionValidationResponse>(
-    "/auth/validate-session"
-  );
-  return response.data;
+// Get token from localStorage
+const getAccessToken = (): string | null => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("accessToken");
+  }
+  return null;
+};
+
+// Store token in localStorage
+export const setAccessToken = (token: string): void => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("accessToken", token);
+  }
+};
+
+// Remove token from localStorage
+export const removeAccessToken = (): void => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("accessToken");
+  }
 };
 ```
 
-### 3. **Enhanced Axios Interceptor** ([lib/api/axios.ts](../../lib/api/axios.ts))
-
-**Key Improvements:**
-
-- Properly handles session-based authentication (uses cookies, not tokens)
-- Detects `SESSION_EXPIRED` error code (401) and shows toast notification
-- Automatically redirects to login on session expiry
-- Handles `INSUFFICIENT_PERMISSIONS` and `ACCESS_DENIED` (403) errors
-- Clears persisted state on session expiry
-
-**Session Expiry Handling:**
+**Request Interceptor:**
 
 ```typescript
-if (errorCode === "SESSION_EXPIRED") {
+api.interceptors.request.use((config) => {
+  // Add JWT token to Authorization header
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+```
+
+**Token Expiry Handling:**
+
+```typescript
+if (errorCode === "TOKEN_EXPIRED" || errorCode === "INVALID_TOKEN") {
   toast.error("Your session has expired. Please login again.");
+  removeAccessToken();
   localStorage.removeItem("persist:root");
   setTimeout(() => {
     window.location.href = "/login";
@@ -56,134 +83,87 @@ if (errorCode === "SESSION_EXPIRED") {
 }
 ```
 
-### 4. **Auth Store Session Validation** ([store/authSlice.ts](../store/authSlice.ts))
+### 3. **Auth Services with Token Storage** ([api/services.ts](../api/services.ts))
 
-Added `validateSessionAsync` thunk for Redux state management:
+**Login Service:**
 
 ```typescript
-export const validateSessionAsync = createAsyncThunk(
-  "auth/validateSession",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await authApi.validateSession();
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.code || "SESSION_VALIDATION_FAILED"
-      );
-    }
-  }
-);
+login: async (credentials: LoginCredentials): Promise<User> => {
+  const response = await api.post<LoginResponse>("/auth/login", credentials);
+
+  // Store JWT access token
+  const { setAccessToken } = await import("@/lib/api/axios");
+  setAccessToken(response.data.accessToken);
+
+  return transformUser(response.data);
+};
 ```
 
-### 5. **Enhanced useAuth Hook** ([hooks/useAuth.ts](../hooks/useAuth.ts))
+**Logout Service:**
 
-**New Features:**
+```typescript
+logout: async (): Promise<void> => {
+  await api.post("/auth/logout");
 
-- `validateSession()` function for manual session checking
-- Automatic periodic session validation (every 5 minutes)
-- Initial session check after 1 minute
-- Proper cleanup on unmount
+  // Remove JWT access token
+  const { removeAccessToken } = await import("@/lib/api/axios");
+  removeAccessToken();
+};
+```
+
+### 4. **Enhanced useAuth Hook** ([hooks/useAuth.ts](../hooks/useAuth.ts))
+
+**Updated Logout Function:**
+
+```typescript
+const logoutMutation = useLogoutMutation({
+  onSuccess: async () => {
+    dispatch(logoutAsync());
+
+    // Clear access token and local storage
+    if (typeof window !== "undefined") {
+      const { removeAccessToken } = await import("@/lib/api/axios");
+      removeAccessToken();
+      localStorage.removeItem("persist:root");
+    }
+
+    toast.success("Logged out successfully");
+    router.push("/login");
+  },
+});
+```
 
 **Usage:**
 
 ```typescript
-const { validateSession, isAuthenticated } = useAuth();
+const { login, logout, isAuthenticated, user } = useAuth();
 
-// Manual validation
-const checkSession = async () => {
-  const result = await validateSession();
-  if (!result.valid) {
-    // Session expired, user will be logged out automatically
-  }
-};
-```
+// Login
+await login({ email: "user@example.com", password: "password" });
 
-**Automatic Validation:**
-
-```typescript
-useEffect(() => {
-  if (isAuthenticated) {
-    // Check every 5 minutes
-    const interval = setInterval(
-      () => {
-        validateSession();
-      },
-      5 * 60 * 1000
-    );
-
-    return () => clearInterval(interval);
-  }
-}, [isAuthenticated, validateSession]);
-```
-
-### 6. **Session Guard Component** ([components/SessionGuard.tsx](../components/SessionGuard.tsx))
-
-New component that automatically validates session on mount:
-
-```typescript
-export const SessionGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, validateSession } = useAuth();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      validateSession();
-    }
-  }, [isAuthenticated, validateSession]);
-
-  return <>{children}</>;
-};
-```
-
-### 7. **Updated Authenticated Layout** ([app/(authenticated)/layout.tsx](<../../app/(authenticated)/layout.tsx>))
-
-Wrapped layout with `SessionGuard` to enable automatic session validation for all authenticated routes:
-
-```typescript
-return (
-  <SessionGuard>
-    <div className="flex h-screen overflow-hidden">
-      {/* Layout content */}
-    </div>
-  </SessionGuard>
-);
-```
-
-### 8. **React Query Mutation** ([api/mutations.ts](../api/mutations.ts))
-
-Added `useValidateSessionMutation` for components that need to check session manually:
-
-```typescript
-export const useValidateSessionMutation = (
-  options?: UseMutationOptions<SessionValidationResponse, Error, void>
-) => {
-  return useMutation({
-    mutationFn: () => authApi.validateSession(),
-    ...options,
-  });
-};
+// Logout
+await logout();
 ```
 
 ## How It Works
 
-### Session Flow
+### JWT Authentication Flow
 
-1. **Login**: User logs in → Session cookie (`WHEELSHIFT_SESSIONID`) is set by backend
-2. **Requests**: All API requests automatically include session cookie (`withCredentials: true`)
-3. **Validation**:
-   - Initial check 1 minute after authentication
-   - Periodic checks every 5 minutes
-   - Automatic check on critical operations
-4. **Expiry Detection**: Backend returns 401 with `SESSION_EXPIRED` error code
-5. **User Notification**: Toast message: "Your session has expired. Please login again."
-6. **Cleanup**: Clear persisted state and redirect to login
-7. **Re-authentication**: User logs in again to create new session
+1. **Login**: User logs in → Backend returns `accessToken` in response
+2. **Storage**: Token is stored in localStorage
+3. **Requests**: All API requests automatically include `Authorization: Bearer <token>` header
+4. **Token Validation**: Backend validates token on each request
+5. **Expiry Detection**: Backend returns 401 with `TOKEN_EXPIRED` or `INVALID_TOKEN` error code
+6. **User Notification**: Toast message: "Your session has expired. Please login again."
+7. **Cleanup**: Clear token, persisted state, and redirect to login
+8. **Re-authentication**: User logs in again to receive new token
 
 ### Error Code Handling
 
 | Error Code                 | Status | Action            | Toast Message                                        |
 | -------------------------- | ------ | ----------------- | ---------------------------------------------------- |
-| `SESSION_EXPIRED`          | 401    | Logout + Redirect | "Your session has expired. Please login again."      |
+| `TOKEN_EXPIRED`            | 401    | Logout + Redirect | "Your session has expired. Please login again."      |
+| `INVALID_TOKEN`            | 401    | Logout + Redirect | "Your session has expired. Please login again."      |
 | `INSUFFICIENT_PERMISSIONS` | 403    | Show Error        | "You do not have permission to perform this action." |
 | `ACCESS_DENIED`            | 403    | Show Error        | "Access denied. Please check your permissions."      |
 | Other 401                  | 401    | Redirect          | "Authentication failed. Please login again."         |
@@ -196,44 +176,49 @@ export const useValidateSessionMutation = (
 import { useAuth } from "@/features/auth";
 
 const MyComponent = () => {
-  const { validateSession, isAuthenticated } = useAuth();
+  const { login, logout, isAuthenticated, user } = useAuth();
 
-  const handleCriticalAction = async () => {
-    // Validate session before critical operation
-    const { valid } = await validateSession();
+  const handleLogin = async () => {
+    const result = await login({
+      email: "user@example.com",
+      password: "password"
+    });
 
-    if (!valid) {
-      // Session expired, user already logged out
-      return;
+    if (result.success) {
+      console.log("Logged in successfully");
     }
-
-    // Proceed with critical action
-    await performCriticalOperation();
   };
 
-  return <button onClick={handleCriticalAction}>Do Action</button>;
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <>
+          <p>Welcome, {user?.name}</p>
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      ) : (
+        <button onClick={handleLogin}>Login</button>
+      )}
+    </div>
+  );
 };
 ```
 
-### Manual Session Check
+### Protected API Calls
+
+All API calls automatically include the JWT token:
 
 ```typescript
-import { useValidateSessionMutation } from "@/features/auth/api/mutations";
+import { api } from "@/lib/api/axios";
 
-const MyComponent = () => {
-  const validateSessionMutation = useValidateSessionMutation({
-    onSuccess: (result) => {
-      if (result.expired) {
-        console.log("Session expired");
-      }
-    },
-  });
-
-  const checkSession = () => {
-    validateSessionMutation.mutate();
-  };
-
-  return <button onClick={checkSession}>Check Session</button>;
+// Token is automatically added to Authorization header
+const fetchData = async () => {
+  const response = await api.get("/some-protected-endpoint");
+  return response.data;
 };
 ```
 
@@ -242,90 +227,77 @@ const MyComponent = () => {
 ### Manual Testing Steps
 
 1. **Login**: Log in with valid credentials
-2. **Wait**: Wait for session to expire (30 minutes) or manually invalidate on backend
-3. **Navigate**: Navigate to access control or any protected page
-4. **Verify**:
+2. **Verify Token**: Check localStorage for `accessToken`
+3. **API Call**: Make an API call and verify Authorization header includes token
+4. **Token Expiry**: Wait for token to expire or manually invalidate on backend
+5. **Verify**:
    - Toast message appears: "Your session has expired. Please login again."
    - User is redirected to login page
-   - No 403 errors in console
+   - Token is cleared from localStorage
 
-### Backend Session Timeout
+### Testing with DevTools
 
-According to the backend README, sessions expire after:
+```javascript
+// Check if token exists
+localStorage.getItem("accessToken");
 
-- **30 minutes** of inactivity
-- Or when manually invalidated
+// Manually remove token to test expiry
+localStorage.removeItem("accessToken");
 
-### Testing Session Expiry
-
-```bash
-# Login
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "password": "password"}' \
-  -c cookies.txt
-
-# Wait for session expiry or manually invalidate
-
-# Try protected endpoint
-curl -X GET http://localhost:8080/api/v1/rbac/permissions \
-  -b cookies.txt
-
-# Should return:
-# {
-#   "code": "SESSION_EXPIRED",
-#   "status": 401,
-#   "message": "Your session has expired. Please login again."
-# }
-```
-
-## Configuration
-
-### Session Check Interval
-
-To change the session validation interval, modify the interval in [hooks/useAuth.ts](../hooks/useAuth.ts):
-
-```typescript
-// Current: Check every 5 minutes
-sessionCheckInterval.current = setInterval(
-  () => {
-    validateSession();
-  },
-  5 * 60 * 1000
-); // Change this value
-
-// Examples:
-// 1 minute: 1 * 60 * 1000
-// 10 minutes: 10 * 60 * 1000
-// 15 minutes: 15 * 60 * 1000
-```
-
-### Initial Check Delay
-
-To change the initial session check delay:
-
-```typescript
-// Current: Check after 1 minute
-const initialCheck = setTimeout(() => {
-  validateSession();
-}, 60 * 1000); // Change this value
+// Try making an API request - should fail with 401
 ```
 
 ## Benefits
 
-1. **Automatic Session Management**: No manual session checking needed
-2. **User-Friendly**: Clear toast notifications on session expiry
-3. **Secure**: Automatically logs out on session expiry
-4. **Reliable**: Periodic validation catches expired sessions early
-5. **Prevents Errors**: Catches 403 errors before they reach components
-6. **Clean State**: Clears persisted state on logout
-7. **Proper Cookie Handling**: Uses `withCredentials: true` for session cookies
+1. **Stateless Authentication**: No server-side session storage needed
+2. **Scalable**: Easy to scale across multiple servers
+3. **User-Friendly**: Clear toast notifications on token expiry
+4. **Secure**: Token-based authentication with automatic expiry handling
+5. **Clean State**: Clears token and persisted state on logout
+6. **Standard Approach**: Uses industry-standard JWT authentication
 
 ## Troubleshooting
 
-### Issue: Session still expiring without notification
+### Issue: Token not being sent with requests
 
 **Solution**: Check that:
+
+- Token is stored in localStorage: `localStorage.getItem("accessToken")`
+- Axios interceptor is properly configured
+- Request is using the configured `api` instance
+
+### Issue: Token expired but no logout
+
+**Solution**: Check that:
+
+- Backend returns correct error code (`TOKEN_EXPIRED` or `INVALID_TOKEN`)
+- Response status is 401
+- Response interceptor is handling the error
+
+### Issue: User logged out unexpectedly
+
+**Solution**: Check that:
+
+- Token hasn't expired (check backend token expiration time)
+- Backend is returning valid JWT tokens
+- Token is not being cleared prematurely
+
+## Security Considerations
+
+1. **Token Storage**: Tokens are stored in localStorage (consider httpOnly cookies for enhanced security)
+2. **Token Expiration**: Backend should set appropriate token expiration times
+3. **HTTPS**: Always use HTTPS in production to prevent token interception
+4. **Token Refresh**: Consider implementing refresh token mechanism for long-lived sessions
+5. **XSS Protection**: Sanitize all user inputs to prevent XSS attacks that could steal tokens
+
+## API Endpoints
+
+All endpoints remain the same, only the authentication mechanism changed:
+
+- `POST /auth/login` - Login (returns accessToken)
+- `POST /auth/logout` - Logout
+- `GET /auth/me` - Get current user
+- All protected endpoints require `Authorization: Bearer <token>` header
 
 1. Backend is returning proper error codes (`SESSION_EXPIRED`)
 2. `withCredentials: true` is set in axios config

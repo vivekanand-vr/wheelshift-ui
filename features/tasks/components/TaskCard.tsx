@@ -3,6 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { Typography } from "@/components/ui/typography";
 import type { Task } from "@/features/tasks/types";
 import { Calendar, Tag, GripVertical } from "lucide-react";
 import { format } from "date-fns";
@@ -35,9 +36,12 @@ export function TaskCard({ task, onClick, isDragging = false }: TaskCardProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-start gap-2">
             <GripVertical className="mt-0.5 h-4 w-4 shrink-0 text-neutral-400" />
-            <h4 className="line-clamp-2 text-sm font-medium text-neutral-900 dark:text-neutral-100">
+            <Typography
+              variant="small"
+              className="line-clamp-2 text-neutral-900 dark:text-neutral-100"
+            >
               {task.title}
-            </h4>
+            </Typography>
           </div>
           <Badge
             className={cn(

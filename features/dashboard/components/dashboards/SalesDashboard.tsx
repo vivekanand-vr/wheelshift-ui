@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 
 interface SalesDashboardProps {
   data: SalesDashboardResponse;
@@ -114,7 +115,7 @@ export const SalesDashboard = ({ data }: SalesDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <Target className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Monthly Target Progress</h3>
+            <Typography variant="large">Monthly Target Progress</Typography>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -127,17 +128,17 @@ export const SalesDashboard = ({ data }: SalesDashboardProps) => {
               </Badge>
             </div>
             <Progress value={data.performance.targetProgress} />
-            <p className="text-muted-foreground text-xs">
+            <Typography variant="muted" className="text-xs">
               {data.performance.monthlyTarget - data.performance.monthlySales}{" "}
               sales remaining to hit target
-            </p>
+            </Typography>
           </div>
         </Card>
 
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <TrendingUp className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Sales Pipeline</h3>
+            <Typography variant="large">Sales Pipeline</Typography>
           </div>
           <ScrollArea className="h-64">
             <div className="space-y-2 pr-4">
@@ -164,7 +165,7 @@ export const SalesDashboard = ({ data }: SalesDashboardProps) => {
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-center gap-2">
             <Clock className="text-primary h-5 w-5" />
-            <h3 className="text-lg font-semibold">Quick Actions</h3>
+            <Typography variant="large">Quick Actions</Typography>
           </div>
           <ScrollArea className="h-80">
             <div className="space-y-2 pr-4">
@@ -193,11 +194,13 @@ export const SalesDashboard = ({ data }: SalesDashboardProps) => {
                       {action.priority}
                     </Badge>
                   </div>
-                  <p className="text-xs font-medium">{action.description}</p>
+                  <Typography variant="small" className="text-xs">
+                    {action.description}
+                  </Typography>
                   {action.dueDate && (
-                    <p className="text-muted-foreground mt-1 text-[10px]">
+                    <Typography variant="muted" className="mt-1 text-[10px]">
                       Due: {new Date(action.dueDate).toLocaleDateString()}
-                    </p>
+                    </Typography>
                   )}
                 </div>
               ))}

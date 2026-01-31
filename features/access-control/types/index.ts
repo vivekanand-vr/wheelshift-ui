@@ -3,6 +3,9 @@
  * Matches backend RBAC entities
  */
 
+// Re-export API error type from global types
+export type { ApiErrorResponse } from "@/types";
+
 export type RoleType =
   | "SUPER_ADMIN"
   | "ADMIN"
@@ -72,12 +75,12 @@ export interface EmployeeDataScope {
 export interface ResourceACL {
   id: number;
   resourceType: ResourceType;
-  resourceId: number;
+  resourceId: number; // ID is a number as per API specification
   subjectType: SubjectType;
   subjectId: number;
   access: AccessLevel;
-  reason?: string;
-  grantedBy: number;
+  reason?: string; // Optional reason for the ACL entry
+  grantedBy?: number; // Employee ID who granted this ACL
   createdAt: string;
   updatedAt: string;
 }
@@ -104,8 +107,24 @@ export interface PermissionRequest {
 
 export type PermissionResponse = Permission;
 
+// Export alias for DataScope
+export type DataScope = EmployeeDataScope;
+
+// Request types for data scopes
+export interface CreateDataScopeInput {
+  scopeType: ScopeType;
+  scopeValue: string;
+  effect: ScopeEffect;
+  description?: string;
+}
+
+export interface UpdateDataScopeInput {
+  effect?: ScopeEffect;
+  description?: string;
+}
+
 export interface DataScopeRequest {
-  employeeId: number;
+  employeeId?: number;
   scopeType: ScopeType;
   scopeValue: string;
   effect: ScopeEffect;
@@ -114,13 +133,15 @@ export interface DataScopeRequest {
 
 export type DataScopeResponse = EmployeeDataScope;
 
+/**
+ * Request body for creating an ACL entry.
+ * Note: resourceType and resourceId are path parameters, not in the request body.
+ */
 export interface ResourceACLRequest {
-  resourceType: ResourceType;
-  resourceId: number;
   subjectType: SubjectType;
   subjectId: number;
   access: AccessLevel;
-  reason?: string;
+  reason?: string; // Optional reason for granting access
 }
 
 export type ResourceACLResponse = ResourceACL;
@@ -128,6 +149,29 @@ export type ResourceACLResponse = ResourceACL;
 export interface AssignRoleRequest {
   roleIds: number[];
 }
+
+export interface EmployeePermission {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  permissionId: number;
+  permissionName: string;
+  permissionResource: string;
+  permissionAction: string;
+  grantedBy: number;
+  grantedByName: string;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployeePermissionRequest {
+  permissionId: number;
+  reason?: string;
+}
+
+export type EmployeePermissionResponse = EmployeePermission;
 
 // UI-specific types
 export interface RoleWithStats extends Role {
@@ -140,7 +184,12 @@ export interface PermissionGroup {
   permissions: Permission[];
 }
 
-export type AccessControlTab = "roles" | "permissions" | "employees" | "scopes";
+export type AccessControlTab =
+  | "roles"
+  | "permissions"
+  | "employees"
+  | "data-scopes"
+  | "acls";
 
 export interface AccessControlFilters {
   search: string;

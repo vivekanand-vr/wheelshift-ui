@@ -1,4 +1,3 @@
-import { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
@@ -10,7 +9,12 @@ import {
   Package,
   UserCircle,
   Bell,
-  Shield,
+  FolderLock,
+  LucideIcon,
+  ScanFace,
+  ShieldUser,
+  SquareUser,
+  UserCheck,
 } from "lucide-react";
 import type { UserRole } from "../../types";
 
@@ -91,8 +95,34 @@ export const navigationItems: NavigationItem[] = [
   {
     title: "Access Control",
     href: "/access-control",
-    icon: Shield,
+    icon: ShieldUser,
     roles: ["SUPER_ADMIN", "ADMIN"],
+    children: [
+      {
+        title: "Roles",
+        href: "/access-control/roles",
+        icon: UserCheck,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "Permissions",
+        href: "/access-control/permissions",
+        icon: ScanFace,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "Employees",
+        href: "/access-control/employees",
+        icon: SquareUser,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+      {
+        title: "ACLs",
+        href: "/access-control/acls",
+        icon: FolderLock,
+        roles: ["SUPER_ADMIN", "ADMIN"],
+      },
+    ],
   },
   {
     title: "Notifications",

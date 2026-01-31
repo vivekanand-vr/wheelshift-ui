@@ -56,6 +56,30 @@ export const roleDisplayMap: Record<
     color: "text-emerald-600 dark:text-emerald-400",
     description: "Oversee sales operations and team performance",
   },
+  SALES: {
+    label: "Sales",
+    icon: DollarSign,
+    color: "text-green-500 dark:text-green-400",
+    description: "Handle sales transactions and customer relations",
+  },
+  INSPECTOR: {
+    label: "Inspector",
+    icon: FileCheck,
+    color: "text-orange-600 dark:text-orange-400",
+    description: "Perform vehicle inspections and quality checks",
+  },
+  FINANCE: {
+    label: "Finance",
+    icon: DollarSign,
+    color: "text-yellow-600 dark:text-yellow-400",
+    description: "Manage financial operations and transactions",
+  },
+  STORE_MANAGER: {
+    label: "Store Manager",
+    icon: Warehouse,
+    color: "text-amber-600 dark:text-amber-400",
+    description: "Manage storage locations and inventory",
+  },
   EMPLOYEE: {
     label: "Employee",
     icon: User,

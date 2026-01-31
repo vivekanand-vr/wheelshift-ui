@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { Typography } from "@/components/ui/typography";
 import {
   BarChart,
   Bar,
@@ -33,7 +34,7 @@ export const RevenueChartWidget = ({ data }: RevenueChartWidgetProps) => {
     <Card className="relative overflow-visible p-6">
       <div className="mb-4 flex items-center gap-2">
         <TrendingUp className="text-primary h-5 w-5" />
-        <h3 className="text-lg font-semibold">Revenue Trend</h3>
+        <Typography variant="large">Revenue Trend</Typography>
       </div>
 
       <div className="relative h-80 w-full">

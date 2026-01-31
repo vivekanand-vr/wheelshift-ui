@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth, SessionGuard } from "@/features/auth";
+import { useAuth } from "@/features/auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import Loader from "@/components/common/Loader";
 
 export default function AuthenticatedLayout({
   children,
@@ -24,14 +25,7 @@ export default function AuthenticatedLayout({
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="border-primary-600 mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!isAuthenticated) {
@@ -39,14 +33,12 @@ export default function AuthenticatedLayout({
   }
 
   return (
-    <SessionGuard>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <Header />
-          <main className="bg-background flex-1 overflow-auto">{children}</main>
-        </div>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header />
+        <main className="bg-background flex-1 overflow-auto">{children}</main>
       </div>
-    </SessionGuard>
+    </div>
   );
 }

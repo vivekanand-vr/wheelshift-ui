@@ -1,6 +1,34 @@
 import axios from "axios";
 import { toast } from "sonner";
 
+/**
+ * Get access token from localStorage
+ */
+const getAccessToken = (): string | null => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("accessToken");
+  }
+  return null;
+};
+
+/**
+ * Set access token in localStorage
+ */
+export const setAccessToken = (token: string): void => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("accessToken", token);
+  }
+};
+
+/**
+ * Remove access token from localStorage
+ */
+export const removeAccessToken = (): void => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("accessToken");
+  }
+};
+
 // Create axios instance with default config
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1",
@@ -8,15 +36,25 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Important for session cookies
 });
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Add JWT token to Authorization header
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     // Log request in development
     if (process.env.NODE_ENV === "development") {
       console.log("API Request:", config.method?.toUpperCase(), config.url);
+      if (token) {
+        console.log("Token present:", token.substring(0, 20) + "...");
+      } else {
+        console.log("No token found");
+      }
     }
 
     return config;
@@ -45,14 +83,14 @@ api.interceptors.response.use(
       error.response?.data?.message ||
       error.message;
 
-    // Handle 401 Unauthorized (Session Expired)
+    // Handle 401 Unauthorized (Token Expired or Invalid)
     if (error.response?.status === 401) {
-      // Check if it's a session expired error
+      // Check if it's a token expired error
       if (
-        errorCode === "SESSION_EXPIRED" &&
-        !originalRequest._isSessionExpiredHandled
+        (errorCode === "TOKEN_EXPIRED" || errorCode === "INVALID_TOKEN") &&
+        !originalRequest._isTokenExpiredHandled
       ) {
-        originalRequest._isSessionExpiredHandled = true;
+        originalRequest._isTokenExpiredHandled = true;
 
         // Show toast notification
         if (typeof window !== "undefined") {
@@ -60,11 +98,11 @@ api.interceptors.response.use(
             duration: 4000,
           });
 
-          // Clear persisted state
+          // Clear token and persisted state
+          removeAccessToken();
           localStorage.removeItem("persist:root");
 
-          // Dispatch logout action if we have access to store
-          // We'll handle this in a centralized way
+          // Redirect to login
           setTimeout(() => {
             window.location.href = "/login";
           }, 500);
@@ -81,6 +119,10 @@ api.interceptors.response.use(
         toast.error(
           errorMessage || "Authentication failed. Please login again."
         );
+
+        // Clear token
+        removeAccessToken();
+        localStorage.removeItem("persist:root");
 
         setTimeout(() => {
           window.location.href = "/login";
@@ -103,12 +145,26 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle 500 Internal Server Error
+    if (error.response?.status === 500) {
+      console.error("Server Error (500):", {
+        url: error.config?.url,
+        method: error.config?.method,
+        data: error.config?.data,
+        response: error.response?.data,
+        headers: error.config?.headers,
+      });
+      toast.error("Server error. Please try again later.");
+      return Promise.reject(error);
+    }
+
     // Handle other errors
     console.error("API Error:", {
       status: error.response?.status,
       code: errorCode,
       message: errorMessage,
       url: error.config?.url,
+      response: error.response?.data,
     });
 
     return Promise.reject(error);

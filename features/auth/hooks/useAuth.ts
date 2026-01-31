@@ -2,18 +2,12 @@
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/store";
 import type { RootState } from "@/lib/redux/store";
-import {
-  logoutAsync,
-  checkAuthAsync,
-  clearError,
-  setUser,
-  validateSessionAsync,
-} from "../store";
+import { logoutAsync, checkAuthAsync, clearError, setUser } from "../store";
 import type { LoginCredentials } from "../types";
 import { useRouter } from "next/navigation";
 import { useLoginMutation, useLogoutMutation } from "../api/mutations";
 import { toast } from "sonner";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 
 /**
  * Main auth hook - Comprehensive authentication management
@@ -62,12 +56,14 @@ export const useAuth = () => {
    * Logout mutation with cleanup and navigation
    */
   const logoutMutation = useLogoutMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       // Clear Redux state
       dispatch(logoutAsync());
 
-      // Clear local storage
+      // Clear access token and local storage
       if (typeof window !== "undefined") {
+        const { removeAccessToken } = await import("@/lib/api/axios");
+        removeAccessToken();
         localStorage.removeItem("persist:root");
       }
 
@@ -132,71 +128,6 @@ export const useAuth = () => {
     dispatch(clearError());
   }, [dispatch]);
 
-  /**
-   * Validate current session
-   * Checks if session is still valid and handles expiry
-   */
-  const validateSession = useCallback(async () => {
-    if (!auth.isAuthenticated) return { valid: false };
-
-    try {
-      const result = await dispatch(validateSessionAsync()).unwrap();
-
-      if (!result.valid || result.expired) {
-        // Session is expired or invalid
-        toast.error(
-          result.message || "Your session has expired. Please login again."
-        );
-        await logoutMutation.mutateAsync();
-        return { valid: false, expired: true };
-      }
-
-      return { valid: true, expired: false };
-    } catch (error: any) {
-      // Session validation failed
-      if (error === "SESSION_EXPIRED") {
-        toast.error("Your session has expired. Please login again.");
-        await logoutMutation.mutateAsync();
-      }
-      return { valid: false, expired: true };
-    }
-  }, [auth.isAuthenticated, dispatch, logoutMutation]);
-
-  /**
-   * Periodic session validation (every 5 minutes)
-   * Only runs when user is authenticated
-   */
-  const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (auth.isAuthenticated && typeof window !== "undefined") {
-      // Clear any existing interval
-      if (sessionCheckInterval.current) {
-        clearInterval(sessionCheckInterval.current);
-      }
-
-      // Set up periodic session check (every 5 minutes)
-      sessionCheckInterval.current = setInterval(
-        () => {
-          validateSession();
-        },
-        5 * 60 * 1000
-      ); // 5 minutes
-
-      // Initial check after 1 minute
-      const initialCheck = setTimeout(() => {
-        validateSession();
-      }, 60 * 1000);
-
-      return () => {
-        if (sessionCheckInterval.current) {
-          clearInterval(sessionCheckInterval.current);
-        }
-        clearTimeout(initialCheck);
-      };
-    }
-  }, [auth.isAuthenticated, validateSession]);
-
   return {
     // State
     user: auth.user,
@@ -209,7 +140,6 @@ export const useAuth = () => {
     login,
     logout,
     checkAuth,
-    validateSession,
     clearError: clearAuthError,
 
     // Mutation states (for granular control in components if needed)

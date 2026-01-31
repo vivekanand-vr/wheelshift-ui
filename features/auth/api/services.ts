@@ -35,19 +35,30 @@ export const authApi = {
   /**
    * Login user with credentials
    * @param credentials - User email and password
-   * @returns Authenticated user data
+   * @returns Authenticated user data with access token
    */
   login: async (credentials: LoginCredentials): Promise<User> => {
     const response = await api.post<LoginResponse>("/auth/login", credentials);
+
+    // Store JWT access token
+    if (response.data.accessToken) {
+      const { setAccessToken } = await import("@/lib/api/axios");
+      setAccessToken(response.data.accessToken);
+    }
+
     return transformUser(response.data);
   },
 
   /**
    * Logout current user
-   * Clears server-side session/token
+   * Clears JWT token
    */
   logout: async (): Promise<void> => {
     await api.post("/auth/logout");
+
+    // Remove JWT access token
+    const { removeAccessToken } = await import("@/lib/api/axios");
+    removeAccessToken();
   },
 
   /**
@@ -55,21 +66,16 @@ export const authApi = {
    * @returns Current user data
    */
   getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<ApiResponse<LoginResponse>>("/auth/me");
-    return transformUser(response.data.data);
-  },
-
-  /**
-   * Validate current session
-   * Checks if the session is still valid and not expired
-   * @returns Session validation response
-   */
-  validateSession: async (): Promise<
-    import("../types").SessionValidationResponse
-  > => {
-    const response = await api.get<
-      import("../types").SessionValidationResponse
-    >("/auth/validate-session");
-    return response.data;
+    try {
+      const response = await api.get<ApiResponse<LoginResponse>>("/auth/me");
+      console.log("getCurrentUser response:", response.data);
+      return transformUser(response.data.data);
+    } catch (error: any) {
+      console.error(
+        "getCurrentUser error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   },
 };

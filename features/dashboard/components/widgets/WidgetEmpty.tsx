@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Typography } from "@/components/ui/typography";
 import { InboxIcon } from "lucide-react";
 
 interface WidgetEmptyProps {
@@ -16,8 +17,12 @@ export const WidgetEmpty = ({
     <Card className="p-6">
       <div className="flex flex-col items-center justify-center py-8 text-center">
         {icon || <InboxIcon className="text-muted-foreground mb-4 h-12 w-12" />}
-        <h3 className="mb-2 text-lg font-semibold">{title}</h3>
-        <p className="text-muted-foreground max-w-sm text-sm">{message}</p>
+        <Typography variant="large" className="mb-2">
+          {title}
+        </Typography>
+        <Typography variant="muted" className="max-w-sm">
+          {message}
+        </Typography>
       </div>
     </Card>
   );

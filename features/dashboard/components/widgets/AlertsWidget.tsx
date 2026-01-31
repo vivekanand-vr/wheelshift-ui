@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Typography } from "@/components/ui/typography";
 import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { SystemAlerts } from "../../types";
 import { WidgetEmpty } from "./WidgetEmpty";
@@ -45,7 +46,7 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertTriangle className="text-warning h-5 w-5" />
-          <h3 className="text-lg font-semibold">System Alerts</h3>
+          <Typography variant="large">System Alerts</Typography>
         </div>
         {totalAlerts > 0 && (
           <Badge variant="destructive">{totalAlerts} Total</Badge>
@@ -58,15 +59,15 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
             <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
               <div className="mb-1 flex items-center gap-2">
                 <AlertTriangle className="text-warning h-4 w-4" />
-                <span className="text-xs font-medium">
+                <Typography variant="small" className="text-xs">
                   Expiring Reservations
-                </span>
+                </Typography>
               </div>
-              <p className="text-muted-foreground text-[10px]">
+              <Typography variant="muted" className="text-[10px]">
                 {data.expiringReservations} reservation
                 {data.expiringReservations > 1 ? "s" : ""} expiring within 3
                 days
-              </p>
+              </Typography>
             </div>
           )}
 
@@ -74,12 +75,14 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
             <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
               <div className="mb-1 flex items-center gap-2">
                 <AlertTriangle className="text-warning h-4 w-4" />
-                <span className="text-xs font-medium">Inspections Due</span>
+                <Typography variant="small" className="text-xs">
+                  Inspections Due
+                </Typography>
               </div>
-              <p className="text-muted-foreground text-[10px]">
+              <Typography variant="muted" className="text-[10px]">
                 {data.inspectionsDue} vehicle
                 {data.inspectionsDue > 1 ? "s need" : " needs"} inspection
-              </p>
+              </Typography>
             </div>
           )}
 
@@ -87,12 +90,14 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
             <div className="bg-warning/10 border-warning/20 rounded-lg border p-2">
               <div className="mb-1 flex items-center gap-2">
                 <AlertTriangle className="text-warning h-4 w-4" />
-                <span className="text-xs font-medium">Capacity Warnings</span>
+                <Typography variant="small" className="text-xs">
+                  Capacity Warnings
+                </Typography>
               </div>
-              <p className="text-muted-foreground text-[10px]">
+              <Typography variant="muted" className="text-[10px]">
                 {data.locationCapacityWarnings} location
                 {data.locationCapacityWarnings > 1 ? "s" : ""} near capacity
-              </p>
+              </Typography>
             </div>
           )}
 
@@ -109,7 +114,9 @@ export const AlertsWidget = ({ data }: AlertsWidgetProps) => {
             >
               <div className="flex items-center gap-2">
                 {getSeverityIcon(alert.severity)}
-                <p className="text-xs">{alert.message}</p>
+                <Typography variant="small" className="text-xs">
+                  {alert.message}
+                </Typography>
               </div>
             </div>
           ))}

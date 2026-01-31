@@ -1,10 +1,6 @@
-import { RoleGuard } from "@/components/common/RoleGuard";
-import { AccessControlFeature } from "@/features/access-control";
+import { redirect } from "next/navigation";
 
 export default function AccessControlPage() {
-  return (
-    <RoleGuard allowedRoles={["SUPER_ADMIN", "ADMIN"]}>
-      <AccessControlFeature />
-    </RoleGuard>
-  );
+  // Redirect to the roles page by default
+  redirect("/access-control/roles");
 }

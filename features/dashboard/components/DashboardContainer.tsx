@@ -13,7 +13,7 @@ import {
   ListSkeleton,
 } from "./widgets/WidgetSkeleton";
 import { WidgetError } from "./widgets/WidgetError";
-import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/common/EmptyState";
 import { AlertCircle } from "lucide-react";
 import type { DashboardRole } from "../types";
 
@@ -60,16 +60,11 @@ export const DashboardContainer = () => {
 
   if (!data) {
     return (
-      <Card className="p-6">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
-          <h3 className="mb-2 text-lg font-semibold">No Dashboard Data</h3>
-          <p className="text-muted-foreground text-sm">
-            Unable to load dashboard. Please contact support if this issue
-            persists.
-          </p>
-        </div>
-      </Card>
+      <EmptyState
+        icon={<AlertCircle className="h-12 w-12" />}
+        title="No Dashboard Data"
+        description="Unable to load dashboard. Please contact support if this issue persists."
+      />
     );
   }
 
@@ -88,17 +83,11 @@ export const DashboardContainer = () => {
       return <StoreManagerDashboard data={data as any} />;
     default:
       return (
-        <Card className="p-6">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <AlertCircle className="text-muted-foreground mb-4 h-12 w-12" />
-            <h3 className="mb-2 text-lg font-semibold">
-              Unknown Dashboard Type
-            </h3>
-            <p className="text-muted-foreground text-sm">
-              Unable to determine the appropriate dashboard for your role.
-            </p>
-          </div>
-        </Card>
+        <EmptyState
+          icon={<AlertCircle className="h-12 w-12" />}
+          title="Unknown Dashboard Type"
+          description="Unable to determine the appropriate dashboard for your role."
+        />
       );
   }
 };

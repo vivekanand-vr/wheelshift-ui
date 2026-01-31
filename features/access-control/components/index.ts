@@ -2,11 +2,26 @@
  * Access Control Components Barrel Export
  */
 
-export * from "./RoleCard";
-export * from "./RoleDialog";
-export * from "./RolesGridView";
-export * from "./RolesListView";
-export * from "./PermissionManager";
-export * from "./PermissionDialog";
-export * from "./EmployeeRoleDialog";
-export * from "./AccessControlFeature";
+// Roles
+export * from "./roles";
+
+// Permissions
+export * from "./permissions";
+export * from "./permissions/PermissionManager";
+export * from "./permissions/PermissionsList";
+
+// Employees
+export * from "./employee/EmployeesTable";
+export * from "./employee";
+
+// Data Scopes
+export * from "./data-scopes";
+
+// ACLs
+export * from "./acls";
+
+// Feature Components
+export * from "./RolesFeature";
+export * from "./PermissionsFeature";
+export * from "./EmployeesFeature";
+export * from "./ACLsFeature";

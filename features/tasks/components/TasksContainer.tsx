@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Typography } from "@/components/ui/typography";
 import { ConfirmationDialog } from "@/components/common";
 import { useTasksContainer } from "@/features/tasks/hooks";
 import { KanbanBoard } from "./KanbanBoard";
@@ -183,14 +184,20 @@ export function TasksContainer() {
             <div className="mb-4 rounded-full bg-neutral-100 p-6 dark:bg-neutral-800">
               <Table2 className="h-12 w-12 text-neutral-400" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            <Typography
+              variant="large"
+              className="mb-2 text-neutral-900 dark:text-neutral-100"
+            >
               No tasks found
-            </h3>
-            <p className="mb-6 max-w-md text-neutral-600 dark:text-neutral-400">
+            </Typography>
+            <Typography
+              variant="muted"
+              className="mb-6 max-w-md text-neutral-600 dark:text-neutral-400"
+            >
               {hasFilters
                 ? "Try adjusting your filters to see more results."
                 : "Get started by creating your first task."}
-            </p>
+            </Typography>
             <Button onClick={handleCreateTask} className="gap-2">
               <Plus className="h-4 w-4" />
               Create Your First Task

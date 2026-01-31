@@ -8,6 +8,7 @@ import {
   roleService,
   permissionService,
   employeeRoleService,
+  employeePermissionService,
   dataScopeService,
   resourceACLService,
 } from "./services";
@@ -18,6 +19,8 @@ import type {
   DataScopeRequest,
   ResourceACLRequest,
   AssignRoleRequest,
+  EmployeePermissionRequest,
+  ResourceType,
 } from "../types";
 
 // ============================================================================
@@ -228,6 +231,98 @@ export const useAssignRolesToEmployee = () => {
 };
 
 // ============================================================================
+// EMPLOYEE CUSTOM PERMISSION MUTATIONS
+// ============================================================================
+
+export const useAssignPermissionToEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      employeeId,
+      data,
+    }: {
+      employeeId: number;
+      data: EmployeePermissionRequest;
+    }) =>
+      employeePermissionService.assignPermissionToEmployee(employeeId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(
+          variables.employeeId
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(variables.employeeId),
+      });
+      toast.success("Permission assigned to employee");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to assign permission"
+      );
+    },
+  });
+};
+
+export const useRemovePermissionFromEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      employeeId,
+      permissionId,
+    }: {
+      employeeId: number;
+      permissionId: number;
+    }) =>
+      employeePermissionService.removePermissionFromEmployee(
+        employeeId,
+        permissionId
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(
+          variables.employeeId
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(variables.employeeId),
+      });
+      toast.success("Permission removed from employee");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to remove permission"
+      );
+    },
+  });
+};
+
+export const useRemoveAllCustomPermissions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (employeeId: number) =>
+      employeePermissionService.removeAllCustomPermissions(employeeId),
+    onSuccess: (_, employeeId) => {
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeeCustomPermissions(employeeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.employeePermissions(employeeId),
+      });
+      toast.success("All custom permissions removed");
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to remove permissions"
+      );
+    },
+  });
+};
+
+// ============================================================================
 // DATA SCOPE MUTATIONS
 // ============================================================================
 
@@ -235,11 +330,19 @@ export const useCreateDataScope = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: DataScopeRequest) =>
-      dataScopeService.createDataScope(data),
-    onSuccess: () => {
+    mutationFn: ({
+      employeeId,
+      data,
+    }: {
+      employeeId: number;
+      data: DataScopeRequest;
+    }) => dataScopeService.createDataScope(String(employeeId), data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.dataScopesByEmployee(variables.employeeId),
       });
       toast.success("Data scope created successfully");
     },
@@ -259,14 +362,22 @@ export const useUpdateDataScope = () => {
       scopeId,
       data,
     }: {
-      scopeId: number;
+      scopeId: number | string;
       data: DataScopeRequest;
-    }) => dataScopeService.updateDataScope(scopeId, data),
-    onSuccess: () => {
+      employeeId?: number;
+    }) => dataScopeService.updateDataScope(String(scopeId), data),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
       });
       toast.success("Data scope updated successfully");
+      if (variables.employeeId) {
+        queryClient.invalidateQueries({
+          queryKey: accessControlKeys.dataScopesByEmployee(
+            variables.employeeId
+          ),
+        });
+      }
     },
     onError: (error: any) => {
       toast.error(
@@ -280,8 +391,9 @@ export const useDeleteDataScope = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (scopeId: number) => dataScopeService.deleteDataScope(scopeId),
-    onSuccess: () => {
+    mutationFn: ({ scopeId }: { scopeId: number | string }) =>
+      dataScopeService.deleteDataScope(String(scopeId)),
+    onSuccess: (_) => {
       queryClient.invalidateQueries({
         queryKey: accessControlKeys.dataScopes(),
       });
@@ -303,10 +415,24 @@ export const useCreateResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: ResourceACLRequest) =>
-      resourceACLService.createResourceACL(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
+    mutationFn: ({
+      resourceType,
+      resourceId,
+      data,
+    }: {
+      resourceType: ResourceType;
+      resourceId: number;
+      data: ResourceACLRequest;
+    }) =>
+      resourceACLService.grantResourceAccess(resourceType, resourceId, data),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
       toast.success("Access control entry created successfully");
     },
     onError: (error: any) => {
@@ -319,13 +445,52 @@ export const useDeleteResourceACL = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (aclId: number) => resourceACLService.deleteResourceACL(aclId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: accessControlKeys.all });
+    mutationFn: ({
+      aclId,
+    }: {
+      aclId: number;
+      resourceType: ResourceType;
+      resourceId: number;
+    }) => resourceACLService.revokeResourceAccess(aclId),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
       toast.success("Access control entry deleted successfully");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to delete ACL");
+    },
+  });
+};
+
+export const useRevokeAllResourceACLs = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      resourceType,
+      resourceId,
+    }: {
+      resourceType: ResourceType;
+      resourceId: number;
+    }) => resourceACLService.revokeAllResourceAccess(resourceType, resourceId),
+    onSuccess: (_, variables) => {
+      // Invalidate the specific resource query
+      queryClient.invalidateQueries({
+        queryKey: accessControlKeys.resourceACLs(
+          variables.resourceType,
+          variables.resourceId
+        ),
+      });
+      toast.success("All access control entries removed successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to revoke all ACLs");
     },
   });
 };
